@@ -173,7 +173,8 @@
             D: { id: 'D', name: 'D社 (競合)', color: '#0f172a' },
             I: { id: 'I', name: 'I社 (競合)', color: '#075985' },
             A: { id: 'A', name: 'A社 (競合)', color: '#4c1d95' },
-            NONE: { id: 'NONE', name: '未開拓', color: '#020617' }
+            NONE: { id: 'NONE', name: '未開拓', color: '#020617' },
+            UNKNOWN: { id: 'UNKNOWN', name: '不明', color: '#1e293b' } // 未訪問時のグレー色
         };
 
         const MAX_MAN_HOURS = 30;
@@ -266,7 +267,10 @@
                                 ${t.isRFP ? 'animate-rfp' : ''} ${t.isBuild ? 'animate-build' : ''} 
                                 ${state.changedIds.includes(t.id) ? 'animate-pink' : ''} 
                                 ${state.selectedId === t.id ? 'z-20 opacity-100 shadow-[0_0_20px_white] scale-110 border-white' : 'opacity-90'}`;
-                tile.style.backgroundColor = VENDORS[t.vendor].color;
+                
+                // 改修ポイント: 訪問前はグレーアウト
+                tile.style.backgroundColor = t.isInfoDisclosed ? VENDORS[t.vendor].color : VENDORS.UNKNOWN.color;
+                
                 if (t.year > 0) {
                     const span = document.createElement('span');
                     span.className = "text-[10px] font-black text-white/80 pointer-events-none drop-shadow-md";
