@@ -41,14 +41,14 @@
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
         .glass-panel {
-            background: rgba(15, 23, 42, 0.7);
-            backdrop-filter: blur(24px);
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(32px);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
         
         .result-item {
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            padding: 8px 0;
+            padding: 12px 0;
         }
         .result-item:last-child { border-bottom: none; }
     </style>
@@ -66,19 +66,19 @@
             </div>
             <div class="text-right">
                 <div class="text-[9px] text-slate-500 font-bold uppercase tracking-widest mb-1 italic">Resource (MH)</div>
-                <div id="man-hours-display" class="text-3xl font-light tabular-nums text-[#34D399]">30<span class="text-xs opacity-20 ml-2">/ 30</span></div>
+                <div id="man-hours-display" class="text-3xl font-light tabular-nums text-[#34D399]">20<span class="text-xs opacity-20 ml-2">/ 20</span></div>
             </div>
         </div>
 
-        <!-- Grid View -->
+        <!-- Grid View (8x8) -->
         <div id="grid-container" class="flex-1 relative bg-black rounded-3xl border border-slate-900 overflow-hidden shadow-inner p-4 flex justify-center items-center m-2 mb-0">
-            <div id="grid" class="grid grid-cols-10 grid-rows-10 gap-[2.5px] w-full aspect-square transition-all duration-500"></div>
+            <div id="grid" class="grid grid-cols-8 grid-rows-8 gap-1 w-full aspect-square transition-all duration-500"></div>
             
             <!-- Result Summary Overlay -->
             <div id="result-overlay" class="absolute inset-0 flex items-center justify-center z-[150] bg-slate-950/40 backdrop-blur-sm hidden">
-                <div id="result-box" class="glass-panel w-5/6 max-h-[70%] rounded-[2rem] p-6 shadow-2xl overflow-hidden flex flex-col result-popup-animate">
+                <div id="result-box" class="glass-panel w-5/6 max-h-[75%] rounded-[2rem] p-6 shadow-2xl overflow-hidden flex flex-col result-popup-animate">
                     <div class="flex justify-between items-center mb-4">
-                        <h3 id="result-title" class="text-sm font-black text-[#D4AF37] uppercase tracking-[0.3em] italic">FY26M1 Action Report</h3>
+                        <h3 id="result-title" class="text-sm font-black text-[#D4AF37] uppercase tracking-[0.3em] italic">FY26 Activity Report</h3>
                         <div class="w-8 h-8 rounded-full bg-slate-800/50 flex items-center justify-center"><i data-lucide="activity" size="14" class="text-white/50"></i></div>
                     </div>
                     <div id="result-list" class="flex-1 overflow-y-auto pr-2 scrollbar-hide space-y-1">
@@ -103,12 +103,12 @@
                         <button id="close-panel" class="text-slate-500 hover:text-white"><i data-lucide="x" size="16"></i></button>
                     </div>
                     <div id="panel-name" class="text-xl font-black text-white leading-tight mb-2 truncate">Customer</div>
-                    <div id="panel-full" class="text-[10px] text-slate-500 mb-4">Description</div>
+                    <div id="panel-full" class="text-[10px] text-slate-500 mb-4 italic leading-relaxed">Description</div>
                     
                     <div class="space-y-3 pt-4 border-t border-white/5">
                         <div class="flex flex-col">
                             <span class="text-[9px] uppercase text-slate-500 font-bold">Phase Status</span>
-                            <span id="panel-status" class="text-[11px] font-bold">Status Text</span>
+                            <span id="panel-status" class="text-[11px] font-bold tracking-tight">Status Text</span>
                         </div>
                         <div class="flex flex-col">
                             <span class="text-[9px] uppercase text-slate-500 font-bold tracking-widest">Est. Win Prob</span>
@@ -185,15 +185,15 @@
 
     <script>
         const VENDORS = {
-            H: { id: 'H', name: 'H社 (自社)', color: '#064e3b' },
-            D: { id: 'D', name: 'D社 (競合)', color: '#0f172a' },
-            I: { id: 'I', name: 'I社 (競合)', color: '#075985' },
-            A: { id: 'A', name: 'A社 (競合)', color: '#4c1d95' },
+            H: { id: 'H', name: 'H社', color: '#064e3b' },
+            D: { id: 'D', name: 'D社', color: '#0f172a' },
+            I: { id: 'I', name: 'I社', color: '#075985' },
+            A: { id: 'A', name: 'A社', color: '#4c1d95' },
             NONE: { id: 'NONE', name: '未開拓', color: '#020617' },
             UNKNOWN: { id: 'UNKNOWN', name: '不明', color: '#1e293b' }
         };
 
-        const MAX_MAN_HOURS = 30;
+        const MAX_MAN_HOURS = 20; // 30から20に変更
 
         let state = {
             month: 1,
@@ -202,22 +202,22 @@
             selectedId: null,
             pendingTasks: [],
             logs: ["インテリジェンス同期。盤面をスキャン中..."],
-            currentResults: [], // 今月の実行結果
+            currentResults: [],
             changedIds: [],
             customers: [
-                { id: 1, name: 'NIT', full: 'ニトリHD', budget: 200, tileCount: 20, sier: 'BIPROGY', vendor: 'D', internalMonth: 42, visitCount: 0, studyCount: 0 },
-                { id: 2, name: 'SAP', full: '札幌市', budget: 135, tileCount: 14, sier: 'HBA', vendor: 'I', internalMonth: 48, visitCount: 0, studyCount: 0 },
-                { id: 3, name: 'HDC', full: '北海道庁', budget: 120, tileCount: 12, sier: 'HBA', vendor: 'I', internalMonth: 30, visitCount: 0, studyCount: 0 },
-                { id: 4, name: 'HOU', full: '北海道大学', budget: 110, tileCount: 11, sier: 'BIPROGY', vendor: 'A', internalMonth: 18, visitCount: 0, studyCount: 0 },
-                { id: 5, name: 'TSU', full: 'ツルハHD', budget: 80, tileCount: 8, sier: 'BIPROGY', vendor: 'D', internalMonth: 45, visitCount: 0, studyCount: 0 },
-                { id: 6, name: 'JRH', full: 'JR北海道', budget: 70, tileCount: 7, sier: 'NTTD', vendor: 'I', internalMonth: 50, visitCount: 0, studyCount: 0 },
-                { id: 7, name: 'HKL', full: 'ホクレン', budget: 60, tileCount: 6, sier: 'HBA', vendor: 'H', internalMonth: 5, visitCount: 0, studyCount: 0 },
-                { id: 8, name: 'AIN', full: 'アインHD', budget: 50, tileCount: 5, sier: 'BIPROGY', vendor: 'D', internalMonth: 35, visitCount: 0, studyCount: 0 },
-                { id: 9, name: 'HYB', full: '北洋銀行', budget: 50, tileCount: 5, sier: 'NTTD', vendor: 'I', internalMonth: 40, visitCount: 0, studyCount: 0 },
-                { id: 10, name: 'SAT', full: 'サツドラHD', budget: 40, tileCount: 4, sier: 'NTTD', vendor: 'H', internalMonth: 58, visitCount: 0, studyCount: 0 },
-                { id: 11, name: 'HRP', full: 'HARP', budget: 30, tileCount: 3, sier: 'HBA', vendor: 'I', internalMonth: 20, visitCount: 0, studyCount: 0 },
+                { id: 1, name: 'NIT', full: 'ニトリHD', budget: 200, tileCount: 12, sier: 'BIPROGY', vendor: 'D', internalMonth: 42, visitCount: 0, studyCount: 0 },
+                { id: 2, name: 'SAP', full: '札幌市', budget: 135, tileCount: 9, sier: 'HBA', vendor: 'I', internalMonth: 48, visitCount: 0, studyCount: 0 },
+                { id: 3, name: 'HDC', full: '北海道庁', budget: 120, tileCount: 8, sier: 'HBA', vendor: 'I', internalMonth: 30, visitCount: 0, studyCount: 0 },
+                { id: 4, name: 'HOU', full: '北海道大学', budget: 110, tileCount: 7, sier: 'BIPROGY', vendor: 'A', internalMonth: 18, visitCount: 0, studyCount: 0 },
+                { id: 5, name: 'TSU', full: 'ツルハHD', budget: 80, tileCount: 5, sier: 'BIPROGY', vendor: 'D', internalMonth: 45, visitCount: 0, studyCount: 0 },
+                { id: 6, name: 'JRH', full: 'JR北海道', budget: 70, tileCount: 4, sier: 'NTTD', vendor: 'I', internalMonth: 50, visitCount: 0, studyCount: 0 },
+                { id: 7, name: 'HKL', full: 'ホクレン', budget: 60, tileCount: 4, sier: 'HBA', vendor: 'H', internalMonth: 5, visitCount: 0, studyCount: 0 },
+                { id: 8, name: 'AIN', full: 'アインHD', budget: 50, tileCount: 3, sier: 'BIPROGY', vendor: 'D', internalMonth: 35, visitCount: 0, studyCount: 0 },
+                { id: 9, name: 'HYB', full: '北洋銀行', budget: 50, tileCount: 3, sier: 'NTTD', vendor: 'I', internalMonth: 40, visitCount: 0, studyCount: 0 },
+                { id: 10, name: 'SAT', full: 'サツドラHD', budget: 40, tileCount: 3, sier: 'NTTD', vendor: 'H', internalMonth: 58, visitCount: 0, studyCount: 0 },
+                { id: 11, name: 'HRP', full: 'HARP', budget: 30, tileCount: 2, sier: 'HBA', vendor: 'I', internalMonth: 20, visitCount: 0, studyCount: 0 },
                 { id: 12, name: 'HPP', full: '北海道警察', budget: 25, tileCount: 2, sier: 'HBA', vendor: 'I', internalMonth: 32, visitCount: 0, studyCount: 0 },
-                { id: 13, name: 'GAS', full: '北海道ガス', budget: 20, tileCount: 2, sier: 'OTHER', vendor: 'A', internalMonth: 44, visitCount: 0, studyCount: 0 },
+                { id: 13, name: 'GAS', full: '北海道ガス', budget: 20, tileCount: 1, sier: 'OTHER', vendor: 'A', internalMonth: 44, visitCount: 0, studyCount: 0 },
                 { id: 14, name: 'KNM', full: 'カナモト', budget: 20, tileCount: 1, sier: 'HBA', vendor: 'D', internalMonth: 12, visitCount: 0, studyCount: 0 },
             ]
         };
@@ -273,9 +273,9 @@
                     tilesData.push({ id: cust.id, vendor: cust.vendor, year, isRFP, isBuild, isInfoDisclosed });
                 }
             });
-            while (tilesData.length < 100) tilesData.push({ id: null, vendor: 'NONE' });
+            while (tilesData.length < 64) tilesData.push({ id: null, vendor: 'NONE' });
 
-            tilesData.forEach(t => {
+            tilesData.slice(0, 64).forEach(t => {
                 const tile = document.createElement('div');
                 tile.className = `w-full aspect-square cursor-pointer transition-all duration-300 border-[1.5px] border-white/10 relative flex items-center justify-center 
                                 ${t.isRFP ? 'animate-rfp' : ''} ${t.isBuild ? 'animate-build' : ''} 
@@ -303,8 +303,17 @@
                 document.getElementById('panel-win-rate').innerText = `${calculateWinRate(c)}%`;
                 const statusEl = document.getElementById('panel-status');
                 if (c.visitCount > 0 || c.vendor === 'H') {
-                    statusEl.className = `text-[11px] font-bold ${c.internalMonth >= 50 ? 'text-white' : c.internalMonth >= 48 ? 'text-yellow-400 animate-pulse' : 'text-slate-400'}`;
-                    statusEl.innerText = c.internalMonth >= 50 ? `🏗️ 構築中 (M${c.internalMonth})` : c.internalMonth >= 48 ? `📄 提案依頼中 (M${c.internalMonth})` : `通常運用 (M${c.internalMonth})`;
+                    // 改修ポイント：構築中の場合はベンダー名を表示
+                    if (c.internalMonth >= 50) {
+                        statusEl.className = "text-[11px] font-bold text-white";
+                        statusEl.innerText = `${VENDORS[c.vendor].name}が構築中 (M${c.internalMonth})`;
+                    } else if (c.internalMonth >= 48) {
+                        statusEl.className = "text-[11px] font-bold text-yellow-400 animate-pulse";
+                        statusEl.innerText = `📄 提案依頼中 (M${c.internalMonth})`;
+                    } else {
+                        statusEl.className = "text-[11px] font-bold text-slate-400";
+                        statusEl.innerText = `通常運用 (M${c.internalMonth})`;
+                    }
                 } else {
                     statusEl.className = "text-[11px] font-bold text-slate-600 italic";
                     statusEl.innerText = "情報未取得";
@@ -392,25 +401,27 @@
                 let c = state.customers.find(x => x.id === task.customerId);
                 if (task.type === 'VISIT') {
                     c.visitCount++;
-                    const msg = `[SELF] ${c.name} へ訪問、情報を収集しました。`;
+                    const msg = `[SELF] ${c.name} へ訪問。インテリジェンスを獲得しました。`;
                     state.logs.unshift(msg);
                     monthResults.push({ vendor: 'H', msg });
                 } else if (task.type === 'PARTNER') {
                     c.studyCount++;
-                    const msg = `[SELF] ${c.name} 勉強会を実施、SIer連携を深めました。`;
+                    const msg = `[SELF] ${c.name} 勉強会を実施。SIer連携を最適化しました。`;
                     state.logs.unshift(msg);
                     monthResults.push({ vendor: 'H', msg });
                 } else if (task.type === 'PROPOSAL') {
+                    monthResults.push({ vendor: 'H', msg: `H社が${c.name}に提案を開始しました。` });
+                    await new Promise(r => setTimeout(r, 200));
                     if (Math.random() * 100 < calculateWinRate(c)) {
                         c.vendor = 'H'; c.internalMonth = 1; c.visitCount = 1; c.studyCount = 0;
                         turnSales += c.budget; turnChanges.push(c.id);
-                        const msg = `[SUCCESS] ${c.name} の奪還提案が承認されました！`;
-                        state.logs.unshift(msg);
-                        monthResults.push({ vendor: 'H', msg, success: true });
+                        const resMsg = `結果は、H社が受注しました。`;
+                        state.logs.unshift(`[SUCCESS] ${c.name} 奪還！`);
+                        monthResults.push({ vendor: 'H', msg: resMsg, success: true });
                     } else { 
-                        const msg = `[FAILED] ${c.name} への提案は競合に阻まれました。`;
-                        state.logs.unshift(msg);
-                        monthResults.push({ vendor: 'H', msg, success: false });
+                        const resMsg = `結果は、H社が失注しました。`;
+                        state.logs.unshift(`[FAILED] ${c.name} 奪還ならず。`);
+                        monthResults.push({ vendor: 'H', msg: resMsg, success: false });
                     }
                 }
                 updateUI();
@@ -429,25 +440,29 @@
                 const rfp = targets.filter(c => c.internalMonth >= 48 && c.internalMonth < 50);
                 if (rfp.length > 0) target = rfp[0];
 
+                monthResults.push({ vendor: rid, msg: `${VENDORS[rid].name}が${target.name}に提案を開始しました。` });
+                await new Promise(r => setTimeout(r, 200));
+
                 const chance = 10 + (target.internalMonth >= 48 ? 20 : 0);
                 if (Math.random() * 100 < chance) {
                     const oldVendor = target.vendor;
                     target.vendor = rid; target.internalMonth = 1; target.visitCount = 0; target.studyCount = 0;
                     turnChanges.push(target.id);
-                    const msg = `[${rid}] ${target.name} (${oldVendor}社) を制圧しました。`;
-                    state.logs.unshift(msg);
-                    monthResults.push({ vendor: rid, msg });
+                    const resMsg = `結果は、${VENDORS[rid].name}が受注しました。`;
+                    state.logs.unshift(`[${rid}] ${target.name} を制圧。`);
+                    monthResults.push({ vendor: rid, msg: resMsg, success: true });
+                } else {
+                    const resMsg = `結果は、${VENDORS[rid].name}が失注しました。`;
+                    monthResults.push({ vendor: rid, msg: resMsg, success: false });
                 }
             }
 
-            // Time advancement logic (hidden from UI until results closed)
             state.customers.forEach(c => { c.internalMonth = c.internalMonth >= 60 ? 1 : c.internalMonth + 1; });
             state.changedIds = turnChanges;
             state.currentResults = monthResults;
             
             document.getElementById('exec-overlay').classList.add('hidden');
             
-            // Show Result Summary Popup
             const resultList = document.getElementById('result-list');
             resultList.innerHTML = '';
             document.getElementById('result-title').innerText = `FY26M${state.month} Activity Summary`;
@@ -459,11 +474,11 @@
                 let iconClass = "text-slate-500";
                 let iconName = "chevron-right";
                 if (r.vendor === 'H') {
-                    iconClass = r.success === false ? "text-rose-500" : "text-emerald-500";
+                    iconClass = r.success === false ? "text-rose-500" : (r.success === true ? "text-emerald-500" : "text-slate-400");
                     iconName = r.success === false ? "shield-alert" : "shield-check";
                 } else {
-                    iconClass = "text-sky-500";
-                    iconName = "zap";
+                    iconClass = r.success === true ? "text-sky-500" : "text-slate-600";
+                    iconName = r.success === true ? "zap" : "slash";
                 }
 
                 div.innerHTML = `
@@ -472,13 +487,9 @@
                 `;
                 resultList.appendChild(div);
             });
-            if (monthResults.length === 0) {
-                resultList.innerHTML = '<div class="text-[10px] text-slate-500 italic py-4">今月、市場に大きな動きはありませんでした。</div>';
-            }
 
             document.getElementById('result-overlay').classList.remove('hidden');
             lucide.createIcons();
-            
             localStorage.setItem('enterprise_hud_state', JSON.stringify(state));
         }
 
