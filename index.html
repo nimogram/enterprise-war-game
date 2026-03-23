@@ -115,13 +115,26 @@
 
         /* ─── SHARE BAR ─── */
         .share-bar {
-            height: 3px;
+            height: 22px; 
             display: flex;
             overflow: hidden;
-            margin: 8px 20px 0;
-            border-radius: 2px;
+            margin: 12px 20px 4px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            background: rgba(255,255,255,0.02);
         }
-        .share-seg { height: 100%; transition: width 0.8s ease; }
+        .share-seg { 
+            height: 100%; 
+            transition: width 0.8s ease; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-display);
+            font-size: 10px;
+            color: #fff;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+            white-space: nowrap;
+        }
 
         /* ─── GRID AREA ─── */
         .grid-wrap {
@@ -159,9 +172,10 @@
         }
         .tile .t-label {
             font-family: var(--font-mono);
-            font-size: 8px;
-            color: rgba(255,255,255,0.35);
+            font-size: 11px;
+            color: rgba(255,255,255,0.6);
             pointer-events: none;
+            font-weight: 500;
         }
         @keyframes rfp-glow {
             0%,100% { box-shadow: 0 0 10px var(--gold), inset 0 0 6px rgba(201,168,76,0.15); border-color: var(--gold); }
@@ -185,8 +199,8 @@
         .side-panel {
             position: absolute;
             top: 0; right: 0; bottom: 0;
-            width: 72%;
-            background: rgba(10,16,28,0.92);
+            width: 80%;
+            background: rgba(10,16,28,0.15);
             backdrop-filter: blur(32px);
             border-left: 1px solid var(--border);
             padding: 20px 18px;
@@ -380,7 +394,7 @@
         .result-block {
             padding: 16px 0;
             border-bottom: 1px solid rgba(255,255,255,0.04);
-            opacity: 0; animation: slide-in 0.5s forwards;
+            opacity: 0; animation: slide-in 0.6s forwards cubic-bezier(0.22, 1, 0.36, 1);
         }
         .result-block:last-child { border-bottom: none; }
         @keyframes slide-in { to{opacity:1;transform:none} from{opacity:0;transform:translateY(-20px)} }
@@ -594,16 +608,16 @@ let state = {
         { id:102, name:'NIT-Logi',    full:'ニトリHD: 物流インフラ',        budget:80,  tiles:4, vendor:'I', mo:12, vc:0, sc:0 },
         { id:201, name:'SAP-Net',     full:'札幌市: 庁内ネットワーク',      budget:70,  tiles:4, vendor:'I', mo:48, vc:0, sc:0 },
         { id:202, name:'SAP-Win',     full:'札幌市: 市民窓口システム',      budget:65,  tiles:3, vendor:'I', mo:30, vc:0, sc:0 },
-        { id:301, name:'HDC-Fin',     full:'北海道庁: 財務会計',           budget:60,  tiles:3, vendor:'A', mo:50, vc:0, sc:0 },
+        { id:301, name:'HDC-Fin',     full:'北海道庁: 財務会計',            budget:60,  tiles:3, vendor:'A', mo:50, vc:0, sc:0 },
         { id:401, name:'HOU-Edu',     full:'北海道大学: 教育インフラ',      budget:110, tiles:4, vendor:'A', mo:18, vc:0, sc:0 },
         { id:501, name:'TSU-EC',      full:'ツルハHD: EC/店舗統合',        budget:80,  tiles:3, vendor:'I', mo:45, vc:0, sc:0 },
-        { id:601, name:'JRH-Tick',    full:'JR北海道: 発券システム',       budget:70,  tiles:4, vendor:'A', mo:50, vc:0, sc:0 },
-        { id:701, name:'HKL-Agri',    full:'ホクレン: 農業情報',           budget:60,  tiles:3, vendor:'H', mo:5,  vc:0, sc:0 },
-        { id:801, name:'AIN-Ph',      full:'アインHD: 調剤管理',           budget:50,  tiles:2, vendor:'I', mo:35, vc:0, sc:0 },
-        { id:901, name:'HBA-Sec',     full:'HBA: セキュリティ基盤',        budget:50,  tiles:2, vendor:'A', mo:40, vc:0, sc:0 },
+        { id:601, name:'JRH-Tick',    full:'JR北海道: 発券システム',        budget:70,  tiles:4, vendor:'A', mo:50, vc:0, sc:0 },
+        { id:701, name:'HKL-Agri',    full:'ホクレン: 農業情報',            budget:60,  tiles:3, vendor:'H', mo:5,  vc:0, sc:0 },
+        { id:801, name:'AIN-Ph',      full:'アインHD: 調剤管理',            budget:50,  tiles:2, vendor:'I', mo:35, vc:0, sc:0 },
+        { id:901, name:'HBA-Sec',     full:'HBA: セキュリティ基盤',         budget:50,  tiles:2, vendor:'A', mo:40, vc:0, sc:0 },
         { id:1001,name:'SAT-POS',     full:'サツドラHD: 次世代POS',        budget:40,  tiles:2, vendor:'H', mo:58, vc:0, sc:0 },
-        { id:1101,name:'HRP-Base',    full:'HARP: 共通基盤システム',       budget:30,  tiles:1, vendor:'I', mo:20, vc:0, sc:0 },
-        { id:1201,name:'HPP-Sec',     full:'北海道警察: 公安NW',           budget:25,  tiles:1, vendor:'I', mo:32, vc:0, sc:0 },
+        { id:1101,name:'HRP-Base',    full:'HARP: 共通基盤システム',        budget:30,  tiles:1, vendor:'I', mo:20, vc:0, sc:0 },
+        { id:1201,name:'HPP-Sec',     full:'北海道警察: 公安情報NW',        budget:25,  tiles:1, vendor:'I', mo:32, vc:0, sc:0 },
     ]
 };
 
@@ -642,6 +656,9 @@ function render() {
             const d = document.createElement('div');
             d.className='share-seg';
             d.style.cssText=`width:${pct}%;background:${col};opacity:${v==='H'?1:0.5}`;
+            if (pct > 5) {
+                d.textContent = Math.round(pct) + '%';
+            }
             bar.appendChild(d);
         }
     });
@@ -670,10 +687,10 @@ function render() {
         if (state.changedIds.includes(t.id)) el.classList.add('changed-anim');
         if (state.selectedId === t.id) el.classList.add('selected');
         if (t.year > 0) {
-            const sp = document.createElement('span');
-            sp.className = 't-label';
-            sp.textContent = t.known ? `Y${t.year}` : 'Y?';
-            el.appendChild(sp);
+            const span = document.createElement('span');
+            span.className = 't-label';
+            span.textContent = t.known ? `Y${t.year}` : 'Y?';
+            el.appendChild(span);
         }
         if (t.id) el.onclick = e => { e.stopPropagation(); state.selectedId = t.id; render(); };
         grid.appendChild(el);
@@ -689,9 +706,11 @@ function render() {
         document.getElementById('sp-visit').textContent = c.vc;
         document.getElementById('sp-study').textContent = c.sc;
         document.getElementById('sp-win').textContent   = `${winRate(c)}%`;
-        document.getElementById('sp-vendor').textContent = VENDORS[c.vendor].name;
 
         const known = c.vc>0 || c.vendor==='H';
+        // 指示：訪問するまでは既存ベンダー情報も「？」に
+        document.getElementById('sp-vendor').textContent = known ? VENDORS[c.vendor].name : '？';
+
         const statusEl = document.getElementById('sp-status');
         const propBtn = document.getElementById('sp-proposal-btn');
         const isRFP = c.mo>=48&&c.mo<50;
@@ -792,7 +811,8 @@ async function executeStrategy() {
             const ok = Math.random()*100 < winRate(c);
             if (ok) {
                 c.vendor='H'; c.mo=1; c.vc=1; c.sc=0;
-                gained += c.budget; changed.push(c.id);
+                gained = c.budget; 
+                changed.push(c.id);
                 monthResults[c.id].push({ icon:'✅', text:`H社が ${c.name} に本提案。`, result:`受注確定。ターゲット制圧。`, success:true });
                 state.logs.unshift(`[SUCCESS] ${c.name} 制圧！`);
             } else {
@@ -854,7 +874,7 @@ async function executeStrategy() {
         if (!monthResults[cid]||monthResults[cid].length===0) continue;
         const block = document.createElement('div');
         block.className = 'result-block';
-        block.style.animationDelay = `${delay*0.4}s`;
+        block.style.animationDelay = `${delay*0.5}s`; 
         delay++;
         let html = `<div class="result-block-name">${c.name} Intel</div>`;
         monthResults[cid].forEach(r => {
