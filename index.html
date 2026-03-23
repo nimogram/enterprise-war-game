@@ -1,386 +1,520 @@
-import React, { useState, useMemo, useCallback } from 'react';
-import { Users, FileText, ChevronRight, Briefcase, MousePointer2, ShieldCheck, Trophy, AlertTriangle, Check, X, RotateCcw, ListChecks, Construction } from 'lucide-react';
-
-const VENDORS = {
-  H: { id: 'H', name: 'H社 (自社)', color: '#064e3b', textColor: '#ECFDF5', borderColor: '#34D399' },
-  D: { id: 'D', name: 'D社 (競合)', color: '#0f172a', textColor: '#F1F5F9', borderColor: '#475569' },
-  I: { id: 'I', name: 'I社 (競合)', color: '#075985', textColor: '#F0F9FF', borderColor: '#7DD3FC' },
-  A: { id: 'A', name: 'A社 (競合)', color: '#4c1d95', textColor: '#F5F3FF', borderColor: '#A78BFA' },
-  NONE: { id: 'NONE', name: '未開拓', color: '#020617', textColor: '#475569', borderColor: '#1E293B' }
-};
-
-const INITIAL_CUSTOMERS = [
-  { id: 1, name: 'NIT', full: 'ニトリHD', budget: 200, tileCount: 20, sier: 'BIPROGY', vendor: 'D', internalMonth: 42, visitCount: 0, studyCount: 0 },
-  { id: 2, name: 'SAP', full: '札幌市', budget: 135, tileCount: 14, sier: 'HBA', vendor: 'I', internalMonth: 48, visitCount: 0, studyCount: 0 },
-  { id: 3, name: 'HDC', full: '北海道庁', budget: 120, tileCount: 12, sier: 'HBA', vendor: 'I', internalMonth: 30, visitCount: 0, studyCount: 0 },
-  { id: 4, name: 'HOU', full: '北海道大学', budget: 110, tileCount: 11, sier: 'BIPROGY', vendor: 'A', internalMonth: 18, visitCount: 0, studyCount: 0 },
-  { id: 5, name: 'TSU', full: 'ツルハHD', budget: 80, tileCount: 8, sier: 'BIPROGY', vendor: 'D', internalMonth: 45, visitCount: 0, studyCount: 0 },
-  { id: 6, name: 'JRH', full: 'JR北海道', budget: 70, tileCount: 7, sier: 'NTTD', vendor: 'I', internalMonth: 50, visitCount: 0, studyCount: 0 },
-  { id: 7, name: 'HKL', full: 'ホクレン', budget: 60, tileCount: 6, sier: 'HBA', vendor: 'H', internalMonth: 5, visitCount: 0, studyCount: 0 },
-  { id: 8, name: 'AIN', full: 'アインHD', budget: 50, tileCount: 5, sier: 'BIPROGY', vendor: 'D', internalMonth: 35, visitCount: 0, studyCount: 0 },
-  { id: 9, name: 'HYB', full: '北洋銀行', budget: 50, tileCount: 5, sier: 'NTTD', vendor: 'I', internalMonth: 40, visitCount: 0, studyCount: 0 },
-  { id: 10, name: 'SAT', full: 'サツドラHD', budget: 40, tileCount: 4, sier: 'NTTD', vendor: 'H', internalMonth: 58, visitCount: 0, studyCount: 0 },
-  { id: 11, name: 'HRP', full: 'HARP', budget: 30, tileCount: 3, sier: 'HBA', vendor: 'I', internalMonth: 20, visitCount: 0, studyCount: 0 },
-  { id: 12, name: 'HPP', full: '北海道警察', budget: 25, tileCount: 2, sier: 'HBA', vendor: 'I', internalMonth: 32, visitCount: 0, studyCount: 0 },
-  { id: 13, name: 'GAS', full: '北海道ガス', budget: 20, tileCount: 2, sier: 'OTHER', vendor: 'A', internalMonth: 44, visitCount: 0, studyCount: 0 },
-  { id: 14, name: 'KNM', full: 'カナモト', budget: 20, tileCount: 1, sier: 'HBA', vendor: 'D', internalMonth: 12, visitCount: 0, studyCount: 0 },
-];
-
-const MAX_MAN_HOURS = 30;
-
-export default function App() {
-  const [month, setMonth] = useState(1);
-  const [currentTurn, setCurrentTurn] = useState('H'); 
-  const [manHours, setManHours] = useState(MAX_MAN_HOURS);
-  const [customers, setCustomers] = useState(INITIAL_CUSTOMERS);
-  const [selectedId, setSelectedId] = useState(null);
-  const [pendingTasks, setPendingTasks] = useState([]); 
-  const [logs, setLogs] = useState(["インテリジェンス同期。盤面をスキャン中..."]);
-  const [sales, setSales] = useState(0);
-  const [isExecuting, setIsExecuting] = useState(false);
-  const [showSummary, setShowSummary] = useState(false);
-  const [popupMonth, setPopupMonth] = useState(null);
-  const [changedIds, setChangedIds] = useState([]);
-
-  const selected = useMemo(() => customers.find(c => c.id === selectedId), [selectedId, customers]);
-
-  const calculateWinRate = useCallback((target) => {
-    if (!target) return 0;
-    const base = 10;
-    const vendorBonus = target.vendor === 'H' ? 40 : 0;
-    
-    let phaseBonus = 0;
-    if (target.internalMonth >= 48 && target.internalMonth < 50) phaseBonus = 40;
-    else if (target.internalMonth >= 50) phaseBonus = -20;
-    
-    const effortBonus = ((target.visitCount || 0) * 5) + ((target.studyCount || 0) * 10);
-    const pendingVisits = pendingTasks.filter(t => t.customerId === target.id && t.type === 'VISIT').length;
-    const pendingStudies = pendingTasks.filter(t => t.customerId === target.id && t.type === 'PARTNER').length;
-    const liveEffortBonus = (pendingVisits * 5) + (pendingStudies * 10);
-
-    return Math.max(5, Math.min(Math.round(base + vendorBonus + phaseBonus + effortBonus + liveEffortBonus), 99));
-  }, [pendingTasks]);
-
-  const stats = useMemo(() => {
-    const totalBudget = 1000;
-    const share = { H: 0, D: 0, I: 0, A: 0, NONE: 0 };
-    customers.forEach(c => { share[c.vendor] += c.budget; });
-    const currentSum = Object.values(share).reduce((a, b) => a + b, 0);
-    share.NONE = Math.max(0, totalBudget - currentSum);
-    return share;
-  }, [customers]);
-
-  const tiles = useMemo(() => {
-    let result = [];
-    customers.forEach(cust => {
-      const year = Math.ceil(cust.internalMonth / 12);
-      // 情報開示されているかどうか（訪問済み or 自社）
-      const isInfoDisclosed = (cust.visitCount > 0) || (cust.vendor === 'H');
-      
-      // 点滅ロジック：情報が開示されている時のみフェーズを反映
-      const isRFP = isInfoDisclosed && (cust.internalMonth >= 48 && cust.internalMonth < 50);
-      const isBuild = isInfoDisclosed && (cust.internalMonth >= 50);
-
-      for (let i = 0; i < cust.tileCount; i++) {
-        result.push({ 
-          customerId: cust.id, 
-          vendor: cust.vendor, 
-          isY5: year === 5, 
-          year, 
-          isRFP, 
-          isBuild,
-          isInfoDisclosed 
-        });
-      }
-    });
-    while (result.length < 100) result.push({ customerId: null, vendor: 'NONE', isY5: false, year: 0, isRFP: false, isBuild: false, isInfoDisclosed: false });
-    return result.slice(0, 100);
-  }, [customers]);
-
-  const addLog = (msg) => setLogs(prev => [msg, ...prev].slice(0, 12));
-
-  const addTask = (type, cost, label) => {
-    if (manHours < cost) return addLog("! 工数不足。");
-    setPendingTasks(prev => [...prev, { customerId: selected.id, customerName: selected.name, type, cost, label }]);
-    setManHours(prev => prev - cost);
-  };
-
-  const removeTask = (index) => {
-    const task = pendingTasks[index];
-    setPendingTasks(prev => prev.filter((_, i) => i !== index));
-    setManHours(prev => prev + task.cost);
-  };
-
-  const executeMonthStrategy = async () => {
-    setIsExecuting(true);
-    let updatedCustomers = [...customers];
-    let turnSales = 0;
-    let turnChanges = [];
-
-    addLog(`--- FY26M${month} 戦略フェーズ実行 ---`);
-
-    for (const task of pendingTasks) {
-      await new Promise(r => setTimeout(r, 400));
-      const target = updatedCustomers.find(c => c.id === task.customerId);
-      
-      if (task.type === 'VISIT') {
-        updatedCustomers = updatedCustomers.map(c => c.id === task.customerId ? { ...c, visitCount: (c.visitCount || 0) + 1 } : c);
-        addLog(`[H] ${target.name} へ情報収集のための訪問を実施。`);
-      } else if (task.type === 'PARTNER') {
-        updatedCustomers = updatedCustomers.map(c => c.id === task.customerId ? { ...c, studyCount: (c.studyCount || 0) + 1 } : c);
-        addLog(`[H] ${target.name} パートナー連携強化。`);
-      } else if (task.type === 'PROPOSAL') {
-        const rate = calculateWinRate(target);
-        if (Math.random() * 100 < rate) {
-          updatedCustomers = updatedCustomers.map(c => c.id === task.customerId ? { ...c, vendor: 'H', internalMonth: 1, visitCount: 1, studyCount: 0 } : c);
-          turnSales += target.budget;
-          turnChanges.push(target.id);
-          addLog(`[SUCCESS] ${target.name} 奪還成功。`);
-        } else {
-          addLog(`[FAILED] ${target.name} 失注。`);
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Enterprise: 覇権奪還 - Strategic HUD</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #020617;
+            color: #94a3b8;
         }
-      }
-    }
 
-    setSales(prev => prev + turnSales);
-    setPendingTasks([]);
+        @keyframes rfp-blink { 
+            0%, 100% { border-color: #eab308; box-shadow: inset 0 0 10px #eab308; } 
+            50% { border-color: #fef08a; box-shadow: inset 0 0 4px #eab308; } 
+        }
+        @keyframes build-blink { 
+            0%, 100% { border-color: #ffffff; box-shadow: inset 0 0 10px #ffffff; } 
+            50% { border-color: #94a3b8; box-shadow: inset 0 0 2px #ffffff; } 
+        }
+        @keyframes pink-blink { 
+            0%, 100% { border-color: #f472b6; box-shadow: 0 0 10px #f472b6; } 
+            50% { border-color: #fce7f3; box-shadow: 0 0 20px #f472b6; } 
+        }
+        @keyframes popup-up { 
+            0% { transform: scale(0.5); opacity: 0; } 
+            20% { transform: scale(1.1); opacity: 1; } 
+            100% { transform: scale(1.4); opacity: 0; } 
+        }
 
-    addLog(`--- ライバルベンダー同期 ---`);
-    const rivalOrder = ['D', 'I', 'A'];
-    for (const rid of rivalOrder) {
-      setCurrentTurn(rid);
-      await new Promise(r => setTimeout(r, 400));
-      const targets = updatedCustomers.filter(c => c.vendor !== rid);
-      if (targets.length === 0) continue;
-
-      let target = targets.sort((a, b) => b.budget - a.budget)[0]; 
-      const rfpTargets = targets.filter(c => c.internalMonth >= 48 && c.internalMonth < 50);
-      if (rfpTargets.length > 0) target = rfpTargets[0];
-
-      const baseChance = 10 + (target.internalMonth >= 48 ? 20 : 0);
-      if (Math.random() * 100 < baseChance) {
-        updatedCustomers = updatedCustomers.map(c => c.id === target.id ? { ...c, vendor: rid, internalMonth: 1, visitCount: 0, studyCount: 0 } : c);
-        turnChanges.push(target.id);
-        addLog(`[${rid}] ${target.name} を制圧。`);
-      }
-    }
-
-    updatedCustomers = updatedCustomers.map(c => ({
-      ...c,
-      internalMonth: c.internalMonth >= 60 ? 1 : c.internalMonth + 1
-    }));
-
-    setChangedIds(turnChanges);
-    setCustomers(updatedCustomers);
-    setIsExecuting(false);
-    setCurrentTurn('H');
-    setManHours(MAX_MAN_HOURS);
-    
-    if (month === 12) {
-      setShowSummary(true);
-    } else {
-      const nextMonth = month + 1;
-      setMonth(nextMonth);
-      setPopupMonth(`FY26M${nextMonth}`);
-      setTimeout(() => {
-        setPopupMonth(null);
-        setChangedIds([]);
-      }, 2000);
-    }
-  };
-
-  return (
-    <div className="min-h-screen bg-[#020617] text-slate-400 font-sans p-2 flex flex-col max-w-lg mx-auto shadow-2xl select-none relative overflow-hidden">
-      <style>{`
-        @keyframes rfp-blink { 0%, 100% { border-color: #eab308; box-shadow: inset 0 0 10px #eab308; } 50% { border-color: #fef08a; box-shadow: inset 0 0 4px #eab308; } }
-        @keyframes build-blink { 0%, 100% { border-color: #ffffff; box-shadow: inset 0 0 10px #ffffff; } 50% { border-color: #94a3b8; box-shadow: inset 0 0 2px #ffffff; } }
-        @keyframes pink-blink { 0%, 100% { border-color: #f472b6; box-shadow: 0 0 10px #f472b6; } 50% { border-color: #fce7f3; box-shadow: 0 0 20px #f472b6; } }
         .animate-rfp { animation: rfp-blink 0.8s infinite ease-in-out; border-width: 2px !important; }
         .animate-build { animation: build-blink 1.2s infinite ease-in-out; border-width: 2px !important; }
         .animate-pink { animation: pink-blink 1.0s infinite ease-in-out; border-width: 2px !important; z-index: 10; }
-        @keyframes popup-up { 0% { transform: scale(0.5); opacity: 0; } 20% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1.4); opacity: 0; } }
         .turn-popup { animation: popup-up 1.8s forwards; }
-      `}</style>
 
-      {/* Share Bar */}
-      <div className="w-full flex h-6 bg-slate-900 rounded-full overflow-hidden mb-3 border border-slate-800 shadow-inner">
-        {['H', 'D', 'I', 'A', 'NONE'].map(v => {
-          const sharePct = Math.round((stats[v] / 1000) * 100);
-          if (sharePct <= 0) return null;
-          return (
-            <div key={v} className="h-full flex items-center justify-center transition-all duration-700 border-r border-black/20 text-[9px] font-black text-white/90 uppercase px-1" style={{ width: `${sharePct}%`, backgroundColor: VENDORS[v].color }}>
-              {sharePct >= 8 && `${v}:${sharePct}%`}
-            </div>
-          );
-        })}
-      </div>
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
-      {/* HUD Header */}
-      <div className="flex justify-between items-end mb-4 border-b border-slate-800 pb-3 px-3">
-        <div>
-          <h1 className="text-[10px] font-bold tracking-[0.4em] text-[#D4AF37] uppercase leading-none mb-1">Strategic Market Board</h1>
-          <div className="text-3xl font-light text-white tracking-tight italic">
-            {currentTurn === 'H' ? `FY26M${month}` : `SYNCING...`}
-          </div>
-        </div>
-        <div className="text-right">
-          <div className="text-[9px] text-slate-500 font-bold uppercase tracking-widest mb-1">MH Units</div>
-          <div className={`text-3xl font-light tabular-nums ${manHours < 5 ? 'text-rose-500' : 'text-[#34D399]'}`}>
-            {manHours}<span className="text-xs opacity-20 ml-2">/ 30</span>
-          </div>
-        </div>
-      </div>
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(16px);
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body class="overflow-hidden">
+    <div id="app" class="min-h-screen flex flex-col max-w-lg mx-auto shadow-2xl relative border-x border-slate-900 bg-[#020617]">
+        <!-- Share Bar -->
+        <div id="share-bar" class="w-full flex h-6 bg-slate-900 rounded-full overflow-hidden mt-2 mb-3 border border-slate-800 shadow-inner mx-2 w-[calc(100%-1rem)]"></div>
 
-      {/* Grid View */}
-      <div className="flex-1 relative bg-black rounded-3xl border border-slate-900 overflow-hidden shadow-inner p-4 flex justify-center items-center">
-        {popupMonth && (
-          <div className="absolute inset-0 flex items-center justify-center z-[110] pointer-events-none">
-             <div className="turn-popup bg-white/5 backdrop-blur-xl border border-white/20 px-16 py-10 rounded-full shadow-2xl">
-               <span className="text-7xl font-black italic text-white tracking-tighter drop-shadow-2xl">{popupMonth}</span>
-             </div>
-          </div>
-        )}
-
-        <div className={`grid grid-cols-10 grid-rows-10 gap-[2.5px] w-full aspect-square transition-all duration-500 ${isExecuting ? 'opacity-30 scale-95' : 'opacity-100'}`}>
-          {tiles.map((tile, i) => (
-            <div 
-              key={i} 
-              onClick={() => !isExecuting && setSelectedId(tile.customerId)} 
-              className={`w-full aspect-square cursor-pointer transition-all duration-300 border-[1.5px] border-white/10 relative flex items-center justify-center 
-                ${tile.isRFP ? 'animate-rfp' : ''} 
-                ${tile.isBuild ? 'animate-build' : ''} 
-                ${changedIds.includes(tile.customerId) ? 'animate-pink' : ''} 
-                ${selectedId === tile.customerId ? 'z-20 opacity-100 shadow-[0_0_20px_white] scale-110 border-white' : 'opacity-90'}`} 
-              style={{ backgroundColor: VENDORS[tile.vendor].color }}
-            >
-              {tile.year > 0 && (
-                <span className="text-[10px] font-black text-white/80 pointer-events-none drop-shadow-md">
-                  {tile.isInfoDisclosed ? `Y${tile.year}` : 'Y?'}
-                </span>
-              )}
-            </div>
-          ))}
-        </div>
-        
-        {/* Slim Slide Panel */}
-        {selected && !isExecuting && (
-          <div className="absolute top-4 right-4 bottom-4 w-44 bg-slate-950/60 backdrop-blur-xl border-l border-white/10 p-4 rounded-2xl shadow-2xl z-[100] animate-in slide-in-from-right duration-500 flex flex-col justify-between">
+        <!-- HUD Header -->
+        <div class="flex justify-between items-end mb-4 border-b border-slate-800 pb-3 px-5">
             <div>
-              <div className="flex justify-between items-start mb-4">
-                 <div className="text-[10px] font-bold text-[#34D399] uppercase tracking-widest">Selected</div>
-                 <button onClick={() => setSelectedId(null)} className="text-slate-500 hover:text-white"><X size={16} /></button>
-              </div>
-              <div className="text-xl font-black text-white leading-tight mb-2 truncate">{selected.name}</div>
-              <div className="text-[10px] text-slate-500 mb-4">{selected.full}</div>
-              
-              <div className="space-y-3 pt-4 border-t border-white/5">
-                <div className="flex flex-col">
-                  <span className="text-[9px] uppercase text-slate-500 font-bold">Phase Status</span>
-                  <span className={`text-[11px] font-bold ${selected.visitCount > 0 || selected.vendor === 'H' ? 'text-white' : 'text-slate-600 italic'}`}>
-                    {(selected.visitCount > 0 || selected.vendor === 'H') ? (
-                       selected.internalMonth >= 50 ? '🏗️ 構築中 (M' + selected.internalMonth + ')' : 
-                       selected.internalMonth >= 48 ? '📄 提案依頼中 (M' + selected.internalMonth + ')' : 
-                       '通常運用 (M' + selected.internalMonth + ')'
-                    ) : '情報未取得'}
-                  </span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-[9px] uppercase text-slate-500 font-bold tracking-widest">Est. Win Probability</span>
-                  <span className="text-3xl font-light text-[#34D399] italic leading-none mt-1">{calculateWinRate(selected)}%</span>
-                </div>
-                <div className="grid grid-cols-2 gap-2 text-[10px]">
-                   <div className="bg-slate-900/50 p-2 rounded border border-white/5">
-                     <div className="text-slate-500 uppercase text-[8px]">Visit</div>
-                     <div className="text-white font-bold">{selected.visitCount}</div>
-                   </div>
-                   <div className="bg-slate-900/50 p-2 rounded border border-white/5">
-                     <div className="text-slate-500 uppercase text-[8px]">Study</div>
-                     <div className="text-white font-bold">{selected.studyCount}</div>
-                   </div>
-                </div>
-              </div>
+                <h1 class="text-[10px] font-bold tracking-[0.4em] text-[#D4AF37] uppercase leading-none mb-1">Elite Strategic HUD</h1>
+                <div id="phase-display" class="text-3xl font-light text-white tracking-tight italic">FY26M1</div>
+            </div>
+            <div class="text-right">
+                <div class="text-[9px] text-slate-500 font-bold uppercase tracking-widest mb-1">MH Units</div>
+                <div id="man-hours-display" class="text-3xl font-light tabular-nums text-[#34D399]">30<span class="text-xs opacity-20 ml-2">/ 30</span></div>
+            </div>
+        </div>
+
+        <!-- Grid View -->
+        <div id="grid-container" class="flex-1 relative bg-black rounded-3xl border border-slate-900 overflow-hidden shadow-inner p-4 flex justify-center items-center m-2">
+            <div id="grid" class="grid grid-cols-10 grid-rows-10 gap-[2.5px] w-full aspect-square transition-all duration-500"></div>
+            
+            <!-- Popup -->
+            <div id="popup-overlay" class="absolute inset-0 flex items-center justify-center z-[110] pointer-events-none hidden">
+                <div class="turn-popup bg-white/5 backdrop-blur-xl border border-white/20 px-16 py-10 rounded-full shadow-2xl text-7xl font-black italic text-white tracking-tighter"></div>
             </div>
 
-            <div className="space-y-2 mt-4">
-              <button onClick={() => addTask('VISIT', 5, '訪問')} className="w-full py-2 bg-slate-900 border border-slate-800 rounded-lg text-[10px] font-bold text-slate-400 hover:text-white transition-all uppercase">Visit (5)</button>
-              <button onClick={() => addTask('PARTNER', 8, '勉強会')} className="w-full py-2 bg-slate-900 border border-slate-800 rounded-lg text-[10px] font-bold text-slate-400 hover:text-white transition-all uppercase">Study (8)</button>
-              <button onClick={() => addTask('PROPOSAL', 10, '提案')} className="w-full py-3 bg-[#064e3b] border border-[#34D399] rounded-lg text-[11px] font-black text-[#ECFDF5] uppercase tracking-[0.2em] shadow-lg shadow-emerald-900/50 active:scale-95 transition-all">Submit (10)</button>
+            <!-- Execution Overlay -->
+            <div id="exec-overlay" class="absolute inset-0 flex items-center justify-center z-[100] bg-slate-950/20 backdrop-blur-[2px] hidden">
+                <div class="bg-slate-900 px-12 py-6 rounded-full border border-slate-700 text-xs font-black tracking-[0.5em] text-white animate-pulse uppercase">Syncing Strategies</div>
             </div>
-          </div>
-        )}
 
-        {isExecuting && (
-          <div className="absolute inset-0 flex items-center justify-center z-[100] bg-slate-950/20 backdrop-blur-[2px]">
-            <div className="bg-slate-900 px-12 py-6 rounded-full border border-slate-700 text-xs font-black tracking-[0.5em] text-white animate-pulse uppercase">Syncing strategies</div>
-          </div>
-        )}
-      </div>
-
-      {/* Task Queue Area */}
-      <div className="bg-[#020617] border-x border-slate-800 px-6 py-2 h-24 overflow-y-auto border-b border-slate-800 shadow-inner text-white">
-        <div className="flex flex-wrap gap-2 items-start content-start">
-          {pendingTasks.length === 0 && <span className="text-[10px] text-slate-700 italic tracking-widest uppercase">{" >>> "} Fog of War active. Recon needed.</span>}
-          {pendingTasks.map((t, idx) => (
-            <div key={idx} className="bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-1.5 flex items-center gap-2 animate-in slide-in-from-left-2 duration-300">
-              <span className="text-[10px] font-black text-[#34D399] uppercase leading-none">{t.customerName}</span>
-              <span className="text-[9px] text-slate-500 uppercase font-bold tracking-tighter">{t.label}</span>
-              <button onClick={() => removeTask(idx)} className="text-rose-500 hover:text-rose-300"><X size={12} /></button>
+            <!-- Side Panel (Selected Customer) -->
+            <div id="side-panel" class="absolute top-4 right-4 bottom-4 w-44 glass-panel p-4 rounded-2xl shadow-2xl z-[100] hidden transition-all flex flex-col justify-between">
+                <div>
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="text-[10px] font-bold text-[#34D399] uppercase tracking-widest">Selected</div>
+                        <button id="close-panel" class="text-slate-500 hover:text-white"><i data-lucide="x" size="16"></i></button>
+                    </div>
+                    <div id="panel-name" class="text-xl font-black text-white leading-tight mb-2 truncate">Customer</div>
+                    <div id="panel-full" class="text-[10px] text-slate-500 mb-4">Description</div>
+                    
+                    <div class="space-y-3 pt-4 border-t border-white/5">
+                        <div class="flex flex-col">
+                            <span class="text-[9px] uppercase text-slate-500 font-bold">Phase Status</span>
+                            <span id="panel-status" class="text-[11px] font-bold">Status Text</span>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-[9px] uppercase text-slate-500 font-bold tracking-widest">Est. Win Prob</span>
+                            <span id="panel-win-rate" class="text-3xl font-light text-[#34D399] italic mt-1">0%</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 text-[10px]">
+                            <div class="bg-slate-900/50 p-2 rounded border border-white/5">
+                                <div class="text-slate-500 uppercase text-[8px]">Visit</div>
+                                <div id="panel-visit" class="text-white font-bold">0</div>
+                            </div>
+                            <div class="bg-slate-900/50 p-2 rounded border border-white/5">
+                                <div class="text-slate-500 uppercase text-[8px]">Study</div>
+                                <div id="panel-study" class="text-white font-bold">0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="space-y-2 mt-4">
+                    <button onclick="addTask('VISIT', 5, '訪問')" class="w-full py-2 bg-slate-900 border border-slate-800 rounded-lg text-[10px] font-bold text-slate-400 hover:text-white transition-all uppercase">Visit (5)</button>
+                    <button onclick="addTask('PARTNER', 8, '勉強会')" class="w-full py-2 bg-slate-900 border border-slate-800 rounded-lg text-[10px] font-bold text-slate-400 hover:text-white transition-all uppercase">Study (8)</button>
+                    <button onclick="addTask('PROPOSAL', 10, '提案')" class="w-full py-3 bg-[#064e3b] border border-[#34D399] rounded-lg text-[11px] font-black text-[#ECFDF5] uppercase tracking-[0.2em] shadow-lg active:scale-95 transition-all">Submit (10)</button>
+                </div>
             </div>
-          ))}
         </div>
-      </div>
 
-      {/* Log Feed */}
-      <div className="bg-[#0F172A] border-x border-slate-800 p-4 font-mono text-[10px] h-32 overflow-hidden shadow-inner relative text-white">
-        <div className="absolute top-0 right-4 h-full flex items-center opacity-[0.03] pointer-events-none uppercase font-black text-6xl italic select-none">Log</div>
-        {logs.map((l, i) => (
-          <div key={i} className={`${i === 0 ? 'text-[#34D399] font-bold' : 'text-slate-600'} mb-1 truncate`}>
-            {i === 0 ? '>>>' : '...'} {l}
-          </div>
-        ))}
-      </div>
-
-      {/* Score / Share Bar */}
-      <div className="bg-slate-950 rounded-b-[3rem] p-6 flex justify-between items-center border-x border-b border-slate-800 shadow-2xl relative overflow-hidden">
-        <div className="flex gap-4 items-center z-10">
-          {['H', 'I', 'A'].map(v => (
-             <div key={v} className="flex items-center gap-2 text-[10px] font-bold text-slate-600 tracking-[0.2em] uppercase">
-               <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: VENDORS[v].color }}></div> {v}
-             </div>
-          ))}
+        <!-- Task Queue -->
+        <div class="bg-[#020617] border-x border-slate-800 px-6 py-2 h-24 overflow-y-auto border-b border-slate-800 shadow-inner text-white">
+            <div id="task-list" class="flex flex-wrap gap-2 items-start content-start"></div>
         </div>
-        <div className="flex items-center gap-4 border-l border-slate-800 pl-8 z-10">
-          <Trophy size={26} className="text-[#D4AF37] opacity-80" />
-          <div className="text-3xl font-light text-white tabular-nums italic tracking-tighter">¥{sales}<span className="text-[14px] ml-1 opacity-20 font-normal">M</span></div>
-        </div>
-      </div>
 
-      {/* Action Trigger */}
-      {currentTurn === 'H' && !isExecuting && (
-        <button 
-          onClick={executeMonthStrategy} 
-          disabled={pendingTasks.length === 0} 
-          className={`absolute bottom-12 left-1/2 -translate-x-1/2 px-16 py-7 rounded-full font-black text-[12px] shadow-2xl flex items-center gap-4 transition-all uppercase tracking-[0.4em] z-[120] 
-            ${pendingTasks.length > 0 ? 'bg-white text-slate-950 hover:scale-105 active:scale-95' : 'bg-slate-900 text-slate-700 cursor-not-allowed opacity-50'}
-          `}
-        >
-          Execute M{month} Strategy <ListChecks size={20} />
+        <!-- Log Feed -->
+        <div class="bg-[#0F172A] border-x border-slate-800 p-4 font-mono text-[10px] h-32 overflow-hidden shadow-inner relative text-white">
+            <div class="absolute top-0 right-4 h-full flex items-center opacity-[0.03] pointer-events-none uppercase font-black text-6xl italic select-none">Log</div>
+            <div id="log-feed" class="flex flex-col gap-1"></div>
+        </div>
+
+        <!-- Score Bar -->
+        <div class="bg-slate-950 rounded-b-[3rem] p-6 flex justify-between items-center border-x border-b border-slate-800 shadow-2xl relative overflow-hidden">
+            <div class="flex gap-4 items-center z-10">
+                <div class="flex items-center gap-2 text-[10px] font-bold text-slate-600 tracking-[0.2em] uppercase"><div class="w-3 h-3 rounded-sm bg-[#064e3b]"></div> H</div>
+                <div class="flex items-center gap-2 text-[10px] font-bold text-slate-600 tracking-[0.2em] uppercase"><div class="w-3 h-3 rounded-sm bg-[#075985]"></div> I</div>
+                <div class="flex items-center gap-2 text-[10px] font-bold text-slate-600 tracking-[0.2em] uppercase"><div class="w-3 h-3 rounded-sm bg-[#4c1d95]"></div> A</div>
+            </div>
+            <div class="flex items-center gap-4 border-l border-slate-800 pl-8 z-10">
+                <i data-lucide="trophy" size="26" class="text-[#D4AF37] opacity-80"></i>
+                <div id="sales-display" class="text-3xl font-light text-white tabular-nums italic tracking-tighter">¥0<span class="text-[14px] ml-1 opacity-20 font-normal">M</span></div>
+            </div>
+        </div>
+
+        <!-- Execute Button -->
+        <button id="execute-btn" disabled class="absolute bottom-12 left-1/2 -translate-x-1/2 px-16 py-7 rounded-full font-black text-[12px] shadow-2xl flex items-center gap-4 transition-all uppercase tracking-[0.4em] z-[120] bg-slate-900 text-slate-700 cursor-not-allowed opacity-50">
+            Execute Strategy <i data-lucide="list-checks" size="20"></i>
         </button>
-      )}
 
-      {/* End Result Summary */}
-      {showSummary && (
-        <div className="absolute inset-0 bg-slate-950/98 z-[200] flex items-center justify-center p-8 backdrop-blur-2xl animate-in fade-in duration-1000 text-center text-white">
-          <div className="bg-[#0F172A] border border-slate-800 rounded-[4rem] p-12 w-full shadow-2xl relative overflow-hidden ring-1 ring-white/10">
-            <h2 className="text-5xl font-black italic tracking-tighter mb-10 leading-none">ANNUAL REVENUE TARGET ACHIEVED</h2>
-            <div className="bg-slate-900/50 p-10 rounded-[3rem] border border-slate-800 mb-8 shadow-inner">
-              <span className="text-[12px] font-bold text-slate-500 uppercase tracking-[0.4em] block mb-2">Final Performance Index</span>
-              <div className="text-8xl font-black tracking-tighter text-[#34D399] italic leading-none">¥{sales}<span className="text-3xl ml-3 opacity-30 font-light">M</span></div>
-            </div>
-            <button onClick={() => window.location.reload()} className="w-full bg-white text-slate-950 py-7 rounded-3xl font-black text-sm uppercase tracking-[0.4em] shadow-2xl flex items-center justify-center gap-4 hover:bg-emerald-50 transition-all">RESTART SIMULATION <ChevronRight size={20} /></button>
-          </div>
+        <!-- Save/Export Tools -->
+        <div class="absolute top-2 right-4 flex gap-2 z-[200]">
+            <button onclick="saveToLocal()" title="Save Session" class="p-2 bg-slate-900/50 rounded-full hover:bg-slate-800 text-slate-500 hover:text-white transition-all"><i data-lucide="save" size="14"></i></button>
+            <button onclick="exportHTML()" title="Export updated HTML" class="p-2 bg-slate-900/50 rounded-full hover:bg-slate-800 text-slate-500 hover:text-white transition-all"><i data-lucide="download" size="14"></i></button>
         </div>
-      )}
     </div>
-  );
-}
+
+    <!-- Summary Modal -->
+    <div id="summary-modal" class="fixed inset-0 bg-slate-950/98 z-[200] flex items-center justify-center p-8 backdrop-blur-2xl hidden animate-in fade-in duration-1000">
+        <div class="bg-[#0F172A] border border-slate-800 rounded-[4rem] p-12 w-full max-w-md shadow-2xl relative overflow-hidden ring-1 ring-white/10 text-center">
+            <h2 class="text-5xl font-black italic tracking-tighter mb-10 text-white leading-none">FY26 COMPLETE</h2>
+            <div class="bg-slate-900/50 p-10 rounded-[3rem] border border-slate-800 mb-8 shadow-inner">
+                <span class="text-[12px] font-bold text-slate-500 uppercase tracking-[0.4em] block mb-2">Final Performance Index</span>
+                <div id="final-sales" class="text-8xl font-black tracking-tighter text-[#34D399] italic leading-none">¥0<span class="text-3xl ml-3 opacity-30 font-light text-white">M</span></div>
+            </div>
+            <button onclick="resetGame()" class="w-full bg-white text-slate-950 py-7 rounded-3xl font-black text-sm uppercase tracking-[0.4em] shadow-2xl flex items-center justify-center gap-4 hover:bg-emerald-50 transition-all">RESTART SIMULATION <i data-lucide="chevron-right"></i></button>
+        </div>
+    </div>
+
+    <script>
+        // Constants
+        const VENDORS = {
+            H: { id: 'H', name: 'H社 (自社)', color: '#064e3b' },
+            D: { id: 'D', name: 'D社 (競合)', color: '#0f172a' },
+            I: { id: 'I', name: 'I社 (競合)', color: '#075985' },
+            A: { id: 'A', name: 'A社 (競合)', color: '#4c1d95' },
+            NONE: { id: 'NONE', name: '未開拓', color: '#020617' }
+        };
+
+        const MAX_MAN_HOURS = 30;
+
+        // Game State
+        let state = {
+            month: 1,
+            currentTurn: 'H',
+            manHours: MAX_MAN_HOURS,
+            sales: 0,
+            selectedId: null,
+            pendingTasks: [],
+            logs: ["インテリジェンス同期。盤面をスキャン中..."],
+            changedIds: [],
+            customers: [
+                { id: 1, name: 'NIT', full: 'ニトリHD', budget: 200, tileCount: 20, sier: 'BIPROGY', vendor: 'D', internalMonth: 42, visitCount: 0, studyCount: 0 },
+                { id: 2, name: 'SAP', full: '札幌市', budget: 135, tileCount: 14, sier: 'HBA', vendor: 'I', internalMonth: 48, visitCount: 0, studyCount: 0 },
+                { id: 3, name: 'HDC', full: '北海道庁', budget: 120, tileCount: 12, sier: 'HBA', vendor: 'I', internalMonth: 30, visitCount: 0, studyCount: 0 },
+                { id: 4, name: 'HOU', full: '北海道大学', budget: 110, tileCount: 11, sier: 'BIPROGY', vendor: 'A', internalMonth: 18, visitCount: 0, studyCount: 0 },
+                { id: 5, name: 'TSU', full: 'ツルハHD', budget: 80, tileCount: 8, sier: 'BIPROGY', vendor: 'D', internalMonth: 45, visitCount: 0, studyCount: 0 },
+                { id: 6, name: 'JRH', full: 'JR北海道', budget: 70, tileCount: 7, sier: 'NTTD', vendor: 'I', internalMonth: 50, visitCount: 0, studyCount: 0 },
+                { id: 7, name: 'HKL', full: 'ホクレン', budget: 60, tileCount: 6, sier: 'HBA', vendor: 'H', internalMonth: 5, visitCount: 0, studyCount: 0 },
+                { id: 8, name: 'AIN', full: 'アインHD', budget: 50, tileCount: 5, sier: 'BIPROGY', vendor: 'D', internalMonth: 35, visitCount: 0, studyCount: 0 },
+                { id: 9, name: 'HYB', full: '北洋銀行', budget: 50, tileCount: 5, sier: 'NTTD', vendor: 'I', internalMonth: 40, visitCount: 0, studyCount: 0 },
+                { id: 10, name: 'SAT', full: 'サツドラHD', budget: 40, tileCount: 4, sier: 'NTTD', vendor: 'H', internalMonth: 58, visitCount: 0, studyCount: 0 },
+                { id: 11, name: 'HRP', full: 'HARP', budget: 30, tileCount: 3, sier: 'HBA', vendor: 'I', internalMonth: 20, visitCount: 0, studyCount: 0 },
+                { id: 12, name: 'HPP', full: '北海道警察', budget: 25, tileCount: 2, sier: 'HBA', vendor: 'I', internalMonth: 32, visitCount: 0, studyCount: 0 },
+                { id: 13, name: 'GAS', full: '北海道ガス', budget: 20, tileCount: 2, sier: 'OTHER', vendor: 'A', internalMonth: 44, visitCount: 0, studyCount: 0 },
+                { id: 14, name: 'KNM', full: 'カナモト', budget: 20, tileCount: 1, sier: 'HBA', vendor: 'D', internalMonth: 12, visitCount: 0, studyCount: 0 },
+            ]
+        };
+
+        // Initialize Icons
+        function refreshIcons() {
+            lucide.createIcons();
+        }
+
+        // Logic
+        function calculateWinRate(target) {
+            if (!target) return 0;
+            let base = 10;
+            const vendorBonus = target.vendor === 'H' ? 40 : 0;
+            let phaseBonus = 0;
+            if (target.internalMonth >= 48 && target.internalMonth < 50) phaseBonus = 40;
+            else if (target.internalMonth >= 50) phaseBonus = -20;
+            
+            const effortBonus = (target.visitCount * 5) + (target.studyCount * 10);
+            const pendingVisits = state.pendingTasks.filter(t => t.customerId === target.id && t.type === 'VISIT').length;
+            const pendingStudies = state.pendingTasks.filter(t => t.customerId === target.id && t.type === 'PARTNER').length;
+            const liveEffortBonus = (pendingVisits * 5) + (pendingStudies * 10);
+
+            return Math.max(5, Math.min(Math.round(base + vendorBonus + phaseBonus + effortBonus + liveEffortBonus), 99));
+        }
+
+        function updateUI() {
+            // Header
+            document.getElementById('phase-display').innerText = `FY26M${state.month}`;
+            const mhEl = document.getElementById('man-hours-display');
+            mhEl.innerHTML = `${state.manHours}<span class="text-xs opacity-20 ml-2">/ ${MAX_MAN_HOURS}</span>`;
+            mhEl.className = `text-3xl font-light tabular-nums ${state.manHours < 5 ? 'text-rose-500' : 'text-[#34D399]'}`;
+            
+            document.getElementById('sales-display').innerHTML = `¥${state.sales}<span class="text-[14px] ml-1 opacity-20 font-normal">M</span>`;
+
+            // Share Bar
+            const stats = { H: 0, D: 0, I: 0, A: 0, NONE: 0 };
+            state.customers.forEach(c => stats[c.vendor] += c.budget);
+            const total = 1000;
+            stats.NONE = Math.max(0, total - Object.values(stats).reduce((a, b) => a + b, 0));
+            
+            const bar = document.getElementById('share-bar');
+            bar.innerHTML = '';
+            ['H', 'D', 'I', 'A', 'NONE'].forEach(v => {
+                const pct = Math.round((stats[v] / total) * 100);
+                if (pct > 0) {
+                    const div = document.createElement('div');
+                    div.className = "h-full flex items-center justify-center transition-all duration-700 border-r border-black/20 text-[9px] font-black text-white/90 uppercase px-1";
+                    div.style.width = `${pct}%`;
+                    div.style.backgroundColor = VENDORS[v].color;
+                    if (pct >= 8) div.innerText = `${v}:${pct}%`;
+                    bar.appendChild(div);
+                }
+            });
+
+            // Grid
+            const grid = document.getElementById('grid');
+            grid.innerHTML = '';
+            let tiles = [];
+            state.customers.forEach(cust => {
+                const year = Math.ceil(cust.internalMonth / 12);
+                const isInfoDisclosed = (cust.visitCount > 0) || (cust.vendor === 'H');
+                const isRFP = isInfoDisclosed && (cust.internalMonth >= 48 && cust.internalMonth < 50);
+                const isBuild = isInfoDisclosed && (cust.internalMonth >= 50);
+                for (let i = 0; i < cust.tileCount; i++) {
+                    tiles.push({ id: cust.id, vendor: cust.vendor, year, isRFP, isBuild, isInfoDisclosed });
+                }
+            });
+            while (tiles.length < 100) tiles.push({ id: null, vendor: 'NONE' });
+
+            tiles.slice(0, 100).forEach(t => {
+                const tile = document.createElement('div');
+                tile.className = `w-full aspect-square cursor-pointer transition-all duration-300 border-[1.5px] border-white/10 relative flex items-center justify-center 
+                                ${t.isRFP ? 'animate-rfp' : ''} ${t.isBuild ? 'animate-build' : ''} 
+                                ${state.changedIds.includes(t.id) ? 'animate-pink' : ''} 
+                                ${state.selectedId === t.id ? 'z-20 opacity-100 shadow-[0_0_20px_white] scale-110 border-white' : 'opacity-90'}`;
+                tile.style.backgroundColor = VENDORS[t.vendor].color;
+                if (t.year > 0) {
+                    const span = document.createElement('span');
+                    span.className = "text-[10px] font-black text-white/80 pointer-events-none drop-shadow-md";
+                    span.innerText = t.isInfoDisclosed ? `Y${t.year}` : 'Y?';
+                    tile.appendChild(span);
+                }
+                tile.onclick = () => selectCustomer(t.id);
+                grid.appendChild(tile);
+            });
+
+            // Side Panel
+            const panel = document.getElementById('side-panel');
+            if (state.selectedId) {
+                const c = state.customers.find(x => x.id === state.selectedId);
+                panel.classList.remove('hidden');
+                document.getElementById('panel-name').innerText = c.name;
+                document.getElementById('panel-full').innerText = c.full;
+                document.getElementById('panel-visit').innerText = c.visitCount;
+                document.getElementById('panel-study').innerText = c.studyCount;
+                document.getElementById('panel-win-rate').innerText = `${calculateWinRate(c)}%`;
+                
+                const statusEl = document.getElementById('panel-status');
+                if (c.visitCount > 0 || c.vendor === 'H') {
+                    statusEl.className = `text-[11px] font-bold ${c.internalMonth >= 50 ? 'text-white' : c.internalMonth >= 48 ? 'text-yellow-400 animate-pulse' : 'text-slate-400'}`;
+                    statusEl.innerText = c.internalMonth >= 50 ? `🏗️ 構築中 (M${c.internalMonth})` : c.internalMonth >= 48 ? `📄 提案依頼中 (M${c.internalMonth})` : `通常運用 (M${c.internalMonth})`;
+                } else {
+                    statusEl.className = "text-[11px] font-bold text-slate-600 italic";
+                    statusEl.innerText = "情報未取得";
+                }
+            } else {
+                panel.classList.add('hidden');
+            }
+
+            // Task Queue
+            const taskList = document.getElementById('task-list');
+            taskList.innerHTML = '';
+            if (state.pendingTasks.length === 0) {
+                taskList.innerHTML = '<span class="text-[10px] text-slate-700 italic tracking-widest uppercase">>>> Recon needed. No tasks queued.</span>';
+            } else {
+                state.pendingTasks.forEach((t, i) => {
+                    const div = document.createElement('div');
+                    div.className = "bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-1.5 flex items-center gap-2 animate-in slide-in-from-left-2 duration-300";
+                    div.innerHTML = `<span class="text-[10px] font-black text-[#34D399] uppercase leading-none">${t.customerName}</span>
+                                     <span class="text-[9px] text-slate-500 uppercase font-bold tracking-tighter">${t.label}</span>
+                                     <button onclick="removeTask(${i})" class="text-rose-500 hover:text-rose-300"><i data-lucide="x" size="12"></i></button>`;
+                    taskList.appendChild(div);
+                });
+            }
+
+            // Log
+            const feed = document.getElementById('log-feed');
+            feed.innerHTML = '';
+            state.logs.forEach((l, i) => {
+                const div = document.createElement('div');
+                div.className = `${i === 0 ? 'text-[#34D399] font-bold' : 'text-slate-600'} mb-1 truncate`;
+                div.innerText = `${i === 0 ? '>>> ' : '... '}${l}`;
+                feed.appendChild(div);
+            });
+
+            // Execute Button
+            const btn = document.getElementById('execute-btn');
+            if (state.pendingTasks.length > 0) {
+                btn.disabled = false;
+                btn.className = "absolute bottom-12 left-1/2 -translate-x-1/2 px-16 py-7 rounded-full font-black text-[12px] shadow-2xl flex items-center gap-4 transition-all uppercase tracking-[0.4em] z-[120] bg-white text-slate-950 hover:scale-105 active:scale-95";
+            } else {
+                btn.disabled = true;
+                btn.className = "absolute bottom-12 left-1/2 -translate-x-1/2 px-16 py-7 rounded-full font-black text-[12px] shadow-2xl flex items-center gap-4 transition-all uppercase tracking-[0.4em] z-[120] bg-slate-900 text-slate-700 cursor-not-allowed opacity-50";
+            }
+
+            refreshIcons();
+        }
+
+        function selectCustomer(id) {
+            state.selectedId = id;
+            updateUI();
+        }
+
+        function addTask(type, cost, label) {
+            if (state.manHours < cost) {
+                state.logs.unshift("! 工数不足。");
+                updateUI();
+                return;
+            }
+            const c = state.customers.find(x => x.id === state.selectedId);
+            state.pendingTasks.push({ customerId: c.id, customerName: c.name, type, cost, label });
+            state.manHours -= cost;
+            updateUI();
+        }
+
+        function removeTask(index) {
+            const task = state.pendingTasks[index];
+            state.manHours += task.cost;
+            state.pendingTasks.splice(index, 1);
+            updateUI();
+        }
+
+        async function executeStrategy() {
+            document.getElementById('exec-overlay').classList.remove('hidden');
+            let turnSales = 0;
+            let turnChanges = [];
+
+            state.logs.unshift(`--- FY26M${state.month} 戦略実行中 ---`);
+
+            for (let task of state.pendingTasks) {
+                await new Promise(r => setTimeout(r, 400));
+                let c = state.customers.find(x => x.id === task.customerId);
+                if (task.type === 'VISIT') {
+                    c.visitCount++;
+                    state.logs.unshift(`[H] ${c.name} 訪問`);
+                } else if (task.type === 'PARTNER') {
+                    c.studyCount++;
+                    state.logs.unshift(`[H] ${c.name} 勉強会`);
+                } else if (task.type === 'PROPOSAL') {
+                    if (Math.random() * 100 < calculateWinRate(c)) {
+                        c.vendor = 'H';
+                        c.internalMonth = 1;
+                        c.visitCount = 1;
+                        c.studyCount = 0;
+                        turnSales += c.budget;
+                        turnChanges.push(c.id);
+                        state.logs.unshift(`[SUCCESS] ${c.name} 奪還`);
+                    } else {
+                        state.logs.unshift(`[FAILED] ${c.name} 失注`);
+                    }
+                }
+                updateUI();
+            }
+
+            state.sales += turnSales;
+            state.pendingTasks = [];
+
+            // Rivals
+            state.logs.unshift(`--- ライバル同期 ---`);
+            const rivals = ['D', 'I', 'A'];
+            for (let rid of rivals) {
+                await new Promise(r => setTimeout(r, 400));
+                const targets = state.customers.filter(c => c.vendor !== rid);
+                let target = targets.sort((a, b) => b.budget - a.budget)[0];
+                const rfp = targets.filter(c => c.internalMonth >= 48 && c.internalMonth < 50);
+                if (rfp.length > 0) target = rfp[0];
+
+                const chance = 10 + (target.internalMonth >= 48 ? 20 : 0);
+                if (Math.random() * 100 < chance) {
+                    target.vendor = rid;
+                    target.internalMonth = 1;
+                    target.visitCount = 0;
+                    target.studyCount = 0;
+                    turnChanges.push(target.id);
+                    state.logs.unshift(`[${rid}] ${target.name} 奪取`);
+                }
+            }
+
+            // Month advance
+            state.customers.forEach(c => {
+                c.internalMonth = c.internalMonth >= 60 ? 1 : c.internalMonth + 1;
+            });
+
+            state.changedIds = turnChanges;
+            document.getElementById('exec-overlay').classList.add('hidden');
+            
+            if (state.month === 12) {
+                showFinalSummary();
+            } else {
+                state.month++;
+                state.manHours = MAX_MAN_HOURS;
+                showPopup(`FY26M${state.month}`);
+                setTimeout(() => {
+                    state.changedIds = [];
+                    updateUI();
+                }, 2000);
+                updateUI();
+            }
+            saveToLocal();
+        }
+
+        function showPopup(text) {
+            const el = document.getElementById('popup-overlay');
+            el.querySelector('.turn-popup').innerText = text;
+            el.classList.remove('hidden');
+            setTimeout(() => el.classList.add('hidden'), 2000);
+        }
+
+        function showFinalSummary() {
+            document.getElementById('final-sales').innerHTML = `¥${state.sales}<span class="text-3xl ml-3 opacity-30 font-light text-white">M</span>`;
+            document.getElementById('summary-modal').classList.remove('hidden');
+        }
+
+        function resetGame() {
+            localStorage.removeItem('enterprise_hud_state');
+            location.reload();
+        }
+
+        // Persistence in LocalStorage
+        function saveToLocal() {
+            localStorage.setItem('enterprise_hud_state', JSON.stringify(state));
+            console.log("State Saved.");
+        }
+
+        function loadFromLocal() {
+            const saved = localStorage.getItem('enterprise_hud_state');
+            if (saved) {
+                state = JSON.parse(saved);
+                state.pendingTasks = []; // Clear unsaved tasks on load
+                state.manHours = MAX_MAN_HOURS;
+                updateUI();
+            }
+        }
+
+        // Fulfilling "Save in HTML" via Export
+        function exportHTML() {
+            const scriptContent = `
+                <script>
+                    window.INITIAL_STATE = ${JSON.stringify(state)};
+                <\/script>
+            `;
+            // Get current HTML, inject current state as initial
+            let html = document.documentElement.outerHTML;
+            const blob = new Blob([html], { type: 'text/html' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `TheEnterprise_FY26M${state.month}_State.html`;
+            a.click();
+            state.logs.unshift("HTMLファイルをエクスポートしました。");
+            updateUI();
+        }
+
+        // Event Listeners
+        document.getElementById('close-panel').onclick = () => { state.selectedId = null; updateUI(); };
+        document.getElementById('execute-btn').onclick = executeStrategy;
+
+        // Init
+        window.onload = () => {
+            loadFromLocal();
+            updateUI();
+            refreshIcons();
+        };
+    </script>
+</body>
+</html>
