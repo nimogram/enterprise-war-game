@@ -2,632 +2,925 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Enterprise: 覇権奪還 - Strategic HUD</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>THE ENTERPRISE: 覇権奪還</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;600;700;900&display=swap" rel="stylesheet">
     <style>
-        /* Rajdhani for high-density, Share Tech Mono for terminal, Inter for body */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&display=swap');
-        
+        :root {
+            --gold: #C9A84C;
+            --gold-dim: #6b5520;
+            --emerald: #00D68F;
+            --rose: #FF4D6D;
+            --sky: #38BDF8;
+            --bg: #080C14;
+            --surface: #0D1420;
+            --border: rgba(255,255,255,0.06);
+            --text-muted: #3a4a60;
+            --font-display: 'Bebas Neue', sans-serif;
+            --font-mono: 'DM Mono', monospace;
+            --font-body: 'Outfit', sans-serif;
+            /* Vendor colors */
+            --vendor-H: #0A3D2B;
+            --vendor-H-bright: #00D68F;
+            --vendor-I: #0A1F3D;
+            --vendor-I-bright: #38BDF8;
+            --vendor-A: #2D0A3D;
+            --vendor-A-bright: #A855F7;
+            --vendor-UNKNOWN: #141C28;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #020617;
-            color: #94a3b8;
+            font-family: var(--font-body);
+            background: var(--bg);
+            color: #8899aa;
+            min-height: 100dvh;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .font-tactical {
-            font-family: 'Rajdhani', sans-serif;
-            letter-spacing: 0.1em;
+        /* Subtle scanline overlay */
+        body::before {
+            content: '';
+            position: fixed; inset: 0;
+            background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px);
+            pointer-events: none; z-index: 9999;
         }
 
-        .font-mono-tactical {
-            font-family: 'Share Tech Mono', monospace;
+        #app {
+            width: 100%; max-width: 430px;
+            height: 100dvh;
+            display: flex; flex-direction: column;
+            position: relative;
+            overflow: hidden;
         }
 
-        @keyframes rfp-blink { 
-            0%, 100% { border-color: #eab308; box-shadow: inset 0 0 10px #eab308; } 
-            50% { border-color: #fef08a; box-shadow: inset 0 0 4px #eab308; } 
+        /* ─── HEADER ─── */
+        .hdr {
+            padding: 16px 20px 10px;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
         }
-        @keyframes build-blink { 
-            0%, 100% { border-color: #ffffff; box-shadow: inset 0 0 10px #ffffff; } 
-            50% { border-color: #94a3b8; box-shadow: inset 0 0 2px #ffffff; } 
+        .hdr-top {
+            display: flex; justify-content: space-between; align-items: flex-start;
         }
-        @keyframes pink-blink { 
-            0%, 100% { border-color: #f472b6; box-shadow: 0 0 10px #f472b6; } 
-            50% { border-color: #fce7f3; box-shadow: 0 0 20px #f472b6; } 
+        .hdr-label {
+            font-family: var(--font-display);
+            font-size: 9px;
+            letter-spacing: 0.6em;
+            color: var(--gold);
+            line-height: 1;
+            margin-bottom: 4px;
+            display: flex; align-items: center; gap: 6px;
         }
-        @keyframes incident-blink { 
-            0%, 100% { background-color: #991b1b; } 
-            50% { background-color: #dc2626; } 
+        .hdr-label::before {
+            content: '';
+            display: inline-block;
+            width: 5px; height: 5px;
+            background: var(--gold);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
         }
-        
-        @keyframes row-slide-in {
-            0% { transform: translateY(-40px); opacity: 0; }
-            100% { transform: translateY(0); opacity: 1; }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+        .hdr-phase {
+            font-family: var(--font-display);
+            font-size: 52px;
+            color: #fff;
+            line-height: 1;
+            letter-spacing: 0.04em;
+        }
+        .hdr-mh {
+            text-align: right;
+        }
+        .hdr-mh-label {
+            font-size: 8px;
+            font-weight: 700;
+            letter-spacing: 0.4em;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 2px;
+        }
+        .hdr-mh-val {
+            font-family: var(--font-display);
+            font-size: 42px;
+            color: var(--emerald);
+            line-height: 1;
+        }
+        .hdr-mh-val.danger { color: var(--rose); }
+
+        /* ─── SHARE BAR ─── */
+        .share-bar {
+            height: 3px;
+            display: flex;
+            overflow: hidden;
+            margin: 8px 20px 0;
+            border-radius: 2px;
+        }
+        .share-seg { height: 100%; transition: width 0.8s ease; }
+
+        /* ─── GRID AREA ─── */
+        .grid-wrap {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 16px;
+            position: relative;
+        }
+        #grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            grid-template-rows: repeat(6, 1fr);
+            gap: 5px;
+            width: 100%;
+            aspect-ratio: 1;
+        }
+        .tile {
+            aspect-ratio: 1;
+            border-radius: 8px;
+            border: 1.5px solid rgba(255,255,255,0.05);
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            position: relative;
+            transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+            user-select: none;
+        }
+        .tile:active { transform: scale(0.9); }
+        .tile.selected {
+            border-color: #fff !important;
+            box-shadow: 0 0 16px rgba(255,255,255,0.4), inset 0 0 8px rgba(255,255,255,0.05);
+            transform: scale(1.08);
+            z-index: 10;
+        }
+        .tile .t-label {
+            font-family: var(--font-mono);
+            font-size: 8px;
+            color: rgba(255,255,255,0.35);
+            pointer-events: none;
+        }
+        @keyframes rfp-glow {
+            0%,100% { box-shadow: 0 0 10px var(--gold), inset 0 0 6px rgba(201,168,76,0.15); border-color: var(--gold); }
+            50%      { box-shadow: 0 0 20px var(--gold), inset 0 0 12px rgba(201,168,76,0.25); border-color: #ffe68a; }
+        }
+        @keyframes build-glow {
+            0%,100% { box-shadow: 0 0 8px rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.4); }
+            50%      { box-shadow: 0 0 16px rgba(255,255,255,0.5); border-color: #fff; }
+        }
+        @keyframes changed-glow {
+            0%,100% { box-shadow: 0 0 14px #f472b6; border-color: #f472b6; }
+            50%      { box-shadow: 0 0 28px #f472b6, inset 0 0 10px rgba(244,114,182,0.2); border-color: #fce7f3; }
+        }
+        @keyframes incident-flash { 0%,100%{background-color:#5c0a0a} 50%{background-color:#b91c1c} }
+        .tile.rfp-anim    { animation: rfp-glow 1.2s infinite ease-in-out; }
+        .tile.build-anim  { animation: build-glow 1.6s infinite ease-in-out; }
+        .tile.changed-anim{ animation: changed-glow 1.0s infinite ease-in-out; }
+        .tile.incident-anim{ animation: incident-flash 0.6s infinite ease-in-out; }
+
+        /* ─── SIDE PANEL ─── */
+        .side-panel {
+            position: absolute;
+            top: 0; right: 0; bottom: 0;
+            width: 72%;
+            background: rgba(10,16,28,0.92);
+            backdrop-filter: blur(32px);
+            border-left: 1px solid var(--border);
+            padding: 20px 18px;
+            display: flex; flex-direction: column; gap: 12px;
+            z-index: 120;
+            transform: translateX(100%);
+            transition: transform 0.3s cubic-bezier(0.16,1,0.3,1);
+        }
+        .side-panel.open { transform: translateX(0); }
+
+        .sp-header { display: flex; justify-content: space-between; align-items: center; }
+        .sp-tag {
+            font-size: 8px; font-weight: 700; letter-spacing: 0.5em;
+            color: var(--emerald); text-transform: uppercase;
+        }
+        .sp-close {
+            background: none; border: none; color: var(--text-muted);
+            cursor: pointer; padding: 4px; font-size: 20px; line-height: 1;
+            transition: color 0.2s;
+        }
+        .sp-close:hover { color: #fff; }
+        .sp-name {
+            font-family: var(--font-display);
+            font-size: 28px; color: #fff; letter-spacing: 0.03em;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .sp-full {
+            font-size: 11px; color: #556677; line-height: 1.5;
+            border-left: 3px solid var(--gold); padding-left: 8px;
+        }
+        .sp-stat-row { display: flex; gap: 8px; }
+        .sp-stat {
+            flex: 1; background: rgba(255,255,255,0.02); border: 1px solid var(--border);
+            border-radius: 10px; padding: 10px;
+        }
+        .sp-stat-label { font-size: 7px; font-weight: 700; letter-spacing: 0.4em; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; }
+        .sp-stat-val { font-family: var(--font-display); font-size: 26px; color: #fff; }
+        .sp-win {
+            font-family: var(--font-display);
+            font-size: 54px; color: var(--emerald); line-height: 1;
+        }
+        .sp-vendor-label { font-size: 7px; font-weight: 700; letter-spacing: 0.4em; color: var(--text-muted); text-transform: uppercase; margin-bottom: 3px; }
+        .sp-vendor-val { font-family: var(--font-display); font-size: 18px; color: var(--gold); letter-spacing: 0.1em; }
+        .sp-status { font-size: 11px; font-weight: 600; color: #fff; }
+        .sp-status.rfp { color: #fbbf24; animation: pulse 1s infinite; }
+        .sp-status.build { color: var(--text-muted); }
+        .sp-status.unknown { color: var(--text-muted); font-style: italic; }
+
+        .sp-btns { display: flex; flex-direction: column; gap: 6px; margin-top: auto; }
+        .sp-btn {
+            background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08);
+            color: #667788; border-radius: 12px; padding: 10px;
+            font-family: var(--font-display); font-size: 14px; letter-spacing: 0.12em;
+            cursor: pointer; transition: all 0.2s; text-transform: uppercase;
+        }
+        .sp-btn:hover { border-color: rgba(255,255,255,0.2); color: #fff; }
+        .sp-btn.primary {
+            background: rgba(0,214,143,0.1); border-color: var(--emerald); color: var(--emerald);
+        }
+        .sp-btn.primary:hover { background: rgba(0,214,143,0.2); }
+        .sp-btn:disabled { opacity: 0.2; cursor: not-allowed; }
+
+        /* ─── TASK STRIP ─── */
+        .task-strip {
+            height: 56px; overflow-x: auto; overflow-y: hidden;
+            display: flex; align-items: center; gap: 6px;
+            padding: 0 16px;
+            border-top: 1px solid var(--border);
+            scrollbar-width: none; flex-shrink: 0;
+        }
+        .task-strip::-webkit-scrollbar { display: none; }
+        .task-chip {
+            flex-shrink: 0;
+            display: flex; align-items: center; gap: 6px;
+            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px; padding: 4px 10px 4px 12px;
+            font-size: 10px; font-weight: 600; color: #cce;
+            white-space: nowrap; animation: chip-in 0.3s ease;
+        }
+        @keyframes chip-in { from{opacity:0;transform:scale(0.7)} to{opacity:1;transform:scale(1)} }
+        .task-chip-name { color: var(--emerald); font-family: var(--font-mono); font-size: 9px; }
+        .task-chip-rm {
+            background: none; border: none; color: #556677; cursor: pointer;
+            font-size: 14px; line-height: 1; padding: 0;
+            transition: color 0.2s;
+        }
+        .task-chip-rm:hover { color: var(--rose); }
+        .task-standby {
+            font-size: 10px; font-weight: 700; letter-spacing: 0.5em;
+            color: var(--text-muted); text-transform: uppercase; font-family: var(--font-mono);
+            white-space: nowrap;
         }
 
-        .animate-rfp { animation: rfp-blink 0.8s infinite ease-in-out; border-width: 2px !important; }
-        .animate-build { animation: build-blink 1.2s infinite ease-in-out; border-width: 2px !important; }
-        .animate-pink { animation: pink-blink 1.0s infinite ease-in-out; border-width: 2px !important; z-index: 10; }
-        .animate-incident { animation: incident-blink 0.5s infinite ease-in-out; }
-        
-        .row-animate { 
-            animation: row-slide-in 0.8s forwards cubic-bezier(0.16, 1, 0.3, 1); 
-            opacity: 0;
+        /* ─── EXECUTE BUTTON ─── */
+        .exec-btn {
+            flex-shrink: 0;
+            height: 52px;
+            background: #0a0f18;
+            border: none; border-top: 1px solid var(--border);
+            color: var(--text-muted);
+            font-family: var(--font-display); font-size: 16px; letter-spacing: 0.5em;
+            text-transform: uppercase; cursor: not-allowed; opacity: 0.4;
+            transition: all 0.3s;
+        }
+        .exec-btn.active {
+            background: #fff; color: #080C14;
+            cursor: pointer; opacity: 1;
+        }
+        .exec-btn.active:active { transform: scale(0.98); }
+
+        /* ─── LOG ─── */
+        .log-area {
+            height: 48px; overflow: hidden;
+            padding: 6px 16px;
+            border-top: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+        .log-line {
+            font-family: var(--font-mono); font-size: 9px;
+            color: var(--text-muted); line-height: 1.6;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .log-line.latest { color: var(--emerald); }
+
+        /* ─── SCORE BAR ─── */
+        .score-bar {
+            height: 52px;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 20px;
+            border-top: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+        .legend-row { display: flex; gap: 12px; align-items: center; }
+        .legend-item {
+            display: flex; align-items: center; gap: 5px;
+            font-size: 8px; font-weight: 700; letter-spacing: 0.3em;
+            color: var(--text-muted); text-transform: uppercase;
+        }
+        .legend-dot { width: 7px; height: 7px; border-radius: 2px; }
+        .score-val {
+            font-family: var(--font-display);
+            font-size: 32px; color: #fff; letter-spacing: 0.04em;
+        }
+        .score-val span { font-size: 14px; color: var(--text-muted); margin-left: 2px; }
+
+        /* ─── OVERLAYS ─── */
+        .overlay {
+            position: absolute; inset: 0;
+            display: flex; align-items: center; justify-content: center;
+            z-index: 150;
+        }
+        .overlay.hidden { display: none; }
+        .exec-overlay {
+            background: rgba(8,12,20,0.7);
+            backdrop-filter: blur(8px);
+        }
+        .exec-spinner {
+            font-family: var(--font-display);
+            font-size: 13px; letter-spacing: 0.6em; color: #fff;
+            text-transform: uppercase; animation: pulse 0.8s infinite;
         }
 
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-
-        .glass-panel {
-            background: rgba(15, 23, 42, 0.08); /* 超透過 */
+        /* ─── RESULT OVERLAY ─── */
+        .result-overlay {
+            background: rgba(8,12,20,0.96);
             backdrop-filter: blur(24px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            flex-direction: column;
         }
-        
-        .result-customer-block {
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            padding: 32px 0;
+        .result-box {
+            width: 94%; max-height: 90%;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 28px;
+            background: var(--surface);
+            display: flex; flex-direction: column;
+            overflow: hidden;
         }
-        .result-customer-block:last-child { border-bottom: none; }
+        .result-hdr {
+            padding: 20px 20px 14px;
+            border-bottom: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .result-title {
+            font-family: var(--font-display);
+            font-size: 11px; letter-spacing: 0.6em; color: var(--gold);
+            text-transform: uppercase;
+        }
+        .result-list {
+            flex: 1; overflow-y: auto; padding: 12px 20px;
+            scrollbar-width: thin; scrollbar-color: #1a2535 transparent;
+        }
+        .result-block {
+            padding: 16px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            opacity: 0; animation: slide-in 0.5s forwards;
+        }
+        .result-block:last-child { border-bottom: none; }
+        @keyframes slide-in { to{opacity:1;transform:none} from{opacity:0;transform:translateY(-20px)} }
+        .result-block-name {
+            font-family: var(--font-display);
+            font-size: 15px; color: var(--gold); letter-spacing: 0.3em;
+            margin-bottom: 10px;
+            padding-left: 10px; border-left: 3px solid var(--gold);
+        }
+        .result-row {
+            display: flex; align-items: flex-start; gap: 10px;
+            margin-bottom: 8px; padding-left: 4px;
+        }
+        .result-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+        .result-text { font-size: 12px; line-height: 1.5; color: #aabbcc; }
+        .result-text .success { color: var(--emerald); font-weight: 700; display: block; font-size: 11px; margin-top: 3px; }
+        .result-text .fail { color: var(--rose); font-weight: 700; display: block; font-size: 11px; margin-top: 3px; }
+        .result-next {
+            flex-shrink: 0;
+            height: 52px; border: none; border-top: 1px solid var(--border);
+            background: #fff; color: #080C14;
+            font-family: var(--font-display); font-size: 15px; letter-spacing: 0.5em;
+            text-transform: uppercase; cursor: pointer; transition: background 0.2s;
+        }
+        .result-next:hover { background: #d4fae9; }
 
-        .title-glow {
-            text-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
+        /* ─── FINAL MODAL ─── */
+        #summary-modal {
+            position: fixed; inset: 0;
+            background: rgba(8,12,20,0.98);
+            z-index: 250;
+            display: flex; align-items: center; justify-content: center;
+            padding: 24px;
         }
+        #summary-modal.hidden { display: none; }
+        .summary-box {
+            background: var(--surface); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 28px; padding: 36px 28px;
+            text-align: center; width: 100%;
+        }
+        .summary-title {
+            font-family: var(--font-display);
+            font-size: 44px; color: #fff; letter-spacing: 0.04em;
+            margin-bottom: 24px; line-height: 1;
+        }
+        .summary-num {
+            font-family: var(--font-display);
+            font-size: 72px; color: var(--emerald); line-height: 1;
+            margin: 16px 0;
+        }
+        .summary-label { font-size: 10px; font-weight: 700; letter-spacing: 0.5em; color: var(--text-muted); text-transform: uppercase; }
+        .summary-restart {
+            margin-top: 28px; width: 100%; height: 52px;
+            background: #fff; color: #080C14;
+            border: none; border-radius: 14px;
+            font-family: var(--font-display); font-size: 15px; letter-spacing: 0.5em;
+            text-transform: uppercase; cursor: pointer;
+        }
+
+        /* ─── TOOLS ─── */
+        .tool-row {
+            position: absolute; top: 16px; right: 16px;
+            display: flex; gap: 6px; z-index: 200;
+        }
+        .tool-btn {
+            background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+            border-radius: 8px; padding: 6px; cursor: pointer; color: var(--text-muted);
+            font-size: 13px; transition: all 0.2s; line-height: 1;
+        }
+        .tool-btn:hover { background: rgba(255,255,255,0.08); color: #fff; }
     </style>
 </head>
-<body class="overflow-hidden">
-    <div id="app" class="min-h-screen flex flex-col max-w-lg mx-auto shadow-2xl relative border-x border-slate-900 bg-[#020617]">
-        
-        <!-- HUD Header (FYXXMXX At Extreme Top) -->
-        <div class="px-5 pt-6 pb-2">
-            <div class="flex items-center gap-2 mb-1">
-                <div class="w-1.5 h-1.5 rounded-full bg-[#D4AF37] animate-pulse"></div>
-                <h1 class="text-[9px] font-black tracking-[0.7em] text-[#D4AF37] uppercase italic title-glow font-tactical">The Enterprise Command</h1>
+<body>
+<div id="app">
+
+    <!-- TOOLS -->
+    <div class="tool-row">
+        <button class="tool-btn" onclick="saveToLocal()" title="Save">💾</button>
+        <button class="tool-btn" onclick="exportHTML()" title="Export">⬇</button>
+    </div>
+
+    <!-- HEADER -->
+    <div class="hdr">
+        <div class="hdr-top">
+            <div>
+                <div class="hdr-label">The Enterprise Command</div>
+                <div class="hdr-phase" id="phase-display">FY26M1</div>
             </div>
-            <div class="flex justify-between items-end">
-                <div>
-                    <div id="phase-display" class="text-6xl font-bold text-white tracking-widest italic leading-none font-mono-tactical">FY26M1</div>
-                    <div class="text-[8px] text-slate-700 mt-2 uppercase font-bold tracking-[0.5em]">Tactical Grid: Synchronized</div>
+            <div class="hdr-mh">
+                <div class="hdr-mh-label">Resource MH</div>
+                <div class="hdr-mh-val" id="mh-display">20</div>
+            </div>
+        </div>
+        <div class="share-bar" id="share-bar"></div>
+    </div>
+
+    <!-- GRID AREA -->
+    <div class="grid-wrap">
+        <div id="grid"></div>
+
+        <!-- Side Panel -->
+        <div class="side-panel" id="side-panel">
+            <div class="sp-header">
+                <span class="sp-tag">Target Intel</span>
+                <button class="sp-close" id="close-panel">✕</button>
+            </div>
+            <div class="sp-name" id="sp-name">—</div>
+            <div class="sp-full" id="sp-full">—</div>
+            <div class="sp-stat-row">
+                <div class="sp-stat">
+                    <div class="sp-stat-label">Visit</div>
+                    <div class="sp-stat-val" id="sp-visit">0</div>
                 </div>
-                <div class="text-right">
-                    <div class="text-[9px] text-slate-500 font-bold uppercase tracking-[0.3em] italic mb-1">Resource (MH)</div>
-                    <div id="man-hours-display" class="text-5xl font-bold tabular-nums text-[#34D399] leading-none font-mono-tactical">20<span class="text-xs opacity-20 ml-1">/ 20</span></div>
+                <div class="sp-stat">
+                    <div class="sp-stat-label">Study</div>
+                    <div class="sp-stat-val" id="sp-study">0</div>
                 </div>
+            </div>
+            <div>
+                <div class="sp-win" id="sp-win">—%</div>
+                <div style="font-size:8px;letter-spacing:0.4em;color:var(--text-muted);text-transform:uppercase;margin-top:2px;">Capture Prob</div>
+            </div>
+            <div>
+                <div class="sp-vendor-label">Existing Provider</div>
+                <div class="sp-vendor-val" id="sp-vendor">—</div>
+            </div>
+            <div>
+                <div class="sp-vendor-label">Phase Vector</div>
+                <div class="sp-status" id="sp-status">—</div>
+            </div>
+            <div class="sp-btns">
+                <button class="sp-btn" onclick="addTask('VISIT',5,'訪問')">Visit &nbsp;&nbsp;(-5 MH)</button>
+                <button class="sp-btn" onclick="addTask('STUDY',8,'勉強会')">Study &nbsp;&nbsp;(-8 MH)</button>
+                <button class="sp-btn primary" id="sp-proposal-btn" onclick="addTask('PROPOSAL',10,'提案')" disabled>Proposal (-10 MH)</button>
             </div>
         </div>
 
-        <!-- Share Bar (Directly below Header) -->
-        <div id="share-bar" class="w-[calc(100%-2.5rem)] flex h-4 bg-slate-900/50 rounded-full overflow-hidden mx-5 mb-4 border border-slate-800 shadow-inner"></div>
+        <!-- Exec Overlay -->
+        <div class="overlay exec-overlay hidden" id="exec-overlay">
+            <div class="exec-spinner">Analyzing Strategic Output…</div>
+        </div>
 
-        <!-- Grid View -->
-        <div id="grid-container" class="flex-1 relative bg-black rounded-[3rem] border border-slate-900 overflow-hidden shadow-inner p-4 flex justify-center items-center m-2 mt-0">
-            <div id="grid" class="grid grid-cols-8 grid-rows-8 gap-1 w-full aspect-square transition-all duration-500"></div>
-            
-            <!-- Result Summary Overlay -->
-            <div id="result-overlay" class="absolute inset-0 flex items-center justify-center z-[150] bg-slate-950/85 backdrop-blur-xl hidden">
-                <div id="result-box" class="glass-panel w-[96%] max-h-[94%] rounded-[3.5rem] p-10 shadow-2xl overflow-hidden flex flex-col border-white/10">
-                    <div class="flex justify-between items-center mb-8">
-                        <h3 id="result-title" class="text-md font-bold text-[#D4AF37] uppercase tracking-[0.6em] italic font-tactical">Intel Sequence Report</h3>
-                        <div class="w-12 h-12 rounded-full bg-slate-800/50 flex items-center justify-center border border-white/10 shadow-lg"><i data-lucide="radar" size="24" class="text-[#34D399]"></i></div>
-                    </div>
-                    <div id="result-list" class="flex-1 overflow-y-auto pr-3 scrollbar-hide space-y-2">
-                        <!-- Grouped items -->
-                    </div>
-                    <button onclick="closeResult()" class="mt-10 w-full py-6 bg-white text-slate-950 font-black text-[13px] uppercase tracking-[0.7em] rounded-3xl shadow-2xl hover:bg-emerald-50 active:scale-[0.98] transition-all font-tactical">
-                        Next Cycle Initiation <i data-lucide="chevron-right" class="inline ml-1" size="16"></i>
-                    </button>
+        <!-- Result Overlay -->
+        <div class="overlay result-overlay hidden" id="result-overlay">
+            <div class="result-box">
+                <div class="result-hdr">
+                    <span class="result-title">Intel Sequence Report</span>
+                    <span style="font-size:18px;">📡</span>
                 </div>
+                <div class="result-list" id="result-list"></div>
+                <button class="result-next" onclick="closeResult()">Next Cycle ›</button>
             </div>
-
-            <!-- Execution Overlay -->
-            <div id="exec-overlay" class="absolute inset-0 flex items-center justify-center z-[100] bg-slate-950/40 backdrop-blur-[4px] hidden">
-                <div class="bg-slate-900/90 px-14 py-7 rounded-full border border-slate-700 text-[10px] font-bold tracking-[0.6em] text-white animate-pulse uppercase font-tactical italic">Analyzing Strategic Output...</div>
-            </div>
-
-            <!-- Side Panel (Super Translucent & Extra Large) -->
-            <div id="side-panel" class="absolute top-4 right-4 bottom-4 w-80 glass-panel p-10 rounded-[4rem] shadow-2xl z-[120] hidden flex flex-col justify-between border-white/10">
-                <div>
-                    <div class="flex justify-between items-start mb-10">
-                        <div class="text-[11px] font-bold text-[#34D399] uppercase tracking-[0.5em] font-tactical italic">Target Intel</div>
-                        <button id="close-panel" class="text-slate-600 hover:text-white transition-all transform hover:rotate-90"><i data-lucide="circle-x" size="32"></i></button>
-                    </div>
-                    <div id="panel-name" class="text-4xl font-black text-white leading-none mb-4 truncate font-tactical tracking-tighter">Customer</div>
-                    <div id="panel-full" class="text-[14px] text-slate-400 mb-10 italic leading-relaxed border-l-4 border-[#D4AF37] pl-5">Description</div>
-                    
-                    <div class="space-y-8 pt-8 border-t border-white/5">
-                        <div class="flex flex-col">
-                            <span class="text-[10px] uppercase text-slate-500 font-bold tracking-[0.3em] mb-3 italic">Existing Provider</span>
-                            <span id="panel-vendor" class="text-[16px] font-bold tracking-widest text-[#D4AF37] uppercase font-tactical">Vendor Name</span>
-                        </div>
-                        <div class="flex flex-col">
-                            <span class="text-[10px] uppercase text-slate-500 font-bold tracking-[0.3em] mb-3 italic">Phase Vector</span>
-                            <span id="panel-status" class="text-[15px] font-bold tracking-tight text-white uppercase">Status Text</span>
-                        </div>
-                        <div class="flex flex-col">
-                            <span class="text-[10px] uppercase text-slate-500 font-bold tracking-[0.3em] mb-2 italic">Capture Prob</span>
-                            <span id="panel-win-rate" class="text-7xl font-bold text-[#34D399] italic mt-1 font-mono-tactical">0%</span>
-                        </div>
-                        <div class="grid grid-cols-2 gap-5 pt-4">
-                            <div class="bg-slate-950/40 p-5 rounded-[2.5rem] border border-white/5">
-                                <div class="text-slate-600 uppercase text-[9px] font-bold mb-1 tracking-widest">Visit</div>
-                                <div id="panel-visit" class="text-white font-black text-3xl font-mono-tactical">0</div>
-                            </div>
-                            <div class="bg-slate-950/40 p-5 rounded-[2.5rem] border border-white/5">
-                                <div class="text-slate-600 uppercase text-[9px] font-bold mb-1 tracking-widest">Study</div>
-                                <div id="panel-study" class="text-white font-black text-3xl font-mono-tactical">0</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="space-y-4 mt-10">
-                    <button id="visit-btn" onclick="addTask('VISIT', 5, '訪問')" class="w-full py-5 bg-slate-900/40 border border-slate-800 rounded-3xl text-[12px] font-bold text-slate-400 hover:text-white hover:border-slate-500 transition-all uppercase italic font-tactical">Visit (5)</button>
-                    <button id="study-btn" onclick="addTask('PARTNER', 8, '勉強会')" class="w-full py-5 bg-slate-900/40 border border-slate-800 rounded-3xl text-[12px] font-bold text-slate-400 hover:text-white hover:border-slate-500 transition-all uppercase italic font-tactical">Study (8)</button>
-                    <button id="proposal-btn-label" onclick="addTask('PROPOSAL', 10, '提案')" class="w-full py-7 rounded-3xl text-[15px] font-black uppercase tracking-[0.4em] shadow-2xl active:scale-95 transition-all italic border font-tactical">Proposal (10)</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Task List Area -->
-        <div class="px-2 pt-2">
-            <div class="bg-[#020617] border-x border-t border-slate-800 px-6 py-2 h-20 overflow-y-auto border-b border-slate-800 shadow-inner text-white rounded-t-3xl scrollbar-hide">
-                <div id="task-list" class="flex flex-wrap gap-2 items-start content-start"></div>
-            </div>
-            
-            <button id="execute-btn" disabled class="w-full py-6 font-black text-[13px] shadow-2xl flex items-center justify-center gap-4 transition-all uppercase tracking-[0.7em] border-x border-slate-800 bg-slate-900 text-slate-700 cursor-not-allowed opacity-50 font-tactical italic">
-                Launch Mission <i data-lucide="zap" size="20"></i>
-            </button>
-        </div>
-
-        <!-- Log Feed -->
-        <div class="bg-[#0F172A] border-x border-slate-800 p-4 font-mono text-[10px] h-32 overflow-hidden shadow-inner relative text-white">
-            <div id="log-feed" class="flex flex-col gap-1"></div>
-        </div>
-
-        <!-- Score Bar -->
-        <div class="bg-slate-950 rounded-b-[4.5rem] p-7 flex justify-between items-center border-x border-b border-slate-800 shadow-2xl relative overflow-hidden">
-            <div class="flex gap-4 items-center z-10">
-                <div class="flex items-center gap-2 text-[10px] font-bold text-slate-600 tracking-[0.4em] uppercase font-tactical"><div class="w-2.5 h-2.5 rounded-sm bg-[#064e3b]"></div> SELF</div>
-                <div class="flex items-center gap-2 text-[10px] font-bold text-slate-600 tracking-[0.4em] uppercase font-tactical"><div class="w-2.5 h-2.5 rounded-sm bg-[#075985]"></div> RIVAL_I</div>
-                <div class="flex items-center gap-2 text-[10px] font-bold text-slate-600 tracking-[0.4em] uppercase font-tactical"><div class="w-2.5 h-2.5 rounded-sm bg-[#4c1d95]"></div> RIVAL_A</div>
-            </div>
-            <div id="sales-display" class="text-4xl font-bold text-white tabular-nums italic tracking-widest pl-10 border-l border-slate-800 font-mono-tactical">¥0<span class="text-[18px] ml-1 opacity-20 font-normal">M</span></div>
-        </div>
-
-        <!-- Tools -->
-        <div class="absolute top-2 right-4 flex gap-2 z-[200]">
-            <button onclick="saveToLocal()" title="Save Session" class="p-2 bg-slate-900/50 rounded-full hover:bg-slate-800 text-slate-500 hover:text-white transition-all"><i data-lucide="save" size="14"></i></button>
-            <button onclick="exportHTML()" title="Export HTML with State" class="p-2 bg-slate-900/50 rounded-full hover:bg-slate-800 text-slate-500 hover:text-white transition-all"><i data-lucide="download" size="14"></i></button>
         </div>
     </div>
 
-    <!-- Final Summary Modal -->
-    <div id="summary-modal" class="fixed inset-0 bg-slate-950/98 z-[250] flex items-center justify-center p-8 backdrop-blur-3xl hidden animate-in fade-in duration-1000">
-        <div class="bg-[#0F172A] border border-slate-800 rounded-[5rem] p-12 w-full max-w-md shadow-2xl relative overflow-hidden text-center">
-            <h2 class="text-6xl font-black italic tracking-tighter mb-12 text-white leading-none uppercase font-tactical">FY26 MISSION ACHIEVED</h2>
-            <div class="bg-slate-900/50 p-12 rounded-[4rem] border border-white/5 mb-10 shadow-inner">
-                <span class="text-[14px] font-bold text-slate-500 uppercase tracking-[0.6em] block mb-3 font-tactical">Aggregated Revenue Output</span>
-                <div id="final-sales" class="text-8xl font-black tracking-tighter text-[#34D399] italic leading-none font-mono-tactical">¥0<span class="text-4xl ml-4 opacity-30 font-light text-white font-tactical">M</span></div>
-            </div>
-            <button onclick="resetGame()" class="w-full bg-white text-slate-950 py-10 rounded-[3rem] font-black text-sm uppercase tracking-[0.7em] flex items-center justify-center gap-4 hover:bg-emerald-50 transition-all font-tactical">Restart Simulation <i data-lucide="rotate-ccw" size="22"></i></button>
-        </div>
+    <!-- TASK STRIP -->
+    <div class="task-strip" id="task-strip">
+        <span class="task-standby">>>> MISSION ON STANDBY</span>
     </div>
 
-    <script>
-        const VENDORS = {
-            H: { id: 'H', name: 'H社', color: '#064e3b' },
-            D: { id: 'D', name: 'D社', color: '#0f172a' },
-            I: { id: 'I', name: 'I社', color: '#075985' },
-            A: { id: 'A', name: 'A社', color: '#4c1d95' },
-            NONE: { id: 'NONE', name: '未開拓', color: '#020617' },
-            UNKNOWN: { id: 'UNKNOWN', name: '不明', color: '#1e293b' }
-        };
+    <!-- EXECUTE BUTTON -->
+    <button class="exec-btn" id="exec-btn" disabled onclick="executeStrategy()">
+        Launch Mission
+    </button>
 
-        const MAX_MAN_HOURS = 20;
+    <!-- LOG -->
+    <div class="log-area" id="log-area"></div>
 
-        let state = {
-            month: 1,
-            manHours: MAX_MAN_HOURS,
-            sales: 0,
-            selectedId: null,
-            pendingTasks: [],
-            logs: ["オペレーションシステム正常。グリッド同期完了。"],
-            changedIds: [],
-            incidents: [],
-            customers: [
-                { id: 101, name: 'NIT-Core', full: 'ニトリHD: 基幹システム', budget: 120, tileCount: 7, vendor: 'D', internalMonth: 42, visitCount: 0, studyCount: 0 },
-                { id: 102, name: 'NIT-Logi', full: 'ニトリHD: 物流インフラ', budget: 80, tileCount: 5, vendor: 'D', internalMonth: 12, visitCount: 0, studyCount: 0 },
-                { id: 201, name: 'SAP-Net', full: '札幌市: 庁内ネットワーク', budget: 70, tileCount: 5, vendor: 'I', internalMonth: 48, visitCount: 0, studyCount: 0 },
-                { id: 202, name: 'SAP-Service', full: '札幌市: 市民向け窓口S', budget: 65, tileCount: 4, vendor: 'I', internalMonth: 30, visitCount: 0, studyCount: 0 },
-                { id: 301, name: 'HDC-Fin', full: '北海道庁: 財務会計システム', budget: 60, tileCount: 4, vendor: 'I', internalMonth: 50, visitCount: 0, studyCount: 0 },
-                { id: 302, name: 'HDC-HR', full: '北海道庁: 人事給与システム', budget: 60, tileCount: 4, vendor: 'I', internalMonth: 20, visitCount: 0, studyCount: 0 },
-                { id: 401, name: 'HOU-Edu', full: '北海道大学: 教育用インフラ', budget: 110, tileCount: 7, vendor: 'A', internalMonth: 18, visitCount: 0, studyCount: 0 },
-                { id: 501, name: 'TSU-EC', full: 'ツルハHD: EC/店舗統合S', budget: 80, tileCount: 5, vendor: 'D', internalMonth: 45, visitCount: 0, studyCount: 0 },
-                { id: 601, name: 'JRH-Tick', full: 'JR北海道: 発券システム', budget: 70, tileCount: 4, vendor: 'I', internalMonth: 50, visitCount: 0, studyCount: 0 },
-                { id: 701, name: 'HKL-Agri', full: 'ホクレン: 農業情報システム', budget: 60, tileCount: 4, vendor: 'H', internalMonth: 5, visitCount: 0, studyCount: 0 },
-                { id: 801, name: 'AIN-Ph', full: 'アインHD: 調剤管理システム', budget: 50, tileCount: 3, vendor: 'D', internalMonth: 35, visitCount: 0, studyCount: 0 },
-                { id: 901, name: 'HYB-Sec', full: '北洋銀行: セキュリティ基盤', budget: 50, tileCount: 3, vendor: 'I', internalMonth: 40, visitCount: 0, studyCount: 0 },
-                { id: 1001, name: 'SAT-POS', full: 'サツドラHD: 次世代POS', budget: 40, tileCount: 3, vendor: 'H', internalMonth: 58, visitCount: 0, studyCount: 0 },
-                { id: 1101, name: 'HRP-Base', full: 'HARP: 共通基盤システム', budget: 30, tileCount: 2, vendor: 'I', internalMonth: 20, visitCount: 0, studyCount: 0 },
-                { id: 1201, name: 'HPP-Sec', full: '北海道警察: 公安情報NW', budget: 25, tileCount: 2, vendor: 'I', internalMonth: 32, visitCount: 0, studyCount: 0 },
-                { id: 1301, name: 'GAS-Main', full: '北海道ガス: 基幹系インフラ', budget: 20, tileCount: 1, vendor: 'A', internalMonth: 44, visitCount: 0, studyCount: 0 },
-                { id: 1401, name: 'KNM-Back', full: 'カナモト: バックオフィスS', budget: 20, tileCount: 1, vendor: 'D', internalMonth: 12, visitCount: 0, studyCount: 0 },
-            ]
-        };
+    <!-- SCORE BAR -->
+    <div class="score-bar">
+        <div class="legend-row">
+            <div class="legend-item"><div class="legend-dot" style="background:var(--vendor-H-bright)"></div>SELF</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--vendor-I-bright)"></div>RVL-I</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--vendor-A-bright)"></div>RVL-A</div>
+        </div>
+        <div class="score-val" id="score-val">¥0<span>M</span></div>
+    </div>
+</div>
 
-        function calculateWinRate(target) {
-            if (!target) return 0;
-            let base = 10;
-            const vendorBonus = target.vendor === 'H' ? 40 : 0;
-            let phaseBonus = 0;
-            if (target.internalMonth >= 48 && target.internalMonth < 50) phaseBonus = 40;
-            else if (target.internalMonth >= 50) phaseBonus = -20;
-            const effortBonus = (target.visitCount * 5) + (target.studyCount * 10);
-            const pendingVisits = state.pendingTasks.filter(t => t.customerId === target.id && t.type === 'VISIT').length;
-            const pendingStudies = state.pendingTasks.filter(t => t.customerId === target.id && t.type === 'PARTNER').length;
-            const liveEffortBonus = (pendingVisits * 5) + (pendingStudies * 10);
-            return Math.min(Math.max(5, Math.round(base + vendorBonus + phaseBonus + effortBonus + liveEffortBonus)), 99);
+<!-- FINAL MODAL -->
+<div id="summary-modal" class="hidden">
+    <div class="summary-box">
+        <div class="summary-title">FY26<br>Mission Complete</div>
+        <div class="summary-label">Aggregated Revenue</div>
+        <div class="summary-num" id="final-score">¥0<span style="font-size:32px;color:var(--text-muted);margin-left:8px;">M</span></div>
+        <button class="summary-restart" onclick="resetGame()">↩ Restart Simulation</button>
+    </div>
+</div>
+
+<script>
+const MAX_MH = 20;
+const VENDORS = {
+    H:    { name: 'H社（SELF）', bg: '#0A3D2B', bright: '#00D68F' },
+    I:    { name: 'I社',        bg: '#0A1F3D', bright: '#38BDF8' },
+    A:    { name: 'A社',        bg: '#2D0A3D', bright: '#A855F7' },
+    NONE: { name: '未開拓',      bg: '#080C14', bright: '#1e293b' },
+    UNK:  { name: '情報未取得',  bg: '#141C28', bright: '#1e293b' },
+};
+
+let state = {
+    month: 1,
+    mh: MAX_MH,
+    sales: 0,
+    selectedId: null,
+    tasks: [],
+    logs: ["システム起動。グリッド同期完了。"],
+    changedIds: [],
+    incidents: [],
+    customers: [
+        { id:101, name:'NIT-Core',    full:'ニトリHD: 基幹システム',        budget:120, tiles:5, vendor:'I', mo:42, vc:0, sc:0 },
+        { id:102, name:'NIT-Logi',    full:'ニトリHD: 物流インフラ',        budget:80,  tiles:4, vendor:'I', mo:12, vc:0, sc:0 },
+        { id:201, name:'SAP-Net',     full:'札幌市: 庁内ネットワーク',      budget:70,  tiles:4, vendor:'I', mo:48, vc:0, sc:0 },
+        { id:202, name:'SAP-Win',     full:'札幌市: 市民窓口システム',      budget:65,  tiles:3, vendor:'I', mo:30, vc:0, sc:0 },
+        { id:301, name:'HDC-Fin',     full:'北海道庁: 財務会計',           budget:60,  tiles:3, vendor:'A', mo:50, vc:0, sc:0 },
+        { id:401, name:'HOU-Edu',     full:'北海道大学: 教育インフラ',      budget:110, tiles:4, vendor:'A', mo:18, vc:0, sc:0 },
+        { id:501, name:'TSU-EC',      full:'ツルハHD: EC/店舗統合',        budget:80,  tiles:3, vendor:'I', mo:45, vc:0, sc:0 },
+        { id:601, name:'JRH-Tick',    full:'JR北海道: 発券システム',       budget:70,  tiles:4, vendor:'A', mo:50, vc:0, sc:0 },
+        { id:701, name:'HKL-Agri',    full:'ホクレン: 農業情報',           budget:60,  tiles:3, vendor:'H', mo:5,  vc:0, sc:0 },
+        { id:801, name:'AIN-Ph',      full:'アインHD: 調剤管理',           budget:50,  tiles:2, vendor:'I', mo:35, vc:0, sc:0 },
+        { id:901, name:'HBA-Sec',     full:'HBA: セキュリティ基盤',        budget:50,  tiles:2, vendor:'A', mo:40, vc:0, sc:0 },
+        { id:1001,name:'SAT-POS',     full:'サツドラHD: 次世代POS',        budget:40,  tiles:2, vendor:'H', mo:58, vc:0, sc:0 },
+        { id:1101,name:'HRP-Base',    full:'HARP: 共通基盤システム',       budget:30,  tiles:1, vendor:'I', mo:20, vc:0, sc:0 },
+        { id:1201,name:'HPP-Sec',     full:'北海道警察: 公安NW',           budget:25,  tiles:1, vendor:'I', mo:32, vc:0, sc:0 },
+    ]
+};
+
+// ─── WIN RATE ───
+function winRate(c) {
+    if (!c) return 0;
+    let r = 10;
+    if (c.vendor === 'H') r += 40;
+    const m = c.mo;
+    if (m >= 48 && m < 50) r += 40;
+    else if (m >= 50) r -= 20;
+    r += c.vc * 5 + c.sc * 10;
+    const pending = state.tasks.filter(t => t.cid === c.id);
+    pending.forEach(t => { if(t.type==='VISIT') r+=5; if(t.type==='STUDY') r+=10; });
+    return Math.min(99, Math.max(5, Math.round(r)));
+}
+
+// ─── RENDER ───
+function render() {
+    // Phase / MH
+    document.getElementById('phase-display').textContent = `FY26M${state.month}`;
+    const mhEl = document.getElementById('mh-display');
+    mhEl.textContent = state.mh;
+    mhEl.className = 'hdr-mh-val' + (state.mh < 5 ? ' danger' : '');
+    document.getElementById('score-val').innerHTML = `¥${state.sales}<span>M</span>`;
+
+    // Share bar
+    const stats = {H:0,I:0,A:0,NONE:0};
+    state.customers.forEach(c => { stats[c.vendor] = (stats[c.vendor]||0) + c.budget; });
+    const total = Object.values(stats).reduce((a,b)=>a+b,0)||1;
+    const bar = document.getElementById('share-bar');
+    bar.innerHTML = '';
+    [['H','#00D68F'],['I','#38BDF8'],['A','#A855F7'],['NONE','#1e293b']].forEach(([v,col])=>{
+        const pct = (stats[v]||0)/total*100;
+        if (pct>0) {
+            const d = document.createElement('div');
+            d.className='share-seg';
+            d.style.cssText=`width:${pct}%;background:${col};opacity:${v==='H'?1:0.5}`;
+            bar.appendChild(d);
         }
+    });
 
-        function updateUI() {
-            document.getElementById('phase-display').innerText = `FY26M${state.month}`;
-            const mhEl = document.getElementById('man-hours-display');
-            mhEl.innerHTML = `${state.manHours}<span class="text-xs opacity-20 ml-2">/ ${MAX_MAN_HOURS}</span>`;
-            mhEl.className = `text-5xl font-bold tabular-nums ${state.manHours < 5 ? 'text-rose-500' : 'text-[#34D399]'} font-mono-tactical`;
-            document.getElementById('sales-display').innerHTML = `¥${state.sales}<span class="text-[18px] ml-1 opacity-20 font-normal">M</span>`;
+    // Grid (6×6 = 36 tiles)
+    const grid = document.getElementById('grid');
+    grid.innerHTML = '';
+    const tiles = [];
+    state.customers.forEach(c => {
+        const known = c.vc > 0 || c.vendor === 'H';
+        const rfp  = known && c.mo >= 48 && c.mo < 50;
+        const bld  = known && c.mo >= 50;
+        const inc  = state.incidents.some(i=>i.cid===c.id);
+        for (let i=0;i<c.tiles;i++) tiles.push({id:c.id,vendor:c.vendor,year:Math.ceil(c.mo/12),rfp,bld,known,inc});
+    });
+    while(tiles.length<36) tiles.push({id:null,vendor:'NONE',year:0,rfp:false,bld:false,known:false,inc:false});
 
-            const stats = { H: 0, D: 0, I: 0, A: 0, NONE: 0 };
-            state.customers.forEach(c => stats[c.vendor] += c.budget);
-            const total = 1000;
-            const bar = document.getElementById('share-bar');
-            bar.innerHTML = '';
-            ['H', 'D', 'I', 'A', 'NONE'].forEach(v => {
-                const pct = Math.round((stats[v] / total) * 100);
-                if (pct > 0) {
-                    const div = document.createElement('div');
-                    div.className = "h-full flex items-center justify-center border-r border-black/20 text-[8px] font-black text-white px-1 transition-all";
-                    div.style.width = `${pct}%`;
-                    div.style.backgroundColor = VENDORS[v].color;
-                    if (pct >= 6) div.innerText = `${v}:${pct}%`;
-                    bar.appendChild(div);
-                }
-            });
+    tiles.slice(0,36).forEach(t => {
+        const el = document.createElement('div');
+        el.className = 'tile';
+        const vd = VENDORS[t.known ? t.vendor : 'UNK'];
+        el.style.background = vd.bg;
+        if (t.rfp) el.classList.add('rfp-anim');
+        else if (t.bld) el.classList.add('build-anim');
+        if (t.inc) el.classList.add('incident-anim');
+        if (state.changedIds.includes(t.id)) el.classList.add('changed-anim');
+        if (state.selectedId === t.id) el.classList.add('selected');
+        if (t.year > 0) {
+            const sp = document.createElement('span');
+            sp.className = 't-label';
+            sp.textContent = t.known ? `Y${t.year}` : 'Y?';
+            el.appendChild(sp);
+        }
+        if (t.id) el.onclick = e => { e.stopPropagation(); state.selectedId = t.id; render(); };
+        grid.appendChild(el);
+    });
 
-            const grid = document.getElementById('grid');
-            grid.innerHTML = '';
-            let tilesData = [];
-            state.customers.forEach(cust => {
-                const year = Math.ceil(cust.internalMonth / 12);
-                const isInfoDisclosed = (cust.visitCount > 0) || (cust.vendor === 'H');
-                const isRFP = isInfoDisclosed && (cust.internalMonth >= 48 && cust.internalMonth < 50);
-                const isBuild = isInfoDisclosed && (cust.internalMonth >= 50);
-                const isIncident = state.incidents.some(inc => inc.customerId === cust.id);
-                for (let i = 0; i < cust.tileCount; i++) {
-                    tilesData.push({ id: cust.id, vendor: cust.vendor, year, isRFP, isBuild, isInfoDisclosed, isIncident });
-                }
-            });
-            while (tilesData.length < 64) tilesData.push({ id: null, vendor: 'NONE' });
+    // Side panel
+    const panel = document.getElementById('side-panel');
+    if (state.selectedId) {
+        const c = state.customers.find(x=>x.id===state.selectedId);
+        panel.classList.add('open');
+        document.getElementById('sp-name').textContent  = c.name;
+        document.getElementById('sp-full').textContent  = c.full;
+        document.getElementById('sp-visit').textContent = c.vc;
+        document.getElementById('sp-study').textContent = c.sc;
+        document.getElementById('sp-win').textContent   = `${winRate(c)}%`;
+        document.getElementById('sp-vendor').textContent = VENDORS[c.vendor].name;
 
-            tilesData.slice(0, 64).forEach(t => {
-                const tile = document.createElement('div');
-                tile.className = `w-full aspect-square cursor-pointer transition-all duration-300 border-[1.5px] border-white/5 relative flex items-center justify-center 
-                                ${t.isRFP ? 'animate-rfp' : ''} ${t.isBuild ? 'animate-build' : ''} 
-                                ${t.isIncident ? 'animate-incident' : ''}
-                                ${state.changedIds.includes(t.id) ? 'animate-pink' : ''} 
-                                ${state.selectedId === t.id ? 'z-20 opacity-100 shadow-[0_0_20px_white] scale-110 border-white' : 'opacity-80'}`;
-                
-                tile.style.backgroundColor = t.isInfoDisclosed ? VENDORS[t.vendor].color : VENDORS.UNKNOWN.color;
-                
-                if (t.year > 0) {
-                    const span = document.createElement('span');
-                    span.className = "text-[9px] font-black text-white/50 pointer-events-none drop-shadow-md font-mono-tactical";
-                    span.innerText = t.isInfoDisclosed ? `Y${t.year}` : 'Y?';
-                    tile.appendChild(span);
-                }
-                tile.onclick = (e) => { 
-                    e.stopPropagation();
-                    state.selectedId = t.id; 
-                    updateUI(); 
-                };
-                grid.appendChild(tile);
-            });
+        const known = c.vc>0 || c.vendor==='H';
+        const statusEl = document.getElementById('sp-status');
+        const propBtn = document.getElementById('sp-proposal-btn');
+        const isRFP = c.mo>=48&&c.mo<50;
+        if (!known) {
+            statusEl.textContent = '情報未取得'; statusEl.className = 'sp-status unknown';
+        } else if (c.mo>=50) {
+            statusEl.textContent = `構築フェーズ (M${c.mo})`; statusEl.className = 'sp-status build';
+        } else if (isRFP) {
+            statusEl.textContent = `📄 提案依頼中 (M${c.mo})`; statusEl.className = 'sp-status rfp';
+        } else {
+            statusEl.textContent = `通常運用 (M${c.mo})`; statusEl.className = 'sp-status';
+        }
+        propBtn.disabled = !(known && isRFP);
+    } else {
+        panel.classList.remove('open');
+    }
 
-            const panel = document.getElementById('side-panel');
-            if (state.selectedId) {
-                const c = state.customers.find(x => x.id === state.selectedId);
-                panel.classList.remove('hidden');
-                document.getElementById('panel-name').innerText = c.name;
-                document.getElementById('panel-full').innerText = c.full;
-                document.getElementById('panel-visit').innerText = c.visitCount || 0;
-                document.getElementById('panel-study').innerText = c.studyCount || 0;
-                document.getElementById('panel-win-rate').innerText = `${calculateWinRate(c)}%`;
-                document.getElementById('panel-vendor').innerText = VENDORS[c.vendor].name;
-                
-                const statusEl = document.getElementById('panel-status');
-                const proposalBtn = document.getElementById('proposal-btn-label');
-                const isRFP = c.internalMonth >= 48 && c.internalMonth < 50;
-                
-                if ((c.visitCount > 0 || c.vendor === 'H') && isRFP) {
-                    proposalBtn.disabled = false;
-                    proposalBtn.className = "w-full py-7 bg-[#064e3b] border-[#34D399] text-[#ECFDF5] rounded-3xl text-[15px] font-black uppercase tracking-[0.4em] shadow-2xl active:scale-95 transition-all italic border font-tactical";
-                } else {
-                    proposalBtn.disabled = true;
-                    proposalBtn.className = "w-full py-7 bg-slate-950 border-slate-900 text-slate-800 rounded-3xl text-[15px] font-black uppercase tracking-[0.4em] transition-all italic border cursor-not-allowed font-tactical";
-                }
+    // Task strip
+    const strip = document.getElementById('task-strip');
+    strip.innerHTML = '';
+    if (state.tasks.length === 0) {
+        const sp = document.createElement('span');
+        sp.className = 'task-standby';
+        sp.textContent = '>>> MISSION ON STANDBY';
+        strip.appendChild(sp);
+    } else {
+        state.tasks.forEach((t,i) => {
+            const chip = document.createElement('div');
+            chip.className = 'task-chip';
+            chip.innerHTML = `<span class="task-chip-name">${t.cname}</span><span>${t.label}</span><button class="task-chip-rm" onclick="removeTask(${i})">✕</button>`;
+            strip.appendChild(chip);
+        });
+    }
 
-                if (c.visitCount > 0 || c.vendor === 'H') {
-                    if (c.internalMonth >= 50) {
-                        statusEl.className = "text-[15px] font-bold text-white uppercase tracking-wider font-tactical";
-                        statusEl.innerText = `構築フェーズ (M${c.internalMonth})`;
-                    } else if (isRFP) {
-                        statusEl.className = "text-[15px] font-bold text-yellow-400 animate-pulse uppercase tracking-wider font-tactical";
-                        statusEl.innerText = `📄 提案依頼中 (M${c.internalMonth})`;
-                    } else {
-                        statusEl.className = "text-[15px] font-bold text-slate-400 uppercase tracking-wider font-tactical";
-                        statusEl.innerText = `通常運用 (M${c.internalMonth})`;
-                    }
-                } else {
-                    statusEl.className = "text-[15px] font-bold text-slate-700 italic";
-                    statusEl.innerText = "情報未取得";
-                }
-            } else { panel.classList.add('hidden'); }
+    // Exec button
+    const btn = document.getElementById('exec-btn');
+    if (state.tasks.length > 0) {
+        btn.disabled = false;
+        btn.classList.add('active');
+    } else {
+        btn.disabled = true;
+        btn.classList.remove('active');
+    }
 
-            const taskList = document.getElementById('task-list');
-            taskList.innerHTML = '';
-            if (state.pendingTasks.length === 0) {
-                taskList.innerHTML = '<span class="text-[11px] text-slate-700 italic tracking-widest uppercase italic font-tactical">>>> MISSION ON STANDBY...</span>';
+    // Log
+    const logEl = document.getElementById('log-area');
+    logEl.innerHTML = '';
+    state.logs.slice(0,3).forEach((l,i) => {
+        const d = document.createElement('div');
+        d.className = 'log-line' + (i===0?' latest':'');
+        d.textContent = (i===0?'>>> ':'... ') + l;
+        logEl.appendChild(d);
+    });
+}
+
+// ─── TASK MANAGEMENT ───
+function addTask(type, cost, label) {
+    if (!state.selectedId) return;
+    if (state.mh < cost) { state.logs.unshift('! 工数不足。'); render(); return; }
+    const c = state.customers.find(x=>x.id===state.selectedId);
+    if (type==='PROPOSAL') {
+        if (!(c.mo>=48&&c.mo<50)) { state.logs.unshift(`! ${c.name} は提案フェーズ未到達。`); render(); return; }
+    }
+    state.tasks.push({ cid:c.id, cname:c.name, type, cost, label });
+    state.mh -= cost;
+    render();
+}
+
+function removeTask(i) {
+    state.mh += state.tasks[i].cost;
+    state.tasks.splice(i,1);
+    render();
+}
+
+// ─── EXECUTE ───
+async function executeStrategy() {
+    document.getElementById('exec-overlay').classList.remove('hidden');
+    let gained = 0;
+    let changed = [];
+    const monthResults = {};
+    const interacted = [...new Set(state.tasks.map(t=>t.cid))];
+    interacted.forEach(id=>{ monthResults[id]=[]; });
+
+    state.logs.unshift(`--- FY26M${state.month} ミッション始動 ---`);
+
+    for (const task of state.tasks) {
+        await new Promise(r=>setTimeout(r,400));
+        const c = state.customers.find(x=>x.id===task.cid);
+        if (task.type==='VISIT') {
+            c.vc++;
+            monthResults[c.id].push({ icon:'👁', text:`${c.name} への戦略訪問完了。インテリジェンス更新。`, self:true });
+            state.logs.unshift(`[SELF] ${c.name} 訪問完了`);
+        } else if (task.type==='STUDY') {
+            c.sc++;
+            monthResults[c.id].push({ icon:'📚', text:`${c.name} 勉強会実施。信頼関係強化。`, self:true });
+            state.logs.unshift(`[SELF] ${c.name} 勉強会完了`);
+        } else if (task.type==='PROPOSAL') {
+            const ok = Math.random()*100 < winRate(c);
+            if (ok) {
+                c.vendor='H'; c.mo=1; c.vc=1; c.sc=0;
+                gained += c.budget; changed.push(c.id);
+                monthResults[c.id].push({ icon:'✅', text:`H社が ${c.name} に本提案。`, result:`受注確定。ターゲット制圧。`, success:true });
+                state.logs.unshift(`[SUCCESS] ${c.name} 制圧！`);
             } else {
-                state.pendingTasks.forEach((t, i) => {
-                    const div = document.createElement('div');
-                    div.className = "bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 flex items-center gap-3 animate-in slide-in-from-left-2 duration-300 shadow-md";
-                    div.innerHTML = `<span class="text-[11px] font-black text-[#34D399] uppercase leading-none font-tactical">${t.customerName}</span>
-                                     <span class="text-[9px] text-slate-500 uppercase font-bold tracking-tighter">${t.label}</span>
-                                     <button onclick="removeTask(${i})" class="text-rose-600 hover:text-rose-400"><i data-lucide="circle-minus" size="16"></i></button>`;
-                    taskList.appendChild(div);
-                });
+                monthResults[c.id].push({ icon:'❌', text:`H社が ${c.name} に本提案。`, result:`敵の守備を崩せず失注。`, success:false });
+                state.logs.unshift(`[FAILED] ${c.name} 失注`);
             }
+        }
+        render();
+    }
 
-            const btn = document.getElementById('execute-btn');
-            btn.innerText = `Execute M${state.month} Mission`;
-            if (state.pendingTasks.length > 0) {
-                btn.disabled = false;
-                btn.className = "w-full py-7 font-black text-[14px] shadow-2xl flex items-center justify-center gap-5 transition-all uppercase tracking-[0.7em] border-x border-slate-800 bg-white text-slate-950 hover:bg-emerald-50 active:scale-95 cursor-pointer font-tactical italic";
+    // Incidents
+    state.customers.forEach(c => {
+        if (Math.random() < 1/30) {
+            state.incidents.push({cid:c.id});
+            if (!interacted.includes(c.id)) { interacted.push(c.id); monthResults[c.id]=[]; }
+            if (c.vendor==='H') {
+                state.mh = Math.max(0, state.mh-5);
+                monthResults[c.id].push({icon:'🚨', text:`緊急: ${c.name} でシステム障害。MH-5で復旧。`, self:true});
             } else {
-                btn.disabled = true;
-                btn.className = "w-full py-7 font-black text-[14px] shadow-2xl flex items-center justify-center gap-5 transition-all uppercase tracking-[0.7em] border-x border-slate-800 bg-slate-900 text-slate-700 cursor-not-allowed opacity-50 font-tactical";
+                monthResults[c.id].push({icon:'⚡', text:`${VENDORS[c.vendor].name} が ${c.name} のトラブル対応中。`, self:false});
             }
+        }
+    });
 
-            const feed = document.getElementById('log-feed');
-            feed.innerHTML = '';
-            state.logs.forEach((l, i) => {
-                const div = document.createElement('div');
-                div.className = `${i === 0 ? 'text-[#34D399] font-bold' : 'text-slate-700'} mb-1 truncate`;
-                div.innerText = `${i === 0 ? '>>> ' : '... '}${l}`;
-                feed.appendChild(div);
+    state.sales += gained;
+    state.tasks = [];
+
+    // Rival moves
+    state.logs.unshift(`--- 競合ベンダー同期 ---`);
+    for (const rid of ['I','A']) {
+        await new Promise(r=>setTimeout(r,300));
+        const rfpTargets = state.customers.filter(c=>c.vendor!==rid&&c.mo>=48&&c.mo<50);
+        if (rfpTargets.length) {
+            const tgt = rfpTargets[Math.floor(Math.random()*rfpTargets.length)];
+            const ok = Math.random()*100 < 25;
+            if (!interacted.includes(tgt.id)) { interacted.push(tgt.id); monthResults[tgt.id]=[]; }
+            monthResults[tgt.id].push({
+                icon: ok?'💀':'🛡',
+                text:`${VENDORS[rid].name} が ${tgt.name} へ電撃提案。`,
+                result: ok?`${VENDORS[rid].name} が受注。`:`${VENDORS[rid].name} は失注。`,
+                success: ok, rival: true
             });
-
-            lucide.createIcons();
+            if (ok) { tgt.vendor=rid; tgt.mo=1; tgt.vc=0; tgt.sc=0; changed.push(tgt.id); state.logs.unshift(`[${rid}] ${tgt.name} 被占領`); }
         }
+    }
 
-        function addTask(type, cost, label) {
-            if (!state.selectedId) return;
-            if (state.manHours < cost) {
-                state.logs.unshift("! 工数不足。戦略の見直しが必要。");
-                updateUI(); return;
-            }
-            const c = state.customers.find(x => x.id === state.selectedId);
-            
-            if (type === 'PROPOSAL' && !(c.internalMonth >= 48 && c.internalMonth < 50)) {
-                state.logs.unshift(`! ${c.name} 提案フェーズ未到達。`);
-                updateUI(); return;
-            }
+    // Advance months
+    state.customers.forEach(c=>{ c.mo = c.mo>=60?1:c.mo+1; });
+    state.changedIds = changed;
 
-            state.pendingTasks.push({ customerId: c.id, customerName: c.name, type, cost, label });
-            state.manHours -= cost;
-            updateUI();
+    document.getElementById('exec-overlay').classList.add('hidden');
+
+    // Build result list
+    const list = document.getElementById('result-list');
+    list.innerHTML = '';
+    let delay = 0;
+    for (const cid of interacted) {
+        const c = state.customers.find(x=>x.id===cid);
+        if (!monthResults[cid]||monthResults[cid].length===0) continue;
+        const block = document.createElement('div');
+        block.className = 'result-block';
+        block.style.animationDelay = `${delay*0.4}s`;
+        delay++;
+        let html = `<div class="result-block-name">${c.name} Intel</div>`;
+        monthResults[cid].forEach(r => {
+            html += `<div class="result-row">
+                <span class="result-icon">${r.icon}</span>
+                <div class="result-text">${r.text}
+                    ${r.result?`<span class="${r.success?'success':'fail'}">${r.result}</span>`:''}
+                </div>
+            </div>`;
+        });
+        block.innerHTML = html;
+        list.appendChild(block);
+    }
+    if (interacted.length===0) {
+        list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);font-family:var(--font-mono);font-size:11px;letter-spacing:0.5em;">SILENCE SECTOR<br>NO DATA FEED</div>';
+    }
+
+    document.getElementById('result-overlay').classList.remove('hidden');
+    localStorage.setItem('ent_state', JSON.stringify(state));
+}
+
+function closeResult() {
+    document.getElementById('result-overlay').classList.add('hidden');
+    if (state.month >= 12) {
+        document.getElementById('final-score').innerHTML = `¥${state.sales}<span style="font-size:32px;color:var(--text-muted);margin-left:8px;">M</span>`;
+        document.getElementById('summary-modal').classList.remove('hidden');
+    } else {
+        state.month++;
+        state.mh = MAX_MH;
+        state.changedIds = [];
+        state.incidents = [];
+        render();
+    }
+}
+
+function resetGame() { localStorage.removeItem('ent_state'); location.reload(); }
+function saveToLocal() { localStorage.setItem('ent_state', JSON.stringify(state)); state.logs.unshift('ローカルセーブ完了。'); render(); }
+function exportHTML() {
+    const blob = new Blob([document.documentElement.outerHTML], {type:'text/html'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `TheEnterprise_FY26M${state.month}.html`;
+    a.click();
+}
+
+window.onload = () => {
+    const saved = localStorage.getItem('ent_state');
+    if (saved) {
+        try {
+            state = JSON.parse(saved);
+            state.tasks = [];
+            state.mh = MAX_MH;
+            state.incidents = state.incidents || [];
+        } catch(e) {}
+    }
+    document.getElementById('close-panel').onclick = () => { state.selectedId = null; render(); };
+    document.addEventListener('click', e => {
+        const panel = document.getElementById('side-panel');
+        const grid  = document.getElementById('grid');
+        if (!panel.contains(e.target) && !grid.contains(e.target)) {
+            state.selectedId = null;
+            panel.classList.remove('open');
         }
-
-        function removeTask(index) {
-            const task = state.pendingTasks[index];
-            state.manHours += task.cost;
-            state.pendingTasks.splice(index, 1);
-            updateUI();
-        }
-
-        function closeResult() {
-            document.getElementById('result-overlay').classList.add('hidden');
-            if (state.month === 12) {
-                document.getElementById('final-sales').innerHTML = `¥${state.sales}<span class="text-4xl ml-4 opacity-30 font-light text-white font-tactical">M</span>`;
-                document.getElementById('summary-modal').classList.remove('hidden');
-            } else {
-                state.month++;
-                state.manHours = MAX_MAN_HOURS;
-                state.changedIds = [];
-                state.incidents = []; 
-                updateUI();
-            }
-        }
-
-        async function executeStrategy() {
-            document.getElementById('exec-overlay').classList.remove('hidden');
-            let turnSales = 0;
-            let turnChanges = [];
-            let monthResultsByCustomer = {}; 
-
-            state.logs.unshift(`--- FY26M${state.month} ミッション始動 ---`);
-
-            const interactedCustomerIds = [...new Set(state.pendingTasks.map(t => t.customerId))];
-            interactedCustomerIds.forEach(id => { monthResultsByCustomer[id] = []; });
-
-            for (let task of state.pendingTasks) {
-                await new Promise(r => setTimeout(r, 450));
-                let c = state.customers.find(x => x.id === task.customerId);
-                let res = { vendor: 'H', type: task.type };
-
-                if (task.type === 'VISIT') {
-                    c.visitCount++;
-                    res.msg = `[SELF] ${c.name} への戦略訪問を完了。インテリジェンス更新。`;
-                    state.logs.unshift(res.msg);
-                } else if (task.type === 'PARTNER') {
-                    c.studyCount++;
-                    res.msg = `[SELF] ${c.name} 勉強会実施。SIerとの強固な共助体制を確認。`;
-                    state.logs.unshift(res.msg);
-                } else if (task.type === 'PROPOSAL') {
-                    res.msg = `H社が ${c.name} に覇権奪還のための本提案を提出。`;
-                    await new Promise(r => setTimeout(r, 500));
-                    if (Math.random() * 100 < calculateWinRate(c)) {
-                        c.vendor = 'H'; c.internalMonth = 1; c.visitCount = 1; c.studyCount = 0;
-                        turnSales += c.budget; turnChanges.push(c.id);
-                        res.result = `結果、H社が完全受注。ターゲットを制圧しました。`;
-                        res.success = true;
-                        state.logs.unshift(`[SUCCESS] ${c.name} 制圧完了！`);
-                    } else { 
-                        res.result = `結果、敵の守備を崩せず、今回は失注に終わりました。`;
-                        res.success = false;
-                        state.logs.unshift(`[FAILED] ${c.name} 失注。`);
-                    }
-                }
-                monthResultsByCustomer[c.id].push(res);
-                updateUI();
-            }
-
-            state.customers.forEach(c => {
-                if (Math.random() < (1/30)) { 
-                    const isSelf = c.vendor === 'H';
-                    state.incidents.push({ customerId: c.id });
-                    if (isSelf) {
-                        state.manHours = Math.max(0, state.manHours - 5);
-                        if (!interactedCustomerIds.includes(c.id)) {
-                            interactedCustomerIds.push(c.id);
-                            monthResultsByCustomer[c.id] = [];
-                        }
-                        monthResultsByCustomer[c.id].push({
-                            vendor: 'H', type: 'INCIDENT',
-                            msg: `緊急警報: ${c.name} でシステム障害発生。リソース5を投入し復旧。`
-                        });
-                    } else if (interactedCustomerIds.includes(c.id)) {
-                        monthResultsByCustomer[c.id].push({
-                            vendor: c.vendor, type: 'INCIDENT',
-                            msg: `${VENDORS[c.vendor].name}が ${c.name} のトラブル対応に追われています。`
-                        });
-                    }
-                }
-            });
-
-            state.sales += turnSales;
-            state.pendingTasks = [];
-
-            state.logs.unshift(`--- 競合ベンダー同期 ---`);
-            const rivals = ['D', 'I', 'A'];
-            for (let rid of rivals) {
-                await new Promise(r => setTimeout(r, 350));
-                const targets = state.customers.filter(c => c.vendor !== rid);
-                let rfpTargets = targets.filter(c => c.internalMonth >= 48 && c.internalMonth < 50);
-                if (rfpTargets.length > 0) {
-                    let target = rfpTargets[Math.floor(Math.random() * rfpTargets.length)];
-                    const isWin = Math.random() * 100 < 25;
-                    if (interactedCustomerIds.includes(target.id)) {
-                        monthResultsByCustomer[target.id].push({
-                            vendor: rid, isProposal: true, success: isWin,
-                            msg: `${VENDORS[rid].name}が ${target.name} へ電撃提案を敢行。`,
-                            result: `結果、${VENDORS[rid].name}が${isWin ? '受注' : '失注'}。`
-                        });
-                    }
-                    if (isWin) {
-                        target.vendor = rid; target.internalMonth = 1; target.visitCount = 0; target.studyCount = 0;
-                        turnChanges.push(target.id);
-                        state.logs.unshift(`[${rid}] ${target.name} 被占領。`);
-                    }
-                }
-            }
-
-            state.customers.forEach(c => { c.internalMonth = c.internalMonth >= 60 ? 1 : c.internalMonth + 1; });
-            state.changedIds = turnChanges;
-            document.getElementById('exec-overlay').classList.add('hidden');
-            
-            const resultList = document.getElementById('result-list');
-            resultList.innerHTML = '';
-            document.getElementById('result-overlay').classList.remove('hidden');
-            
-            // 指示通り上から下に順番に表示するためのスタッガード・シーケンス
-            let globalAnimDelay = 0;
-            for (let custId of interactedCustomerIds) {
-                const c = state.customers.find(x => x.id === custId);
-                const block = document.createElement('div');
-                block.className = "result-customer-block row-animate";
-                block.style.animationDelay = `${globalAnimDelay * 0.6}s`;
-                globalAnimDelay++;
-                
-                let html = `<div class="text-[16px] font-black text-[#D4AF37] mb-6 border-l-4 border-[#D4AF37] pl-5 uppercase italic tracking-[0.4em] font-tactical">${c.name} Intel</div>`;
-                
-                monthResultsByCustomer[custId].forEach(r => {
-                    let icon = "info";
-                    let iconColor = "text-slate-600";
-                    if (r.type === 'INCIDENT') { icon = "alert-octagon"; iconColor = "text-rose-600 animate-pulse"; }
-                    else if (r.vendor === 'H') { 
-                        icon = r.success === false ? "shield-alert" : "shield-check"; 
-                        iconColor = r.success === false ? "text-rose-500" : "text-[#34D399]";
-                    } else {
-                        icon = "zap"; iconColor = "text-sky-400";
-                    }
-
-                    html += `
-                        <div class="flex items-start gap-5 mb-5 pl-3">
-                            <i data-lucide="${icon}" size="22" class="${iconColor} mt-1"></i>
-                            <div class="text-[18px] text-slate-100 font-bold tracking-tight leading-relaxed">
-                                ${r.msg}
-                                ${r.result ? `<span class="block text-[14px] ${r.success ? 'text-[#34D399]' : 'text-rose-400'} mt-3 uppercase font-tactical tracking-widest italic font-black">${r.result}</span>` : ''}
-                            </div>
-                        </div>
-                    `;
-                });
-
-                rivals.forEach(rid => {
-                    if (!monthResultsByCustomer[custId].some(r => r.vendor === rid)) {
-                        html += `
-                            <div class="flex items-start gap-5 mb-5 pl-3 opacity-10">
-                                <i data-lucide="eye-off" size="18" class="mt-1"></i>
-                                <div class="text-[16px] text-slate-600 italic font-medium">${VENDORS[rid].name} の動きを捕捉できませんでした。</div>
-                            </div>
-                        `;
-                    }
-                });
-
-                block.innerHTML = html;
-                resultList.appendChild(block);
-            }
-
-            if (interactedCustomerIds.length === 0) {
-                resultList.innerHTML = '<div class="text-[18px] text-slate-800 italic py-32 text-center uppercase tracking-[0.6em] font-tactical">Silence Sector. No Data Feed.</div>';
-            }
-            lucide.createIcons({ props: { "stroke-width": 2.5 }, nameAttr: "data-lucide" });
-
-            localStorage.setItem('enterprise_hud_state', JSON.stringify(state));
-        }
-
-        function resetGame() { localStorage.removeItem('enterprise_hud_state'); location.reload(); }
-        function saveToLocal() { localStorage.setItem('enterprise_hud_state', JSON.stringify(state)); state.logs.unshift("インテリジェンスをローカルにセーブ。"); updateUI(); }
-        function exportHTML() {
-            let html = document.documentElement.outerHTML;
-            const blob = new Blob([html], { type: 'text/html' });
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = `TheEnterprise_State_FY26M${state.month}.html`;
-            a.click();
-        }
-
-        window.onload = () => {
-            const saved = localStorage.getItem('enterprise_hud_state');
-            if (saved) {
-                state = JSON.parse(saved);
-                state.pendingTasks = []; state.manHours = MAX_MAN_HOURS;
-                state.incidents = state.incidents || [];
-            }
-            updateUI();
-            document.getElementById('close-panel').onclick = () => { state.selectedId = null; updateUI(); };
-            document.getElementById('execute-btn').onclick = executeStrategy;
-        };
-    </script>
+    });
+    render();
+};
+</script>
 </body>
 </html>
