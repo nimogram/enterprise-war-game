@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        /* Share Tech Mono for terminal feel, Rajdhani for high-density, Inter for body */
+        /* Rajdhani for high-density, Share Tech Mono for terminal, Inter for body */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&display=swap');
         
         body {
@@ -43,7 +43,7 @@
         }
         
         @keyframes row-slide-in {
-            0% { transform: translateY(-20px); opacity: 0; }
+            0% { transform: translateY(-30px); opacity: 0; }
             100% { transform: translateY(0); opacity: 1; }
         }
 
@@ -52,8 +52,9 @@
         .animate-pink { animation: pink-blink 1.0s infinite ease-in-out; border-width: 2px !important; z-index: 10; }
         .animate-incident { animation: incident-blink 0.5s infinite ease-in-out; }
         
+        /* アクションレポートの表示アニメーション */
         .row-animate { 
-            animation: row-slide-in 0.5s forwards cubic-bezier(0, 0, 0.2, 1); 
+            animation: row-slide-in 0.6s forwards cubic-bezier(0.22, 1, 0.36, 1); 
             opacity: 0;
         }
 
@@ -61,106 +62,107 @@
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
         .glass-panel {
-            background: rgba(15, 23, 42, 0.2); /* さらに透過 */
-            backdrop-filter: blur(16px);
+            background: rgba(15, 23, 42, 0.15); /* 透明度をさらに向上 */
+            backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
         
         .result-customer-block {
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            padding: 24px 0;
+            padding: 28px 0;
         }
         .result-customer-block:last-child { border-bottom: none; }
 
         .title-glow {
-            text-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
+            text-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
         }
     </style>
 </head>
 <body class="overflow-hidden">
     <div id="app" class="min-h-screen flex flex-col max-w-lg mx-auto shadow-2xl relative border-x border-slate-900 bg-[#020617]">
-        <!-- Share Bar -->
-        <div id="share-bar" class="w-full flex h-6 bg-slate-900 rounded-full overflow-hidden mt-2 mb-3 border border-slate-800 shadow-inner mx-2 w-[calc(100%-1rem)]"></div>
-
-        <!-- HUD Header -->
-        <div class="flex justify-between items-start mb-4 border-b border-slate-800 pb-3 px-5 pt-2">
+        
+        <!-- HUD Header (FYXXMXX At Top) -->
+        <div class="flex justify-between items-start mb-2 pb-3 px-5 pt-4">
             <div>
                 <div class="flex items-center gap-2 mb-1">
                     <div class="w-1.5 h-1.5 rounded-full bg-[#D4AF37] animate-pulse"></div>
                     <h1 class="text-[9px] font-black tracking-[0.6em] text-[#D4AF37] uppercase italic title-glow font-tactical">The Enterprise</h1>
                 </div>
                 <div id="phase-display" class="text-5xl font-bold text-white tracking-widest italic leading-none font-mono-tactical">FY26M1</div>
-                <div class="text-[9px] text-slate-600 mt-2 uppercase font-bold tracking-[0.4em]">Sector Grid: Scanning...</div>
+                <div class="text-[8px] text-slate-700 mt-2 uppercase font-bold tracking-[0.4em]">Multi-System Grid: Online</div>
             </div>
             <div class="text-right">
                 <div class="flex items-center justify-end gap-1 mb-2">
-                    <span class="text-[8px] text-slate-600 font-bold uppercase tracking-tighter">nimogram protocol 5.0</span>
-                    <i data-lucide="shield-alert" size="8" class="text-rose-900"></i>
+                    <span class="text-[8px] text-slate-700 font-bold uppercase tracking-tighter">nimogram protocol 5.5</span>
+                    <i data-lucide="shield" size="8" class="text-slate-800"></i>
                 </div>
                 <div class="text-[9px] text-slate-500 font-bold uppercase tracking-[0.2em] italic mb-1">Resource (MH)</div>
                 <div id="man-hours-display" class="text-5xl font-bold tabular-nums text-[#34D399] leading-none font-mono-tactical">20<span class="text-xs opacity-20 ml-1">/ 20</span></div>
             </div>
         </div>
 
+        <!-- Share Bar (Positioned under Phase) -->
+        <div id="share-bar" class="w-[calc(100%-2.5rem)] flex h-5 bg-slate-900 rounded-full overflow-hidden mx-5 mb-4 border border-slate-800 shadow-inner"></div>
+
         <!-- Grid View -->
-        <div id="grid-container" class="flex-1 relative bg-black rounded-3xl border border-slate-900 overflow-hidden shadow-inner p-4 flex justify-center items-center m-2 mb-0">
-            <div id="grid" class="grid grid-cols-8 grid-rows-8 gap-1.5 w-full aspect-square transition-all duration-500"></div>
+        <div id="grid-container" class="flex-1 relative bg-black rounded-3xl border border-slate-900 overflow-hidden shadow-inner p-4 flex justify-center items-center m-2 mt-0">
+            <div id="grid" class="grid grid-cols-8 grid-rows-8 gap-1 w-full aspect-square transition-all duration-500"></div>
             
             <!-- Result Summary Overlay -->
             <div id="result-overlay" class="absolute inset-0 flex items-center justify-center z-[150] bg-slate-950/80 backdrop-blur-md hidden">
-                <div id="result-box" class="glass-panel w-[96%] max-h-[90%] rounded-[3rem] p-8 shadow-2xl overflow-hidden flex flex-col border-white/10">
+                <div id="result-box" class="glass-panel w-[96%] max-h-[92%] rounded-[3rem] p-8 shadow-2xl overflow-hidden flex flex-col border-white/10">
                     <div class="flex justify-between items-center mb-6">
-                        <h3 id="result-title" class="text-sm font-bold text-[#D4AF37] uppercase tracking-[0.5em] italic font-tactical">Strategic Intel Hub</h3>
-                        <div class="w-10 h-10 rounded-full bg-slate-800/50 flex items-center justify-center border border-white/10"><i data-lucide="brain-circuit" size="20" class="text-[#34D399]"></i></div>
+                        <h3 id="result-title" class="text-sm font-bold text-[#D4AF37] uppercase tracking-[0.5em] italic font-tactical">Intel Report Hub</h3>
+                        <div class="w-10 h-10 rounded-full bg-slate-800/50 flex items-center justify-center border border-white/10"><i data-lucide="layers" size="20" class="text-[#34D399]"></i></div>
                     </div>
-                    <div id="result-list" class="flex-1 overflow-y-auto pr-2 scrollbar-hide">
+                    <div id="result-list" class="flex-1 overflow-y-auto pr-2 scrollbar-hide space-y-4">
                         <!-- Grouped items injected here -->
                     </div>
                     <button onclick="closeResult()" class="mt-8 w-full py-5 bg-white text-slate-950 font-black text-[12px] uppercase tracking-[0.6em] rounded-2xl shadow-2xl hover:bg-emerald-50 active:scale-[0.98] transition-all font-tactical">
-                        Next Planning Cycle <i data-lucide="arrow-down-right" class="inline ml-1" size="14"></i>
+                        Close & Next Cycle <i data-lucide="arrow-right" class="inline ml-1" size="14"></i>
                     </button>
                 </div>
             </div>
 
             <!-- Execution Overlay -->
             <div id="exec-overlay" class="absolute inset-0 flex items-center justify-center z-[100] bg-slate-950/20 backdrop-blur-[2px] hidden">
-                <div class="bg-slate-900 px-12 py-6 rounded-full border border-slate-700 text-xs font-bold tracking-[0.5em] text-white animate-pulse uppercase font-tactical">Processing Field Intel...</div>
+                <div class="bg-slate-900 px-12 py-6 rounded-full border border-slate-700 text-xs font-bold tracking-[0.5em] text-white animate-pulse uppercase font-tactical italic">Syncing Field Tactics...</div>
             </div>
 
-            <!-- Side Panel (Super Translucent & Large) -->
-            <div id="side-panel" class="absolute top-4 right-4 bottom-4 w-72 glass-panel p-8 rounded-[3rem] shadow-2xl z-[100] hidden flex flex-col justify-between border-white/10">
+            <!-- Side Panel (Super Translucent & Extra Large) -->
+            <div id="side-panel" class="absolute top-4 right-4 bottom-4 w-80 glass-panel p-8 rounded-[3.5rem] shadow-2xl z-[100] hidden flex flex-col justify-between border-white/5">
                 <div>
                     <div class="flex justify-between items-start mb-8">
-                        <div class="text-[10px] font-bold text-[#34D399] uppercase tracking-[0.4em] font-tactical">Target Detail</div>
-                        <button id="close-panel" class="text-slate-500 hover:text-white transition-colors"><i data-lucide="x" size="28"></i></button>
+                        <div class="text-[10px] font-bold text-[#34D399] uppercase tracking-[0.4em] font-tactical">System Profile</div>
+                        <button id="close-panel" class="text-slate-500 hover:text-white transition-colors"><i data-lucide="circle-x" size="28"></i></button>
                     </div>
-                    <div id="panel-name" class="text-4xl font-black text-white leading-none mb-4 truncate font-tactical tracking-tighter">Customer</div>
-                    <div id="panel-full" class="text-[12px] text-slate-300 mb-10 italic leading-relaxed border-l-4 border-[#D4AF37] pl-4">Description</div>
+                    <div id="panel-name" class="text-4xl font-black text-white leading-tight mb-4 truncate font-tactical tracking-tighter">Customer</div>
+                    <div id="panel-full" class="text-[13px] text-slate-400 mb-10 italic leading-relaxed border-l-4 border-[#D4AF37] pl-5">Description</div>
                     
                     <div class="space-y-8 pt-8 border-t border-white/10">
                         <div class="flex flex-col">
-                            <span class="text-[10px] uppercase text-slate-500 font-bold tracking-[0.3em] mb-3">Status Vector</span>
-                            <span id="panel-status" class="text-[14px] font-bold tracking-tight text-white uppercase">Status Text</span>
+                            <span class="text-[10px] uppercase text-slate-500 font-bold tracking-[0.3em] mb-3 italic">Phase Vector</span>
+                            <span id="panel-status" class="text-[15px] font-bold tracking-tight text-white uppercase">Status Text</span>
                         </div>
                         <div class="flex flex-col">
-                            <span class="text-[10px] uppercase text-slate-500 font-bold tracking-[0.3em] mb-2">Capture Prob</span>
+                            <span class="text-[10px] uppercase text-slate-500 font-bold tracking-[0.3em] mb-2 italic">Capture Prob</span>
                             <span id="panel-win-rate" class="text-6xl font-bold text-[#34D399] italic mt-1 font-mono-tactical">0%</span>
                         </div>
-                        <div class="grid grid-cols-2 gap-4 pt-4">
-                            <div class="bg-slate-900/30 p-4 rounded-3xl border border-white/5">
-                                <div class="text-slate-500 uppercase text-[9px] font-bold mb-1 tracking-widest">Visit</div>
+                        <div class="grid grid-cols-2 gap-5 pt-4">
+                            <div class="bg-slate-900/20 p-5 rounded-[2rem] border border-white/5">
+                                <div class="text-slate-600 uppercase text-[9px] font-bold mb-1 tracking-widest">Visit</div>
                                 <div id="panel-visit" class="text-white font-black text-3xl font-mono-tactical">0</div>
                             </div>
-                            <div class="bg-slate-900/30 p-4 rounded-3xl border border-white/5">
-                                <div class="text-slate-500 uppercase text-[9px] font-bold mb-1 tracking-widest">Study</div>
+                            <div class="bg-slate-900/20 p-5 rounded-[2rem] border border-white/5">
+                                <div class="text-slate-600 uppercase text-[9px] font-bold mb-1 tracking-widest">Study</div>
                                 <div id="panel-study" class="text-white font-black text-3xl font-mono-tactical">0</div>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="space-y-4 mt-8">
-                    <button onclick="addTask('VISIT', 5, '訪問')" class="w-full py-4 bg-slate-900/40 border border-slate-700 rounded-2xl text-[11px] font-bold text-slate-300 hover:text-white hover:border-slate-400 transition-all uppercase italic font-tactical">Visit (5)</button>
-                    <button onclick="addTask('PARTNER', 8, '勉強会')" class="w-full py-4 bg-slate-900/40 border border-slate-700 rounded-2xl text-[11px] font-bold text-slate-300 hover:text-white hover:border-slate-400 transition-all uppercase italic font-tactical">Study (8)</button>
+                    <button onclick="addTask('VISIT', 5, '訪問')" class="w-full py-4 bg-slate-900/30 border border-slate-800 rounded-2xl text-[11px] font-bold text-slate-400 hover:text-white hover:border-slate-500 transition-all uppercase italic font-tactical">Visit (5)</button>
+                    <button onclick="addTask('PARTNER', 8, '勉強会')" class="w-full py-4 bg-slate-900/30 border border-slate-800 rounded-2xl text-[11px] font-bold text-slate-400 hover:text-white hover:border-slate-500 transition-all uppercase italic font-tactical">Study (8)</button>
                     <button id="proposal-btn-label" onclick="addTask('PROPOSAL', 10, '提案')" class="w-full py-6 rounded-2xl text-[14px] font-black uppercase tracking-[0.3em] shadow-lg active:scale-95 transition-all italic border font-tactical">Proposal (10)</button>
                 </div>
             </div>
@@ -172,8 +174,8 @@
                 <div id="task-list" class="flex flex-wrap gap-2 items-start content-start"></div>
             </div>
             
-            <button id="execute-btn" disabled class="w-full py-5 font-black text-[12px] shadow-2xl flex items-center justify-center gap-4 transition-all uppercase tracking-[0.6em] border-x border-slate-800 bg-slate-900 text-slate-700 cursor-not-allowed opacity-50 font-tactical">
-                Execute Mission <i data-lucide="zap" size="18"></i>
+            <button id="execute-btn" disabled class="w-full py-6 font-black text-[12px] shadow-2xl flex items-center justify-center gap-4 transition-all uppercase tracking-[0.6em] border-x border-slate-800 bg-slate-900 text-slate-700 cursor-not-allowed opacity-50 font-tactical italic">
+                Commit Operations <i data-lucide="power" size="18"></i>
             </button>
         </div>
 
@@ -183,7 +185,7 @@
         </div>
 
         <!-- Score Bar -->
-        <div class="bg-slate-950 rounded-b-[3rem] p-6 flex justify-between items-center border-x border-b border-slate-800 shadow-2xl relative overflow-hidden">
+        <div class="bg-slate-950 rounded-b-[4rem] p-6 flex justify-between items-center border-x border-b border-slate-800 shadow-2xl relative overflow-hidden">
             <div class="flex gap-4 items-center z-10">
                 <div class="flex items-center gap-2 text-[10px] font-bold text-slate-600 tracking-[0.3em] uppercase font-tactical"><div class="w-2.5 h-2.5 rounded-sm bg-[#064e3b]"></div> SELF</div>
                 <div class="flex items-center gap-2 text-[10px] font-bold text-slate-600 tracking-[0.3em] uppercase font-tactical"><div class="w-2.5 h-2.5 rounded-sm bg-[#075985]"></div> RIVAL_I</div>
@@ -201,11 +203,11 @@
 
     <!-- Final Summary Modal -->
     <div id="summary-modal" class="fixed inset-0 bg-slate-950/98 z-[200] flex items-center justify-center p-8 backdrop-blur-2xl hidden animate-in fade-in duration-1000">
-        <div class="bg-[#0F172A] border border-slate-800 rounded-[4.5rem] p-12 w-full max-w-md shadow-2xl relative overflow-hidden text-center">
-            <h2 class="text-6xl font-black italic tracking-tighter mb-12 text-white leading-none uppercase font-tactical">FY26 MISSION COMPLETE</h2>
+        <div class="bg-[#0F172A] border border-slate-800 rounded-[5rem] p-12 w-full max-w-md shadow-2xl relative overflow-hidden text-center">
+            <h2 class="text-6xl font-black italic tracking-tighter mb-12 text-white leading-none uppercase font-tactical">FY26 MISSION ACHIEVED</h2>
             <div class="bg-slate-900/50 p-12 rounded-[4rem] border border-white/5 mb-10 shadow-inner">
-                <span class="text-[13px] font-bold text-slate-500 uppercase tracking-[0.5em] block mb-3 font-tactical">Total Achieved Revenue</span>
-                <div id="final-sales" class="text-8xl font-black tracking-tighter text-[#34D399] italic leading-none font-mono-tactical">¥0<span class="text-4xl ml-4 opacity-30 font-light text-white">M</span></div>
+                <span class="text-[13px] font-bold text-slate-500 uppercase tracking-[0.5em] block mb-3 font-tactical">Total Revenue Output</span>
+                <div id="final-sales" class="text-8xl font-black tracking-tighter text-[#34D399] italic leading-none font-mono-tactical">¥0<span class="text-4xl ml-4 opacity-30 font-light text-white font-tactical">M</span></div>
             </div>
             <button onclick="resetGame()" class="w-full bg-white text-slate-950 py-8 rounded-3xl font-black text-sm uppercase tracking-[0.6em] flex items-center justify-center gap-4 hover:bg-emerald-50 transition-all font-tactical">Restart Simulation <i data-lucide="rotate-ccw" size="18"></i></button>
         </div>
@@ -229,25 +231,28 @@
             sales: 0,
             selectedId: null,
             pendingTasks: [],
-            logs: ["オペレーションシステム待機中。"],
+            logs: ["マルチシステム同期完了。"],
             changedIds: [],
-            // 障害管理用
             incidents: [],
+            // 顧客データを複数システムに分割
             customers: [
-                { id: 1, name: 'NIT', full: 'ニトリHD', budget: 200, tileCount: 12, sier: 'BIPROGY', vendor: 'D', internalMonth: 42, visitCount: 0, studyCount: 0 },
-                { id: 2, name: 'SAP', full: '札幌市', budget: 135, tileCount: 9, sier: 'HBA', vendor: 'I', internalMonth: 48, visitCount: 0, studyCount: 0 },
-                { id: 3, name: 'HDC', full: '北海道庁', budget: 120, tileCount: 8, sier: 'HBA', vendor: 'I', internalMonth: 30, visitCount: 0, studyCount: 0 },
-                { id: 4, name: 'HOU', full: '北海道大学', budget: 110, tileCount: 7, sier: 'BIPROGY', vendor: 'A', internalMonth: 18, visitCount: 0, studyCount: 0 },
-                { id: 5, name: 'TSU', full: 'ツルハHD', budget: 80, tileCount: 5, sier: 'BIPROGY', vendor: 'D', internalMonth: 45, visitCount: 0, studyCount: 0 },
-                { id: 6, name: 'JRH', full: 'JR北海道', budget: 70, tileCount: 4, sier: 'NTTD', vendor: 'I', internalMonth: 50, visitCount: 0, studyCount: 0 },
-                { id: 7, name: 'HKL', full: 'ホクレン', budget: 60, tileCount: 4, sier: 'HBA', vendor: 'H', internalMonth: 5, visitCount: 0, studyCount: 0 },
-                { id: 8, name: 'AIN', full: 'アインHD', budget: 50, tileCount: 3, sier: 'BIPROGY', vendor: 'D', internalMonth: 35, visitCount: 0, studyCount: 0 },
-                { id: 9, name: 'HYB', full: '北洋銀行', budget: 50, tileCount: 3, sier: 'NTTD', vendor: 'I', internalMonth: 40, visitCount: 0, studyCount: 0 },
-                { id: 10, name: 'SAT', full: 'サツドラHD', budget: 40, tileCount: 3, sier: 'NTTD', vendor: 'H', internalMonth: 58, visitCount: 0, studyCount: 0 },
-                { id: 11, name: 'HRP', full: 'HARP', budget: 30, tileCount: 2, sier: 'HBA', vendor: 'I', internalMonth: 20, visitCount: 0, studyCount: 0 },
-                { id: 12, name: 'HPP', full: '北海道警察', budget: 25, tileCount: 2, sier: 'HBA', vendor: 'I', internalMonth: 32, visitCount: 0, studyCount: 0 },
-                { id: 13, name: 'GAS', full: '北海道ガス', budget: 20, tileCount: 1, sier: 'OTHER', vendor: 'A', internalMonth: 44, visitCount: 0, studyCount: 0 },
-                { id: 14, name: 'KNM', full: 'カナモト', budget: 20, tileCount: 1, sier: 'HBA', vendor: 'D', internalMonth: 12, visitCount: 0, studyCount: 0 },
+                { id: 101, name: 'NIT-Core', full: 'ニトリHD: 基幹システム', budget: 120, tileCount: 7, vendor: 'D', internalMonth: 42, visitCount: 0, studyCount: 0 },
+                { id: 102, name: 'NIT-Logi', full: 'ニトリHD: 物流インフラ', budget: 80, tileCount: 5, vendor: 'D', internalMonth: 12, visitCount: 0, studyCount: 0 },
+                { id: 201, name: 'SAP-Net', full: '札幌市: 庁内ネットワーク', budget: 70, tileCount: 5, vendor: 'I', internalMonth: 48, visitCount: 0, studyCount: 0 },
+                { id: 202, name: 'SAP-Service', full: '札幌市: 市民向け窓口S', budget: 65, tileCount: 4, vendor: 'I', internalMonth: 30, visitCount: 0, studyCount: 0 },
+                { id: 301, name: 'HDC-Fin', full: '北海道庁: 財務会計システム', budget: 60, tileCount: 4, vendor: 'I', internalMonth: 50, visitCount: 0, studyCount: 0 },
+                { id: 302, name: 'HDC-HR', full: '北海道庁: 人事給与システム', budget: 60, tileCount: 4, vendor: 'I', internalMonth: 20, visitCount: 0, studyCount: 0 },
+                { id: 401, name: 'HOU-Edu', full: '北海道大学: 教育用インフラ', budget: 110, tileCount: 7, vendor: 'A', internalMonth: 18, visitCount: 0, studyCount: 0 },
+                { id: 501, name: 'TSU-EC', full: 'ツルハHD: EC/店舗統合S', budget: 80, tileCount: 5, vendor: 'D', internalMonth: 45, visitCount: 0, studyCount: 0 },
+                { id: 601, name: 'JRH-Tick', full: 'JR北海道: 発券システム', budget: 70, tileCount: 4, vendor: 'I', internalMonth: 50, visitCount: 0, studyCount: 0 },
+                { id: 701, name: 'HKL-Agri', full: 'ホクレン: 農業情報システム', budget: 60, tileCount: 4, vendor: 'H', internalMonth: 5, visitCount: 0, studyCount: 0 },
+                { id: 801, name: 'AIN-Ph', full: 'アインHD: 調剤管理システム', budget: 50, tileCount: 3, vendor: 'D', internalMonth: 35, visitCount: 0, studyCount: 0 },
+                { id: 901, name: 'HYB-Sec', full: '北洋銀行: セキュリティ基盤', budget: 50, tileCount: 3, vendor: 'I', internalMonth: 40, visitCount: 0, studyCount: 0 },
+                { id: 1001, name: 'SAT-POS', full: 'サツドラHD: 次世代POS', budget: 40, tileCount: 3, vendor: 'H', internalMonth: 58, visitCount: 0, studyCount: 0 },
+                { id: 1101, name: 'HRP-Base', full: 'HARP: 共通基盤システム', budget: 30, tileCount: 2, vendor: 'I', internalMonth: 20, visitCount: 0, studyCount: 0 },
+                { id: 1201, name: 'HPP-Sec', full: '北海道警察: 公安情報NW', budget: 25, tileCount: 2, vendor: 'I', internalMonth: 32, visitCount: 0, studyCount: 0 },
+                { id: 1301, name: 'GAS-Main', full: '北海道ガス: 基幹系インフラ', budget: 20, tileCount: 1, vendor: 'A', internalMonth: 44, visitCount: 0, studyCount: 0 },
+                { id: 1401, name: 'KNM-Back', full: 'カナモト: バックオフィスS', budget: 20, tileCount: 1, vendor: 'D', internalMonth: 12, visitCount: 0, studyCount: 0 },
             ]
         };
 
@@ -281,10 +286,10 @@
                 const pct = Math.round((stats[v] / total) * 100);
                 if (pct > 0) {
                     const div = document.createElement('div');
-                    div.className = "h-full flex items-center justify-center border-r border-black/20 text-[9px] font-black text-white px-1 transition-all";
+                    div.className = "h-full flex items-center justify-center border-r border-black/20 text-[8px] font-black text-white px-1 transition-all";
                     div.style.width = `${pct}%`;
                     div.style.backgroundColor = VENDORS[v].color;
-                    if (pct >= 8) div.innerText = `${v}:${pct}%`;
+                    if (pct >= 6) div.innerText = `${v}:${pct}%`;
                     bar.appendChild(div);
                 }
             });
@@ -306,17 +311,17 @@
 
             tilesData.slice(0, 64).forEach(t => {
                 const tile = document.createElement('div');
-                tile.className = `w-full aspect-square cursor-pointer transition-all duration-300 border-[1.5px] border-white/10 relative flex items-center justify-center 
+                tile.className = `w-full aspect-square cursor-pointer transition-all duration-300 border-[1.5px] border-white/5 relative flex items-center justify-center 
                                 ${t.isRFP ? 'animate-rfp' : ''} ${t.isBuild ? 'animate-build' : ''} 
                                 ${t.isIncident ? 'animate-incident' : ''}
                                 ${state.changedIds.includes(t.id) ? 'animate-pink' : ''} 
-                                ${state.selectedId === t.id ? 'z-20 opacity-100 shadow-[0_0_20px_white] scale-110 border-white' : 'opacity-90'}`;
+                                ${state.selectedId === t.id ? 'z-20 opacity-100 shadow-[0_0_20px_white] scale-110 border-white' : 'opacity-80'}`;
                 
                 tile.style.backgroundColor = t.isInfoDisclosed ? VENDORS[t.vendor].color : VENDORS.UNKNOWN.color;
                 
                 if (t.year > 0) {
                     const span = document.createElement('span');
-                    span.className = "text-[10px] font-black text-white/80 pointer-events-none drop-shadow-md font-mono-tactical";
+                    span.className = "text-[9px] font-black text-white/60 pointer-events-none drop-shadow-md font-mono-tactical";
                     span.innerText = t.isInfoDisclosed ? `Y${t.year}` : 'Y?';
                     tile.appendChild(span);
                 }
@@ -348,17 +353,17 @@
 
                 if (c.visitCount > 0 || c.vendor === 'H') {
                     if (c.internalMonth >= 50) {
-                        statusEl.className = "text-[14px] font-bold text-white uppercase tracking-wider";
-                        statusEl.innerText = `${VENDORS[c.vendor].name}が構築中 (M${c.internalMonth})`;
+                        statusEl.className = "text-[14px] font-bold text-white uppercase tracking-wider font-tactical";
+                        statusEl.innerText = `${VENDORS[c.vendor].name} 構築中 (M${c.internalMonth})`;
                     } else if (isRFP) {
-                        statusEl.className = "text-[14px] font-bold text-yellow-400 animate-pulse uppercase tracking-wider";
+                        statusEl.className = "text-[14px] font-bold text-yellow-400 animate-pulse uppercase tracking-wider font-tactical";
                         statusEl.innerText = `📄 提案依頼中 (M${c.internalMonth})`;
                     } else {
-                        statusEl.className = "text-[14px] font-bold text-slate-400 uppercase tracking-wider";
+                        statusEl.className = "text-[14px] font-bold text-slate-400 uppercase tracking-wider font-tactical";
                         statusEl.innerText = `通常運用 (M${c.internalMonth})`;
                     }
                 } else {
-                    statusEl.className = "text-[14px] font-bold text-slate-600 italic";
+                    statusEl.className = "text-[14px] font-bold text-slate-700 italic";
                     statusEl.innerText = "情報未取得";
                 }
             } else { panel.classList.add('hidden'); }
@@ -370,9 +375,9 @@
             } else {
                 state.pendingTasks.forEach((t, i) => {
                     const div = document.createElement('div');
-                    div.className = "bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 flex items-center gap-2 animate-in slide-in-from-left-2 duration-300";
+                    div.className = "bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 flex items-center gap-2 animate-in slide-in-from-left-2 duration-300";
                     div.innerHTML = `<span class="text-[10px] font-black text-[#34D399] uppercase leading-none font-tactical">${t.customerName}</span>
-                                     <span class="text-[9px] text-slate-500 uppercase font-bold tracking-tighter">${t.label}</span>
+                                     <span class="text-[8px] text-slate-500 uppercase font-bold tracking-tighter">${t.label}</span>
                                      <button onclick="removeTask(${i})" class="text-rose-500 hover:text-rose-300"><i data-lucide="circle-minus" size="14"></i></button>`;
                     taskList.appendChild(div);
                 });
@@ -382,17 +387,17 @@
             btn.innerText = `Execute M${state.month} Operations`;
             if (state.pendingTasks.length > 0) {
                 btn.disabled = false;
-                btn.className = "w-full py-5 font-black text-[12px] shadow-2xl flex items-center justify-center gap-4 transition-all uppercase tracking-[0.6em] border-x border-slate-800 bg-white text-slate-950 hover:bg-emerald-50 active:scale-95 cursor-pointer font-tactical";
+                btn.className = "w-full py-6 font-black text-[12px] shadow-2xl flex items-center justify-center gap-4 transition-all uppercase tracking-[0.6em] border-x border-slate-800 bg-white text-slate-950 hover:bg-emerald-50 active:scale-95 cursor-pointer font-tactical";
             } else {
                 btn.disabled = true;
-                btn.className = "w-full py-5 font-black text-[12px] shadow-2xl flex items-center justify-center gap-4 transition-all uppercase tracking-[0.6em] border-x border-slate-800 bg-slate-900 text-slate-700 cursor-not-allowed opacity-50 font-tactical";
+                btn.className = "w-full py-6 font-black text-[12px] shadow-2xl flex items-center justify-center gap-4 transition-all uppercase tracking-[0.6em] border-x border-slate-800 bg-slate-900 text-slate-700 cursor-not-allowed opacity-50 font-tactical";
             }
 
             const feed = document.getElementById('log-feed');
             feed.innerHTML = '';
             state.logs.forEach((l, i) => {
                 const div = document.createElement('div');
-                div.className = `${i === 0 ? 'text-[#34D399] font-bold' : 'text-slate-600'} mb-1 truncate`;
+                div.className = `${i === 0 ? 'text-[#34D399] font-bold' : 'text-slate-700'} mb-1 truncate`;
                 div.innerText = `${i === 0 ? '>>> ' : '... '}${l}`;
                 feed.appendChild(div);
             });
@@ -402,17 +407,14 @@
 
         function addTask(type, cost, label) {
             if (state.manHours < cost) {
-                state.logs.unshift("! 工数リソース不足。プラン再考を。");
+                state.logs.unshift("! 工数不足。");
                 updateUI(); return;
             }
             const c = state.customers.find(x => x.id === state.selectedId);
             
-            if (type === 'PROPOSAL') {
-                const isRFP = c.internalMonth >= 48 && c.internalMonth < 50;
-                if (!isRFP) {
-                    state.logs.unshift(`! ${c.name} はまだ提案時期ではありません。`);
-                    updateUI(); return;
-                }
+            if (type === 'PROPOSAL' && !(c.internalMonth >= 48 && c.internalMonth < 50)) {
+                state.logs.unshift(`! ${c.name} はまだ提案時期ではありません。`);
+                updateUI(); return;
             }
 
             state.pendingTasks.push({ customerId: c.id, customerName: c.name, type, cost, label });
@@ -436,7 +438,7 @@
                 state.month++;
                 state.manHours = MAX_MAN_HOURS;
                 state.changedIds = [];
-                state.incidents = []; // 毎月の障害は月明けにクリア（対応済み想定）
+                state.incidents = []; 
                 updateUI();
             }
         }
@@ -447,12 +449,11 @@
             let turnChanges = [];
             let monthResultsByCustomer = {}; 
 
-            state.logs.unshift(`--- FY26M${state.month} ミッション実行 ---`);
+            state.logs.unshift(`--- FY26M${state.month} オペレーション実行 ---`);
 
             const interactedCustomerIds = [...new Set(state.pendingTasks.map(t => t.customerId))];
             interactedCustomerIds.forEach(id => { monthResultsByCustomer[id] = []; });
 
-            // 1. User Actions
             for (let task of state.pendingTasks) {
                 await new Promise(r => setTimeout(r, 400));
                 let c = state.customers.find(x => x.id === task.customerId);
@@ -460,19 +461,19 @@
 
                 if (task.type === 'VISIT') {
                     c.visitCount++;
-                    res.msg = `[SELF] ${c.name} への訪問により信頼を維持。`;
+                    res.msg = `[SELF] ${c.name} への定期訪問を完了。インテリジェンスを獲得。`;
                     state.logs.unshift(res.msg);
                 } else if (task.type === 'PARTNER') {
                     c.studyCount++;
-                    res.msg = `[SELF] ${c.name} 勉強会実施。SIerとの連携が強固になりました。`;
+                    res.msg = `[SELF] ${c.name} 勉強会実施。SIerとの強固な連携を構築。`;
                     state.logs.unshift(res.msg);
                 } else if (task.type === 'PROPOSAL') {
-                    res.msg = `H社が${c.name}に正式な提案を提出。`;
+                    res.msg = `H社が ${c.name} に正式提案を提出。`;
                     await new Promise(r => setTimeout(r, 400));
                     if (Math.random() * 100 < calculateWinRate(c)) {
                         c.vendor = 'H'; c.internalMonth = 1; c.visitCount = 1; c.studyCount = 0;
                         turnSales += c.budget; turnChanges.push(c.id);
-                        res.result = `結果、H社が受注に成功しました！`;
+                        res.result = `結果、H社が受注に成功しました。`;
                         res.success = true;
                         state.logs.unshift(`[SUCCESS] ${c.name} 受注！`);
                     } else { 
@@ -485,15 +486,10 @@
                 updateUI();
             }
 
-            // 2. Incident Logic (ランダムに発生)
             state.customers.forEach(c => {
-                // 1/60の確率（60ヶ月に1回程度）で障害発生
                 if (Math.random() < (1/30)) { 
                     const isSelf = c.vendor === 'H';
-                    const msg = `[INCIDENT] ${c.name} で障害が発生！`;
-                    state.logs.unshift(msg);
                     state.incidents.push({ customerId: c.id });
-                    
                     if (isSelf) {
                         state.manHours = Math.max(0, state.manHours - 5);
                         if (!interactedCustomerIds.includes(c.id)) {
@@ -501,14 +497,12 @@
                             monthResultsByCustomer[c.id] = [];
                         }
                         monthResultsByCustomer[c.id].push({
-                            vendor: 'H',
-                            type: 'INCIDENT',
-                            msg: `緊急対応: ${c.name} の障害対応に工数5を投入しました。`
+                            vendor: 'H', type: 'INCIDENT',
+                            msg: `緊急対応: ${c.name} のシステム障害に工数5を投入。`
                         });
                     } else if (interactedCustomerIds.includes(c.id)) {
                         monthResultsByCustomer[c.id].push({
-                            vendor: c.vendor,
-                            type: 'INCIDENT',
+                            vendor: c.vendor, type: 'INCIDENT',
                             msg: `${VENDORS[c.vendor].name}が ${c.name} の障害対応に追われています。`
                         });
                     }
@@ -518,35 +512,26 @@
             state.sales += turnSales;
             state.pendingTasks = [];
 
-            // 3. Rivals Actions
             state.logs.unshift(`--- 敵対ベンダー同期 ---`);
             const rivals = ['D', 'I', 'A'];
-
             for (let rid of rivals) {
                 await new Promise(r => setTimeout(r, 300));
                 const targets = state.customers.filter(c => c.vendor !== rid);
-                if (targets.length === 0) continue;
-
                 let rfpTargets = targets.filter(c => c.internalMonth >= 48 && c.internalMonth < 50);
                 if (rfpTargets.length > 0) {
                     let target = rfpTargets[Math.floor(Math.random() * rfpTargets.length)];
-                    const chance = 15 + (target.internalMonth >= 48 ? 15 : 0);
-                    const isWin = Math.random() * 100 < chance;
-                    
+                    const isWin = Math.random() * 100 < 25;
                     if (interactedCustomerIds.includes(target.id)) {
                         monthResultsByCustomer[target.id].push({
-                            vendor: rid,
-                            isProposal: true,
-                            success: isWin,
+                            vendor: rid, isProposal: true, success: isWin,
                             msg: `${VENDORS[rid].name}が ${target.name} へ提案。`,
                             result: `結果、${VENDORS[rid].name}が${isWin ? '受注' : '失注'}しました。`
                         });
                     }
-
                     if (isWin) {
                         target.vendor = rid; target.internalMonth = 1; target.visitCount = 0; target.studyCount = 0;
                         turnChanges.push(target.id);
-                        state.logs.unshift(`[${rid}] ${target.name} 制圧。`);
+                        state.logs.unshift(`[${rid}] ${target.name} 被奪取。`);
                     }
                 }
             }
@@ -555,26 +540,24 @@
             state.changedIds = turnChanges;
             document.getElementById('exec-overlay').classList.add('hidden');
             
-            // 4. Update Summary Popup with Animation
             const resultList = document.getElementById('result-list');
             resultList.innerHTML = '';
-            
             document.getElementById('result-overlay').classList.remove('hidden');
             
-            // 上から順に表示するためのシーケンス
+            // 指示通り上から下に順番に表示するためのディレイ付きシーケンス
             let globalAnimDelay = 0;
             for (let custId of interactedCustomerIds) {
                 const c = state.customers.find(x => x.id === custId);
                 const block = document.createElement('div');
                 block.className = "result-customer-block row-animate";
-                block.style.animationDelay = `${globalAnimDelay * 0.4}s`;
+                block.style.animationDelay = `${globalAnimDelay * 0.5}s`;
                 globalAnimDelay++;
                 
-                let html = `<div class="text-[14px] font-black text-[#D4AF37] mb-6 border-l-4 border-[#D4AF37] pl-4 uppercase italic tracking-[0.3em] font-tactical">${c.name} Report</div>`;
+                let html = `<div class="text-[14px] font-black text-[#D4AF37] mb-6 border-l-4 border-[#D4AF37] pl-4 uppercase italic tracking-[0.3em] font-tactical">${c.name} Intel Report</div>`;
                 
                 monthResultsByCustomer[custId].forEach(r => {
                     let icon = "info";
-                    let iconColor = "text-slate-400";
+                    let iconColor = "text-slate-500";
                     if (r.type === 'INCIDENT') { icon = "alert-octagon"; iconColor = "text-rose-600 animate-pulse"; }
                     else if (r.vendor === 'H') { 
                         icon = r.success === false ? "shield-alert" : "shield-check"; 
@@ -588,19 +571,18 @@
                             <i data-lucide="${icon}" size="18" class="${iconColor} mt-1"></i>
                             <div class="text-[16px] text-slate-100 font-bold tracking-tight leading-relaxed">
                                 ${r.msg}
-                                ${r.result ? `<span class="block text-[13px] ${r.success ? 'text-[#34D399]' : 'text-rose-400'} mt-2 uppercase font-tactical tracking-widest">${r.result}</span>` : ''}
+                                ${r.result ? `<span class="block text-[13px] ${r.success ? 'text-[#34D399]' : 'text-rose-400'} mt-2 uppercase font-tactical tracking-widest italic">${r.result}</span>` : ''}
                             </div>
                         </div>
                     `;
                 });
 
-                // 動きがなかった競合のレポート
                 rivals.forEach(rid => {
                     if (!monthResultsByCustomer[custId].some(r => r.vendor === rid)) {
                         html += `
-                            <div class="flex items-start gap-4 mb-4 pl-2 opacity-20">
+                            <div class="flex items-start gap-4 mb-4 pl-2 opacity-10">
                                 <i data-lucide="eye-off" size="16" class="mt-1"></i>
-                                <div class="text-[14px] text-slate-500 italic font-medium">${VENDORS[rid].name}の動きは検知されませんでした。</div>
+                                <div class="text-[14px] text-slate-500 italic font-medium">${VENDORS[rid].name} の動きは検知されませんでした。</div>
                             </div>
                         `;
                     }
@@ -608,18 +590,18 @@
 
                 block.innerHTML = html;
                 resultList.appendChild(block);
-                lucide.createIcons({ props: { "stroke-width": 3 }, nameAttr: "data-lucide" });
             }
 
             if (interactedCustomerIds.length === 0) {
-                resultList.innerHTML = '<div class="text-[16px] text-slate-500 italic py-24 text-center uppercase tracking-[0.5em] font-tactical">Mission Area Quiet. No Interaction Data.</div>';
+                resultList.innerHTML = '<div class="text-[16px] text-slate-700 italic py-24 text-center uppercase tracking-[0.5em] font-tactical">No Interaction Data. Sector Quiet.</div>';
             }
+            lucide.createIcons({ props: { "stroke-width": 3 }, nameAttr: "data-lucide" });
 
             localStorage.setItem('enterprise_hud_state', JSON.stringify(state));
         }
 
         function resetGame() { localStorage.removeItem('enterprise_hud_state'); location.reload(); }
-        function saveToLocal() { localStorage.setItem('enterprise_hud_state', JSON.stringify(state)); state.logs.unshift("インテリジェンスセーブ完了。"); updateUI(); }
+        function saveToLocal() { localStorage.setItem('enterprise_hud_state', JSON.stringify(state)); state.logs.unshift("セッション保存完了。"); updateUI(); }
         function exportHTML() {
             let html = document.documentElement.outerHTML;
             const blob = new Blob([html], { type: 'text/html' });
