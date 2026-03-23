@@ -7,8 +7,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        /* Rajdhani for high-density tech feel, Inter for readability */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&family=Rajdhani:wght@400;600;700&display=swap');
+        /* Share Tech Mono for terminal feel, Rajdhani for high-density, Inter for body */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&display=swap');
         
         body {
             font-family: 'Inter', sans-serif;
@@ -19,6 +19,10 @@
         .font-tactical {
             font-family: 'Rajdhani', sans-serif;
             letter-spacing: 0.1em;
+        }
+
+        .font-mono-tactical {
+            font-family: 'Share Tech Mono', monospace;
         }
 
         @keyframes rfp-blink { 
@@ -33,19 +37,23 @@
             0%, 100% { border-color: #f472b6; box-shadow: 0 0 10px #f472b6; } 
             50% { border-color: #fce7f3; box-shadow: 0 0 20px #f472b6; } 
         }
+        @keyframes incident-blink { 
+            0%, 100% { background-color: #991b1b; } 
+            50% { background-color: #dc2626; } 
+        }
         
-        /* Staggered row animation */
         @keyframes row-slide-in {
-            0% { transform: translateY(-10px); opacity: 0; }
+            0% { transform: translateY(-20px); opacity: 0; }
             100% { transform: translateY(0); opacity: 1; }
         }
 
         .animate-rfp { animation: rfp-blink 0.8s infinite ease-in-out; border-width: 2px !important; }
         .animate-build { animation: build-blink 1.2s infinite ease-in-out; border-width: 2px !important; }
         .animate-pink { animation: pink-blink 1.0s infinite ease-in-out; border-width: 2px !important; z-index: 10; }
+        .animate-incident { animation: incident-blink 0.5s infinite ease-in-out; }
         
         .row-animate { 
-            animation: row-slide-in 0.4s forwards cubic-bezier(0, 0, 0.2, 1); 
+            animation: row-slide-in 0.5s forwards cubic-bezier(0, 0, 0.2, 1); 
             opacity: 0;
         }
 
@@ -53,19 +61,19 @@
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
         .glass-panel {
-            background: rgba(15, 23, 42, 0.4); 
-            backdrop-filter: blur(28px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(15, 23, 42, 0.2); /* さらに透過 */
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
         
         .result-customer-block {
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            padding: 20px 0;
+            padding: 24px 0;
         }
         .result-customer-block:last-child { border-bottom: none; }
 
         .title-glow {
-            text-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
+            text-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
         }
     </style>
 </head>
@@ -79,18 +87,18 @@
             <div>
                 <div class="flex items-center gap-2 mb-1">
                     <div class="w-1.5 h-1.5 rounded-full bg-[#D4AF37] animate-pulse"></div>
-                    <h1 class="text-[10px] font-bold tracking-[0.6em] text-[#D4AF37] uppercase italic title-glow font-tactical">The Enterprise</h1>
+                    <h1 class="text-[9px] font-black tracking-[0.6em] text-[#D4AF37] uppercase italic title-glow font-tactical">The Enterprise</h1>
                 </div>
-                <div id="phase-display" class="text-5xl font-bold text-white tracking-widest italic leading-none font-tactical">FY26M1</div>
-                <div class="text-[9px] text-slate-600 mt-2 uppercase font-bold tracking-[0.4em]">Architect Domain: Syncing...</div>
+                <div id="phase-display" class="text-5xl font-bold text-white tracking-widest italic leading-none font-mono-tactical">FY26M1</div>
+                <div class="text-[9px] text-slate-600 mt-2 uppercase font-bold tracking-[0.4em]">Sector Grid: Scanning...</div>
             </div>
             <div class="text-right">
                 <div class="flex items-center justify-end gap-1 mb-2">
-                    <span class="text-[8px] text-slate-600 font-bold uppercase tracking-tighter">nimogram protocol 4.8</span>
-                    <i data-lucide="shield" size="8" class="text-slate-800"></i>
+                    <span class="text-[8px] text-slate-600 font-bold uppercase tracking-tighter">nimogram protocol 5.0</span>
+                    <i data-lucide="shield-alert" size="8" class="text-rose-900"></i>
                 </div>
                 <div class="text-[9px] text-slate-500 font-bold uppercase tracking-[0.2em] italic mb-1">Resource (MH)</div>
-                <div id="man-hours-display" class="text-5xl font-bold tabular-nums text-[#34D399] leading-none font-tactical">20<span class="text-xs opacity-20 ml-1">/ 20</span></div>
+                <div id="man-hours-display" class="text-5xl font-bold tabular-nums text-[#34D399] leading-none font-mono-tactical">20<span class="text-xs opacity-20 ml-1">/ 20</span></div>
             </div>
         </div>
 
@@ -99,61 +107,61 @@
             <div id="grid" class="grid grid-cols-8 grid-rows-8 gap-1.5 w-full aspect-square transition-all duration-500"></div>
             
             <!-- Result Summary Overlay -->
-            <div id="result-overlay" class="absolute inset-0 flex items-center justify-center z-[150] bg-slate-950/70 backdrop-blur-sm hidden">
-                <div id="result-box" class="glass-panel w-[95%] max-h-[85%] rounded-[2.5rem] p-8 shadow-2xl overflow-hidden flex flex-col border-white/20">
+            <div id="result-overlay" class="absolute inset-0 flex items-center justify-center z-[150] bg-slate-950/80 backdrop-blur-md hidden">
+                <div id="result-box" class="glass-panel w-[96%] max-h-[90%] rounded-[3rem] p-8 shadow-2xl overflow-hidden flex flex-col border-white/10">
                     <div class="flex justify-between items-center mb-6">
-                        <h3 id="result-title" class="text-sm font-bold text-[#D4AF37] uppercase tracking-[0.5em] italic font-tactical">Strategic Intel Report</h3>
-                        <div class="w-10 h-10 rounded-full bg-slate-800/50 flex items-center justify-center border border-white/10"><i data-lucide="list-tree" size="20" class="text-[#34D399]"></i></div>
+                        <h3 id="result-title" class="text-sm font-bold text-[#D4AF37] uppercase tracking-[0.5em] italic font-tactical">Strategic Intel Hub</h3>
+                        <div class="w-10 h-10 rounded-full bg-slate-800/50 flex items-center justify-center border border-white/10"><i data-lucide="brain-circuit" size="20" class="text-[#34D399]"></i></div>
                     </div>
-                    <div id="result-list" class="flex-1 overflow-y-auto pr-2 scrollbar-hide space-y-4">
+                    <div id="result-list" class="flex-1 overflow-y-auto pr-2 scrollbar-hide">
                         <!-- Grouped items injected here -->
                     </div>
-                    <button onclick="closeResult()" class="mt-8 w-full py-5 bg-white text-slate-950 font-black text-[11px] uppercase tracking-[0.6em] rounded-2xl shadow-2xl hover:bg-emerald-50 active:scale-[0.98] transition-all font-tactical">
-                        Close Intel Hub <i data-lucide="arrow-right" class="inline ml-1" size="14"></i>
+                    <button onclick="closeResult()" class="mt-8 w-full py-5 bg-white text-slate-950 font-black text-[12px] uppercase tracking-[0.6em] rounded-2xl shadow-2xl hover:bg-emerald-50 active:scale-[0.98] transition-all font-tactical">
+                        Next Planning Cycle <i data-lucide="arrow-down-right" class="inline ml-1" size="14"></i>
                     </button>
                 </div>
             </div>
 
             <!-- Execution Overlay -->
             <div id="exec-overlay" class="absolute inset-0 flex items-center justify-center z-[100] bg-slate-950/20 backdrop-blur-[2px] hidden">
-                <div class="bg-slate-900 px-12 py-6 rounded-full border border-slate-700 text-xs font-bold tracking-[0.5em] text-white animate-pulse uppercase font-tactical">Computing Tactics...</div>
+                <div class="bg-slate-900 px-12 py-6 rounded-full border border-slate-700 text-xs font-bold tracking-[0.5em] text-white animate-pulse uppercase font-tactical">Processing Field Intel...</div>
             </div>
 
-            <!-- Side Panel (Expanded & Translucent) -->
-            <div id="side-panel" class="absolute top-4 right-4 bottom-4 w-64 glass-panel p-6 rounded-[2.5rem] shadow-2xl z-[100] hidden flex flex-col justify-between border-white/10">
+            <!-- Side Panel (Super Translucent & Large) -->
+            <div id="side-panel" class="absolute top-4 right-4 bottom-4 w-72 glass-panel p-8 rounded-[3rem] shadow-2xl z-[100] hidden flex flex-col justify-between border-white/10">
                 <div>
-                    <div class="flex justify-between items-start mb-6">
-                        <div class="text-[10px] font-bold text-[#34D399] uppercase tracking-[0.4em] font-tactical">Target Profile</div>
-                        <button id="close-panel" class="text-slate-500 hover:text-white transition-colors"><i data-lucide="circle-x" size="24"></i></button>
+                    <div class="flex justify-between items-start mb-8">
+                        <div class="text-[10px] font-bold text-[#34D399] uppercase tracking-[0.4em] font-tactical">Target Detail</div>
+                        <button id="close-panel" class="text-slate-500 hover:text-white transition-colors"><i data-lucide="x" size="28"></i></button>
                     </div>
-                    <div id="panel-name" class="text-3xl font-black text-white leading-none mb-4 truncate font-tactical tracking-tight">Customer</div>
-                    <div id="panel-full" class="text-[11px] text-slate-400 mb-8 italic leading-relaxed border-l-2 border-[#D4AF37] pl-3">Description</div>
+                    <div id="panel-name" class="text-4xl font-black text-white leading-none mb-4 truncate font-tactical tracking-tighter">Customer</div>
+                    <div id="panel-full" class="text-[12px] text-slate-300 mb-10 italic leading-relaxed border-l-4 border-[#D4AF37] pl-4">Description</div>
                     
-                    <div class="space-y-6 pt-6 border-t border-white/10">
+                    <div class="space-y-8 pt-8 border-t border-white/10">
                         <div class="flex flex-col">
-                            <span class="text-[9px] uppercase text-slate-500 font-bold tracking-[0.3em] mb-2">Phase Vector</span>
-                            <span id="panel-status" class="text-[13px] font-bold tracking-tight text-slate-100">Status Text</span>
+                            <span class="text-[10px] uppercase text-slate-500 font-bold tracking-[0.3em] mb-3">Status Vector</span>
+                            <span id="panel-status" class="text-[14px] font-bold tracking-tight text-white uppercase">Status Text</span>
                         </div>
                         <div class="flex flex-col">
-                            <span class="text-[9px] uppercase text-slate-500 font-bold tracking-[0.3em] mb-1">Win Probability</span>
-                            <span id="panel-win-rate" class="text-5xl font-bold text-[#34D399] italic mt-1 font-tactical">0%</span>
+                            <span class="text-[10px] uppercase text-slate-500 font-bold tracking-[0.3em] mb-2">Capture Prob</span>
+                            <span id="panel-win-rate" class="text-6xl font-bold text-[#34D399] italic mt-1 font-mono-tactical">0%</span>
                         </div>
-                        <div class="grid grid-cols-2 gap-4 text-[10px] pt-2">
-                            <div class="bg-slate-900/40 p-3 rounded-2xl border border-white/5">
-                                <div class="text-slate-500 uppercase text-[8px] font-bold mb-1 tracking-widest">Visits</div>
-                                <div id="panel-visit" class="text-white font-black text-2xl font-tactical">0</div>
+                        <div class="grid grid-cols-2 gap-4 pt-4">
+                            <div class="bg-slate-900/30 p-4 rounded-3xl border border-white/5">
+                                <div class="text-slate-500 uppercase text-[9px] font-bold mb-1 tracking-widest">Visit</div>
+                                <div id="panel-visit" class="text-white font-black text-3xl font-mono-tactical">0</div>
                             </div>
-                            <div class="bg-slate-900/40 p-3 rounded-2xl border border-white/5">
-                                <div class="text-slate-500 uppercase text-[8px] font-bold mb-1 tracking-widest">Studies</div>
-                                <div id="panel-study" class="text-white font-black text-2xl font-tactical">0</div>
+                            <div class="bg-slate-900/30 p-4 rounded-3xl border border-white/5">
+                                <div class="text-slate-500 uppercase text-[9px] font-bold mb-1 tracking-widest">Study</div>
+                                <div id="panel-study" class="text-white font-black text-3xl font-mono-tactical">0</div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="space-y-3 mt-8">
-                    <button onclick="addTask('VISIT', 5, '訪問')" class="w-full py-4 bg-slate-900/60 border border-slate-700 rounded-xl text-[10px] font-bold text-slate-400 hover:text-white hover:border-slate-400 transition-all uppercase italic font-tactical">Visit (5)</button>
-                    <button onclick="addTask('PARTNER', 8, '勉強会')" class="w-full py-4 bg-slate-900/60 border border-slate-700 rounded-xl text-[10px] font-bold text-slate-400 hover:text-white hover:border-slate-400 transition-all uppercase italic font-tactical">Study (8)</button>
-                    <button id="proposal-btn-label" onclick="addTask('PROPOSAL', 10, '提案')" class="w-full py-5 rounded-xl text-[13px] font-black uppercase tracking-[0.3em] shadow-lg active:scale-95 transition-all italic border font-tactical">Proposal (10)</button>
+                <div class="space-y-4 mt-8">
+                    <button onclick="addTask('VISIT', 5, '訪問')" class="w-full py-4 bg-slate-900/40 border border-slate-700 rounded-2xl text-[11px] font-bold text-slate-300 hover:text-white hover:border-slate-400 transition-all uppercase italic font-tactical">Visit (5)</button>
+                    <button onclick="addTask('PARTNER', 8, '勉強会')" class="w-full py-4 bg-slate-900/40 border border-slate-700 rounded-2xl text-[11px] font-bold text-slate-300 hover:text-white hover:border-slate-400 transition-all uppercase italic font-tactical">Study (8)</button>
+                    <button id="proposal-btn-label" onclick="addTask('PROPOSAL', 10, '提案')" class="w-full py-6 rounded-2xl text-[14px] font-black uppercase tracking-[0.3em] shadow-lg active:scale-95 transition-all italic border font-tactical">Proposal (10)</button>
                 </div>
             </div>
         </div>
@@ -165,7 +173,7 @@
             </div>
             
             <button id="execute-btn" disabled class="w-full py-5 font-black text-[12px] shadow-2xl flex items-center justify-center gap-4 transition-all uppercase tracking-[0.6em] border-x border-slate-800 bg-slate-900 text-slate-700 cursor-not-allowed opacity-50 font-tactical">
-                Execute Operations <i data-lucide="play" size="18"></i>
+                Execute Mission <i data-lucide="zap" size="18"></i>
             </button>
         </div>
 
@@ -181,7 +189,7 @@
                 <div class="flex items-center gap-2 text-[10px] font-bold text-slate-600 tracking-[0.3em] uppercase font-tactical"><div class="w-2.5 h-2.5 rounded-sm bg-[#075985]"></div> RIVAL_I</div>
                 <div class="flex items-center gap-2 text-[10px] font-bold text-slate-600 tracking-[0.3em] uppercase font-tactical"><div class="w-2.5 h-2.5 rounded-sm bg-[#4c1d95]"></div> RIVAL_A</div>
             </div>
-            <div id="sales-display" class="text-4xl font-bold text-white tabular-nums italic tracking-widest pl-8 border-l border-slate-800 font-tactical">¥0<span class="text-[16px] ml-1 opacity-20 font-normal font-tactical">M</span></div>
+            <div id="sales-display" class="text-4xl font-bold text-white tabular-nums italic tracking-widest pl-8 border-l border-slate-800 font-mono-tactical">¥0<span class="text-[16px] ml-1 opacity-20 font-normal">M</span></div>
         </div>
 
         <!-- Tools -->
@@ -197,7 +205,7 @@
             <h2 class="text-6xl font-black italic tracking-tighter mb-12 text-white leading-none uppercase font-tactical">FY26 MISSION COMPLETE</h2>
             <div class="bg-slate-900/50 p-12 rounded-[4rem] border border-white/5 mb-10 shadow-inner">
                 <span class="text-[13px] font-bold text-slate-500 uppercase tracking-[0.5em] block mb-3 font-tactical">Total Achieved Revenue</span>
-                <div id="final-sales" class="text-8xl font-black tracking-tighter text-[#34D399] italic leading-none font-tactical">¥0<span class="text-4xl ml-4 opacity-30 font-light text-white font-tactical">M</span></div>
+                <div id="final-sales" class="text-8xl font-black tracking-tighter text-[#34D399] italic leading-none font-mono-tactical">¥0<span class="text-4xl ml-4 opacity-30 font-light text-white">M</span></div>
             </div>
             <button onclick="resetGame()" class="w-full bg-white text-slate-950 py-8 rounded-3xl font-black text-sm uppercase tracking-[0.6em] flex items-center justify-center gap-4 hover:bg-emerald-50 transition-all font-tactical">Restart Simulation <i data-lucide="rotate-ccw" size="18"></i></button>
         </div>
@@ -223,6 +231,8 @@
             pendingTasks: [],
             logs: ["オペレーションシステム待機中。"],
             changedIds: [],
+            // 障害管理用
+            incidents: [],
             customers: [
                 { id: 1, name: 'NIT', full: 'ニトリHD', budget: 200, tileCount: 12, sier: 'BIPROGY', vendor: 'D', internalMonth: 42, visitCount: 0, studyCount: 0 },
                 { id: 2, name: 'SAP', full: '札幌市', budget: 135, tileCount: 9, sier: 'HBA', vendor: 'I', internalMonth: 48, visitCount: 0, studyCount: 0 },
@@ -259,8 +269,8 @@
             document.getElementById('phase-display').innerText = `FY26M${state.month}`;
             const mhEl = document.getElementById('man-hours-display');
             mhEl.innerHTML = `${state.manHours}<span class="text-xs opacity-20 ml-2">/ ${MAX_MAN_HOURS}</span>`;
-            mhEl.className = `text-5xl font-bold tabular-nums ${state.manHours < 5 ? 'text-rose-500' : 'text-[#34D399]'} font-tactical`;
-            document.getElementById('sales-display').innerHTML = `¥${state.sales}<span class="text-[16px] ml-1 opacity-20 font-normal font-tactical">M</span>`;
+            mhEl.className = `text-5xl font-bold tabular-nums ${state.manHours < 5 ? 'text-rose-500' : 'text-[#34D399]'} font-mono-tactical`;
+            document.getElementById('sales-display').innerHTML = `¥${state.sales}<span class="text-[16px] ml-1 opacity-20 font-normal">M</span>`;
 
             const stats = { H: 0, D: 0, I: 0, A: 0, NONE: 0 };
             state.customers.forEach(c => stats[c.vendor] += c.budget);
@@ -287,8 +297,9 @@
                 const isInfoDisclosed = (cust.visitCount > 0) || (cust.vendor === 'H');
                 const isRFP = isInfoDisclosed && (cust.internalMonth >= 48 && cust.internalMonth < 50);
                 const isBuild = isInfoDisclosed && (cust.internalMonth >= 50);
+                const isIncident = state.incidents.some(inc => inc.customerId === cust.id);
                 for (let i = 0; i < cust.tileCount; i++) {
-                    tilesData.push({ id: cust.id, vendor: cust.vendor, year, isRFP, isBuild, isInfoDisclosed });
+                    tilesData.push({ id: cust.id, vendor: cust.vendor, year, isRFP, isBuild, isInfoDisclosed, isIncident });
                 }
             });
             while (tilesData.length < 64) tilesData.push({ id: null, vendor: 'NONE' });
@@ -297,12 +308,15 @@
                 const tile = document.createElement('div');
                 tile.className = `w-full aspect-square cursor-pointer transition-all duration-300 border-[1.5px] border-white/10 relative flex items-center justify-center 
                                 ${t.isRFP ? 'animate-rfp' : ''} ${t.isBuild ? 'animate-build' : ''} 
+                                ${t.isIncident ? 'animate-incident' : ''}
                                 ${state.changedIds.includes(t.id) ? 'animate-pink' : ''} 
                                 ${state.selectedId === t.id ? 'z-20 opacity-100 shadow-[0_0_20px_white] scale-110 border-white' : 'opacity-90'}`;
+                
                 tile.style.backgroundColor = t.isInfoDisclosed ? VENDORS[t.vendor].color : VENDORS.UNKNOWN.color;
+                
                 if (t.year > 0) {
                     const span = document.createElement('span');
-                    span.className = "text-[10px] font-black text-white/80 pointer-events-none drop-shadow-md font-tactical";
+                    span.className = "text-[10px] font-black text-white/80 pointer-events-none drop-shadow-md font-mono-tactical";
                     span.innerText = t.isInfoDisclosed ? `Y${t.year}` : 'Y?';
                     tile.appendChild(span);
                 }
@@ -326,25 +340,25 @@
                 
                 if ((c.visitCount > 0 || c.vendor === 'H') && isRFP) {
                     proposalBtn.disabled = false;
-                    proposalBtn.className = "w-full py-5 bg-[#064e3b] border-[#34D399] text-[#ECFDF5] rounded-xl text-[13px] font-black uppercase tracking-[0.3em] shadow-lg active:scale-95 transition-all italic border font-tactical";
+                    proposalBtn.className = "w-full py-6 bg-[#064e3b] border-[#34D399] text-[#ECFDF5] rounded-2xl text-[14px] font-black uppercase tracking-[0.3em] shadow-lg active:scale-95 transition-all italic border font-tactical";
                 } else {
                     proposalBtn.disabled = true;
-                    proposalBtn.className = "w-full py-5 bg-slate-900 border-slate-800 text-slate-700 rounded-xl text-[13px] font-black uppercase tracking-[0.3em] transition-all italic border cursor-not-allowed font-tactical";
+                    proposalBtn.className = "w-full py-6 bg-slate-900 border-slate-800 text-slate-700 rounded-2xl text-[14px] font-black uppercase tracking-[0.3em] transition-all italic border cursor-not-allowed font-tactical";
                 }
 
                 if (c.visitCount > 0 || c.vendor === 'H') {
                     if (c.internalMonth >= 50) {
-                        statusEl.className = "text-[12px] font-bold text-white uppercase";
+                        statusEl.className = "text-[14px] font-bold text-white uppercase tracking-wider";
                         statusEl.innerText = `${VENDORS[c.vendor].name}が構築中 (M${c.internalMonth})`;
                     } else if (isRFP) {
-                        statusEl.className = "text-[12px] font-bold text-yellow-400 animate-pulse uppercase";
+                        statusEl.className = "text-[14px] font-bold text-yellow-400 animate-pulse uppercase tracking-wider";
                         statusEl.innerText = `📄 提案依頼中 (M${c.internalMonth})`;
                     } else {
-                        statusEl.className = "text-[12px] font-bold text-slate-400 uppercase";
+                        statusEl.className = "text-[14px] font-bold text-slate-400 uppercase tracking-wider";
                         statusEl.innerText = `通常運用 (M${c.internalMonth})`;
                     }
                 } else {
-                    statusEl.className = "text-[12px] font-bold text-slate-600 italic";
+                    statusEl.className = "text-[14px] font-bold text-slate-600 italic";
                     statusEl.innerText = "情報未取得";
                 }
             } else { panel.classList.add('hidden'); }
@@ -352,12 +366,12 @@
             const taskList = document.getElementById('task-list');
             taskList.innerHTML = '';
             if (state.pendingTasks.length === 0) {
-                taskList.innerHTML = '<span class="text-[10px] text-slate-700 italic tracking-widest uppercase italic font-tactical">>>> IDLE STATUS...</span>';
+                taskList.innerHTML = '<span class="text-[10px] text-slate-700 italic tracking-widest uppercase italic font-tactical">>>> OPERATIONS ON STANDBY...</span>';
             } else {
                 state.pendingTasks.forEach((t, i) => {
                     const div = document.createElement('div');
                     div.className = "bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 flex items-center gap-2 animate-in slide-in-from-left-2 duration-300";
-                    div.innerHTML = `<span class="text-[10px] font-black text-[#34D399] uppercase leading-none">${t.customerName}</span>
+                    div.innerHTML = `<span class="text-[10px] font-black text-[#34D399] uppercase leading-none font-tactical">${t.customerName}</span>
                                      <span class="text-[9px] text-slate-500 uppercase font-bold tracking-tighter">${t.label}</span>
                                      <button onclick="removeTask(${i})" class="text-rose-500 hover:text-rose-300"><i data-lucide="circle-minus" size="14"></i></button>`;
                     taskList.appendChild(div);
@@ -388,7 +402,7 @@
 
         function addTask(type, cost, label) {
             if (state.manHours < cost) {
-                state.logs.unshift("! 工数リソース枯渇。");
+                state.logs.unshift("! 工数リソース不足。プラン再考を。");
                 updateUI(); return;
             }
             const c = state.customers.find(x => x.id === state.selectedId);
@@ -396,7 +410,7 @@
             if (type === 'PROPOSAL') {
                 const isRFP = c.internalMonth >= 48 && c.internalMonth < 50;
                 if (!isRFP) {
-                    state.logs.unshift(`! ${c.name} は提案フェーズ外です。`);
+                    state.logs.unshift(`! ${c.name} はまだ提案時期ではありません。`);
                     updateUI(); return;
                 }
             }
@@ -416,12 +430,13 @@
         function closeResult() {
             document.getElementById('result-overlay').classList.add('hidden');
             if (state.month === 12) {
-                document.getElementById('final-sales').innerHTML = `¥${state.sales}<span class="text-3xl ml-4 opacity-30 font-light text-white font-tactical">M</span>`;
+                document.getElementById('final-sales').innerHTML = `¥${state.sales}<span class="text-4xl ml-4 opacity-30 font-light text-white font-tactical">M</span>`;
                 document.getElementById('summary-modal').classList.remove('hidden');
             } else {
                 state.month++;
                 state.manHours = MAX_MAN_HOURS;
                 state.changedIds = [];
+                state.incidents = []; // 毎月の障害は月明けにクリア（対応済み想定）
                 updateUI();
             }
         }
@@ -432,11 +447,12 @@
             let turnChanges = [];
             let monthResultsByCustomer = {}; 
 
-            state.logs.unshift(`--- FY26M${state.month} ミッション開始 ---`);
+            state.logs.unshift(`--- FY26M${state.month} ミッション実行 ---`);
 
             const interactedCustomerIds = [...new Set(state.pendingTasks.map(t => t.customerId))];
             interactedCustomerIds.forEach(id => { monthResultsByCustomer[id] = []; });
 
+            // 1. User Actions
             for (let task of state.pendingTasks) {
                 await new Promise(r => setTimeout(r, 400));
                 let c = state.customers.find(x => x.id === task.customerId);
@@ -444,23 +460,23 @@
 
                 if (task.type === 'VISIT') {
                     c.visitCount++;
-                    res.msg = `[SELF] ${c.name} への定期訪問を完了。`;
+                    res.msg = `[SELF] ${c.name} への訪問により信頼を維持。`;
                     state.logs.unshift(res.msg);
                 } else if (task.type === 'PARTNER') {
                     c.studyCount++;
-                    res.msg = `[SELF] ${c.name} 勉強会を実施、連携を強化。`;
+                    res.msg = `[SELF] ${c.name} 勉強会実施。SIerとの連携が強固になりました。`;
                     state.logs.unshift(res.msg);
                 } else if (task.type === 'PROPOSAL') {
-                    res.msg = `H社が${c.name}に正式提案を提出しました。`;
+                    res.msg = `H社が${c.name}に正式な提案を提出。`;
                     await new Promise(r => setTimeout(r, 400));
                     if (Math.random() * 100 < calculateWinRate(c)) {
                         c.vendor = 'H'; c.internalMonth = 1; c.visitCount = 1; c.studyCount = 0;
                         turnSales += c.budget; turnChanges.push(c.id);
-                        res.result = `結果、H社が受注に成功しました。`;
+                        res.result = `結果、H社が受注に成功しました！`;
                         res.success = true;
-                        state.logs.unshift(`[SUCCESS] ${c.name} 制圧！`);
+                        state.logs.unshift(`[SUCCESS] ${c.name} 受注！`);
                     } else { 
-                        res.result = `結果、H社の提案は退けられました。`;
+                        res.result = `結果、競合の壁を崩せず失注しました。`;
                         res.success = false;
                         state.logs.unshift(`[FAILED] ${c.name} 失注。`);
                     }
@@ -469,10 +485,41 @@
                 updateUI();
             }
 
+            // 2. Incident Logic (ランダムに発生)
+            state.customers.forEach(c => {
+                // 1/60の確率（60ヶ月に1回程度）で障害発生
+                if (Math.random() < (1/30)) { 
+                    const isSelf = c.vendor === 'H';
+                    const msg = `[INCIDENT] ${c.name} で障害が発生！`;
+                    state.logs.unshift(msg);
+                    state.incidents.push({ customerId: c.id });
+                    
+                    if (isSelf) {
+                        state.manHours = Math.max(0, state.manHours - 5);
+                        if (!interactedCustomerIds.includes(c.id)) {
+                            interactedCustomerIds.push(c.id);
+                            monthResultsByCustomer[c.id] = [];
+                        }
+                        monthResultsByCustomer[c.id].push({
+                            vendor: 'H',
+                            type: 'INCIDENT',
+                            msg: `緊急対応: ${c.name} の障害対応に工数5を投入しました。`
+                        });
+                    } else if (interactedCustomerIds.includes(c.id)) {
+                        monthResultsByCustomer[c.id].push({
+                            vendor: c.vendor,
+                            type: 'INCIDENT',
+                            msg: `${VENDORS[c.vendor].name}が ${c.name} の障害対応に追われています。`
+                        });
+                    }
+                }
+            });
+
             state.sales += turnSales;
             state.pendingTasks = [];
 
-            state.logs.unshift(`--- ライバルベンダー同期 ---`);
+            // 3. Rivals Actions
+            state.logs.unshift(`--- 敵対ベンダー同期 ---`);
             const rivals = ['D', 'I', 'A'];
 
             for (let rid of rivals) {
@@ -491,15 +538,15 @@
                             vendor: rid,
                             isProposal: true,
                             success: isWin,
-                            msg: `${VENDORS[rid].name}が${target.name}へ提案を開始しました。`,
-                            result: `結果は、${VENDORS[rid].name}が${isWin ? '受注' : '失注'}しました。`
+                            msg: `${VENDORS[rid].name}が ${target.name} へ提案。`,
+                            result: `結果、${VENDORS[rid].name}が${isWin ? '受注' : '失注'}しました。`
                         });
                     }
 
                     if (isWin) {
                         target.vendor = rid; target.internalMonth = 1; target.visitCount = 0; target.studyCount = 0;
                         turnChanges.push(target.id);
-                        state.logs.unshift(`[${rid}] ${target.name} 被奪取。`);
+                        state.logs.unshift(`[${rid}] ${target.name} 制圧。`);
                     }
                 }
             }
@@ -508,42 +555,52 @@
             state.changedIds = turnChanges;
             document.getElementById('exec-overlay').classList.add('hidden');
             
+            // 4. Update Summary Popup with Animation
             const resultList = document.getElementById('result-list');
             resultList.innerHTML = '';
             
+            document.getElementById('result-overlay').classList.remove('hidden');
+            
+            // 上から順に表示するためのシーケンス
             let globalAnimDelay = 0;
-            interactedCustomerIds.forEach(custId => {
+            for (let custId of interactedCustomerIds) {
                 const c = state.customers.find(x => x.id === custId);
                 const block = document.createElement('div');
                 block.className = "result-customer-block row-animate";
-                block.style.animationDelay = `${globalAnimDelay * 0.1}s`;
+                block.style.animationDelay = `${globalAnimDelay * 0.4}s`;
                 globalAnimDelay++;
                 
-                let html = `<div class="text-[12px] font-bold text-[#D4AF37] mb-4 border-l-4 border-[#D4AF37] pl-3 uppercase italic tracking-[0.2em] font-tactical">${c.name} Intel</div>`;
+                let html = `<div class="text-[14px] font-black text-[#D4AF37] mb-6 border-l-4 border-[#D4AF37] pl-4 uppercase italic tracking-[0.3em] font-tactical">${c.name} Report</div>`;
                 
-                monthResultsByCustomer[custId].filter(r => r.vendor === 'H').forEach(r => {
+                monthResultsByCustomer[custId].forEach(r => {
+                    let icon = "info";
+                    let iconColor = "text-slate-400";
+                    if (r.type === 'INCIDENT') { icon = "alert-octagon"; iconColor = "text-rose-600 animate-pulse"; }
+                    else if (r.vendor === 'H') { 
+                        icon = r.success === false ? "shield-alert" : "shield-check"; 
+                        iconColor = r.success === false ? "text-rose-500" : "text-[#34D399]";
+                    } else {
+                        icon = "zap"; iconColor = "text-sky-400";
+                    }
+
                     html += `
-                        <div class="flex items-start gap-4 mb-3 pl-2">
-                            <i data-lucide="${r.success === false ? 'alert-triangle' : 'check-circle'}" size="16" class="${r.success === false ? 'text-rose-500' : 'text-[#34D399]'} mt-1"></i>
-                            <div class="text-[14px] text-slate-100 font-bold tracking-tight">${r.msg} <span class="block text-[#34D399] mt-1">${r.result || ''}</span></div>
+                        <div class="flex items-start gap-4 mb-4 pl-2">
+                            <i data-lucide="${icon}" size="18" class="${iconColor} mt-1"></i>
+                            <div class="text-[16px] text-slate-100 font-bold tracking-tight leading-relaxed">
+                                ${r.msg}
+                                ${r.result ? `<span class="block text-[13px] ${r.success ? 'text-[#34D399]' : 'text-rose-400'} mt-2 uppercase font-tactical tracking-widest">${r.result}</span>` : ''}
+                            </div>
                         </div>
                     `;
                 });
 
+                // 動きがなかった競合のレポート
                 rivals.forEach(rid => {
-                    const rivalAct = monthResultsByCustomer[custId].find(r => r.vendor === rid);
-                    if (rivalAct) {
+                    if (!monthResultsByCustomer[custId].some(r => r.vendor === rid)) {
                         html += `
-                            <div class="flex items-start gap-4 mb-3 pl-2">
-                                <i data-lucide="zap" size="16" class="text-sky-400 mt-1"></i>
-                                <div class="text-[14px] text-slate-100 font-bold">${rivalAct.msg} <span class="block text-sky-300 opacity-80 text-[11px] mt-1 uppercase font-tactical">${rivalAct.result}</span></div>
-                            </div>
-                        `;
-                    } else {
-                        html += `
-                            <div class="flex items-start gap-4 mb-3 pl-2 opacity-30">
-                                <i data-lucide="eye-off" size="14" class="mt-1"></i>
-                                <div class="text-[13px] text-slate-400 italic">${VENDORS[rid].name}の動きは確認できませんでした。</div>
+                            <div class="flex items-start gap-4 mb-4 pl-2 opacity-20">
+                                <i data-lucide="eye-off" size="16" class="mt-1"></i>
+                                <div class="text-[14px] text-slate-500 italic font-medium">${VENDORS[rid].name}の動きは検知されませんでした。</div>
                             </div>
                         `;
                     }
@@ -551,19 +608,18 @@
 
                 block.innerHTML = html;
                 resultList.appendChild(block);
-            });
-
-            if (interactedCustomerIds.length === 0) {
-                resultList.innerHTML = '<div class="text-[14px] text-slate-500 italic py-16 text-center uppercase tracking-[0.4em] font-tactical">No Contact Data. Sector Quiet.</div>';
+                lucide.createIcons({ props: { "stroke-width": 3 }, nameAttr: "data-lucide" });
             }
 
-            document.getElementById('result-overlay').classList.remove('hidden');
-            lucide.createIcons();
+            if (interactedCustomerIds.length === 0) {
+                resultList.innerHTML = '<div class="text-[16px] text-slate-500 italic py-24 text-center uppercase tracking-[0.5em] font-tactical">Mission Area Quiet. No Interaction Data.</div>';
+            }
+
             localStorage.setItem('enterprise_hud_state', JSON.stringify(state));
         }
 
         function resetGame() { localStorage.removeItem('enterprise_hud_state'); location.reload(); }
-        function saveToLocal() { localStorage.setItem('enterprise_hud_state', JSON.stringify(state)); state.logs.unshift("インテリジェンス保存。"); updateUI(); }
+        function saveToLocal() { localStorage.setItem('enterprise_hud_state', JSON.stringify(state)); state.logs.unshift("インテリジェンスセーブ完了。"); updateUI(); }
         function exportHTML() {
             let html = document.documentElement.outerHTML;
             const blob = new Blob([html], { type: 'text/html' });
@@ -578,6 +634,7 @@
             if (saved) {
                 state = JSON.parse(saved);
                 state.pendingTasks = []; state.manHours = MAX_MAN_HOURS;
+                state.incidents = state.incidents || [];
             }
             updateUI();
             document.getElementById('close-panel').onclick = () => { state.selectedId = null; updateUI(); };
