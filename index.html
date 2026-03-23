@@ -21,7 +21,7 @@
             --font-mono: 'DM Mono', monospace;
             --font-body: 'Outfit', sans-serif;
             /* Vendor colors */
-            --vendor-H: #00D68F; /* 指示：明るいエメラルドグリーン */
+            --vendor-H: #00D68F; 
             --vendor-H-bright: #00D68F;
             --vendor-I: #0A1F3D;
             --vendor-I-bright: #38BDF8;
@@ -362,21 +362,21 @@
             text-transform: uppercase; animation: pulse 0.8s infinite;
         }
 
-        /* ─── RESULT OVERLAY (指示：半透明化) ─── */
+        /* ─── RESULT OVERLAY ─── */
         .result-overlay {
-            background: rgba(8, 12, 20, 0.7); /* 半透明度を調整 */
-            backdrop-filter: blur(12px);
+            background: rgba(8, 12, 20, 0.5); 
+            backdrop-filter: blur(8px);
             flex-direction: column;
         }
         .result-box {
             width: 94%; max-height: 90%;
             border: 1px solid rgba(255,255,255,0.08);
             border-radius: 28px;
-            background: rgba(13, 20, 32, 0.7); /* 指示：半透明 */
-            backdrop-filter: blur(24px);
+            background: rgba(13, 20, 32, 0.5); 
+            backdrop-filter: blur(20px);
             display: flex; flex-direction: column;
             overflow: hidden;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.6);
         }
         .result-hdr {
             padding: 20px 20px 14px;
@@ -392,7 +392,6 @@
             flex: 1; overflow-y: auto; padding: 12px 20px;
             scrollbar-width: thin; scrollbar-color: #1a2535 transparent;
         }
-        /* 指示：上から下にゆっくり流れるアニメーション */
         .result-block {
             padding: 16px 0;
             border-bottom: 1px solid rgba(255,255,255,0.04);
@@ -590,7 +589,7 @@
 <script>
 const MAX_MH = 20;
 const VENDORS = {
-    H:    { name: 'H社（SELF）', bg: '#00D68F', bright: '#00D68F' }, // 指示：明るいエメラルド
+    H:    { name: 'H社（SELF）', bg: '#00D68F', bright: '#00D68F' }, 
     I:    { name: 'I社',        bg: '#0A1F3D', bright: '#38BDF8' },
     A:    { name: 'A社',        bg: '#2D0A3D', bright: '#A855F7' },
     NONE: { name: '未開拓',      bg: '#080C14', bright: '#1e293b' },
@@ -620,11 +619,10 @@ let state = {
         { id:901, name:'HBA-Sec',     full:'HBA: セキュリティ基盤',         budget:50,  tiles:2, vendor:'A', mo:40, vc:0, sc:0, lv:0 },
         { id:1001,name:'SAT-POS',     full:'サツドラHD: 次世代POS',        budget:40,  tiles:2, vendor:'H', mo:58, vc:0, sc:0, lv:0 },
         { id:1101,name:'HRP-Base',    full:'HARP: 共通基盤システム',        budget:30,  tiles:1, vendor:'I', mo:20, vc:0, sc:0, lv:0 },
-        { id:1201,name:'HPP-Sec',     full:'北海道警察: 公安情報NW',        budget:25,  tiles:1, vendor:'I', mo:32, vc:0, sc:0, lv:0 },
+        { id:1201,name:'HPP-Sec',     full:'北海道警察: 公安NW基盤',        budget:25,  tiles:1, vendor:'I', mo:32, vc:0, sc:0, lv:0 },
     ]
 };
 
-// ─── WIN RATE (指示：訪問がなければ段階的に下がる) ───
 function winRate(c) {
     if (!c) return 0;
     let r = 10;
@@ -632,21 +630,13 @@ function winRate(c) {
     const m = c.mo;
     if (m >= 48 && m < 50) r += 40;
     else if (m >= 50) r -= 20;
-    
-    // 基本活動ボーナス
     r += c.vc * 5 + c.sc * 10;
-    
-    // 放置による減衰ロジック
-    // 最後の訪問(lv)から時間が経つほど信頼(勝率)が削られる
     const monthsSinceVisit = state.month - (c.lv || 0);
     if (monthsSinceVisit > 1) {
-        // 1ヶ月あけると毎月8%ずつ勝率が落ちる
         r -= (monthsSinceVisit - 1) * 8;
     }
-
     const pending = state.tasks.filter(t => t.cid === c.id);
     pending.forEach(t => { if(t.type==='VISIT') r+=5; if(t.type==='STUDY') r+=10; });
-    
     return Math.min(99, Math.max(5, Math.round(r)));
 }
 
@@ -714,10 +704,8 @@ function render() {
         document.getElementById('sp-visit').textContent = c.vc;
         document.getElementById('sp-study').textContent = c.sc;
         document.getElementById('sp-win').textContent   = `${winRate(c)}%`;
-
         const known = c.vc>0 || c.vendor==='H';
         document.getElementById('sp-vendor').textContent = known ? VENDORS[c.vendor].name : '？';
-
         const statusEl = document.getElementById('sp-status');
         const propBtn = document.getElementById('sp-proposal-btn');
         const isRFP = c.mo>=48&&c.mo<50;
@@ -731,9 +719,7 @@ function render() {
             statusEl.textContent = `通常運用 (M${c.mo})`; statusEl.className = 'sp-status';
         }
         propBtn.disabled = !(known && isRFP);
-    } else {
-        panel.classList.remove('open');
-    }
+    } else { panel.classList.remove('open'); }
 
     const strip = document.getElementById('task-strip');
     strip.innerHTML = '';
@@ -753,11 +739,9 @@ function render() {
 
     const btn = document.getElementById('exec-btn');
     if (state.tasks.length > 0) {
-        btn.disabled = false;
-        btn.classList.add('active');
+        btn.disabled = false; btn.classList.add('active');
     } else {
-        btn.disabled = true;
-        btn.classList.remove('active');
+        btn.disabled = true; btn.classList.remove('active');
     }
 
     const logEl = document.getElementById('log-area');
@@ -802,8 +786,7 @@ async function executeStrategy() {
         await new Promise(r=>setTimeout(r,400));
         const c = state.customers.find(x=>x.id===task.cid);
         if (task.type==='VISIT') {
-            c.vc++;
-            c.lv = state.month; // 最終訪問月を更新
+            c.vc++; c.lv = state.month;
             monthResults[c.id].push({ icon:'👁', text:`${c.name} への戦略訪問完了。インテリジェンス更新。`, self:true });
             state.logs.unshift(`[SELF] ${c.name} 訪問完了`);
         } else if (task.type==='STUDY') {
@@ -814,8 +797,7 @@ async function executeStrategy() {
             const ok = Math.random()*100 < winRate(c);
             if (ok) {
                 c.vendor='H'; c.mo=1; c.vc=1; c.sc=0; c.lv = state.month;
-                gained = c.budget; 
-                changed.push(c.id);
+                gained = c.budget; changed.push(c.id);
                 monthResults[c.id].push({ icon:'✅', text:`H社が ${c.name} に本提案。`, result:`受注確定。ターゲット制圧。`, success:true });
                 state.logs.unshift(`[SUCCESS] ${c.name} 制圧！`);
             } else {
@@ -845,6 +827,19 @@ async function executeStrategy() {
     state.logs.unshift(`--- 競合ベンダー同期 ---`);
     for (const rid of ['I','A']) {
         await new Promise(r=>setTimeout(r,300));
+        interacted.forEach(cid => {
+            const tgt = state.customers.find(x=>x.id===cid);
+            if (tgt.vendor === rid) {
+                monthResults[cid].push({ icon:'🛡', text:`${VENDORS[rid].name} が ${tgt.name} の防衛を強化中。`, rival:true });
+            } else {
+                const prob = Math.random();
+                if (prob < 0.2) {
+                    // 指示：「スカウト」ではなく「営業」に変更
+                    monthResults[cid].push({ icon:'🕵️', text:`${VENDORS[rid].name} の営業が ${tgt.name} に接触。`, rival:true });
+                }
+            }
+        });
+
         const rfpTargets = state.customers.filter(c=>c.vendor!==rid&&c.mo>=48&&c.mo<50);
         if (rfpTargets.length) {
             const tgt = rfpTargets[Math.floor(Math.random()*rfpTargets.length)];
@@ -852,7 +847,7 @@ async function executeStrategy() {
             if (!interacted.includes(tgt.id)) { interacted.push(tgt.id); monthResults[tgt.id]=[]; }
             monthResults[tgt.id].push({
                 icon: ok?'💀':'🛡',
-                text:`${VENDORS[rid].name} が ${tgt.name} へ電撃提案。`,
+                text:`${VENDORS[rid].name} が ${tgt.name} へ電撃提案を敢行。`,
                 result: ok?`${VENDORS[rid].name} が受注。`:`${VENDORS[rid].name} は失注。`,
                 success: ok, rival: true
             });
@@ -872,7 +867,7 @@ async function executeStrategy() {
         if (!monthResults[cid]||monthResults[cid].length===0) continue;
         const block = document.createElement('div');
         block.className = 'result-block';
-        block.style.animationDelay = `${delay * 0.6}s`; // 指示：一行ずつゆっくり流れる
+        block.style.animationDelay = `${delay * 0.6}s`; 
         delay++;
         let html = `<div class="result-block-name">${c.name} Intel</div>`;
         monthResults[cid].forEach(r => {
@@ -900,10 +895,7 @@ function closeResult() {
         document.getElementById('final-score').innerHTML = `¥${state.sales}<span style="font-size:32px;color:var(--text-muted);margin-left:8px;">M</span>`;
         document.getElementById('summary-modal').classList.remove('hidden');
     } else {
-        state.month++;
-        state.mh = MAX_MH;
-        state.changedIds = [];
-        state.incidents = [];
+        state.month++; state.mh = MAX_MH; state.changedIds = []; state.incidents = [];
         render();
     }
 }
@@ -912,30 +904,19 @@ function resetGame() { localStorage.removeItem('ent_state'); location.reload(); 
 function saveToLocal() { localStorage.setItem('ent_state', JSON.stringify(state)); state.logs.unshift('ローカルセーブ完了。'); render(); }
 function exportHTML() {
     const blob = new Blob([document.documentElement.outerHTML], {type:'text/html'});
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `TheEnterprise_FY26M${state.month}.html`;
-    a.click();
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    a.download = `TheEnterprise_FY26M${state.month}.html`; a.click();
 }
 
 window.onload = () => {
     const saved = localStorage.getItem('ent_state');
     if (saved) {
-        try {
-            state = JSON.parse(saved);
-            state.tasks = [];
-            state.mh = MAX_MH;
-            state.incidents = state.incidents || [];
-        } catch(e) {}
+        try { state = JSON.parse(saved); state.tasks = []; state.mh = MAX_MH; state.incidents = state.incidents || []; } catch(e) {}
     }
     document.getElementById('close-panel').onclick = () => { state.selectedId = null; render(); };
     document.addEventListener('click', e => {
-        const panel = document.getElementById('side-panel');
-        const grid  = document.getElementById('grid');
-        if (!panel.contains(e.target) && !grid.contains(e.target)) {
-            state.selectedId = null;
-            panel.classList.remove('open');
-        }
+        const panel = document.getElementById('side-panel'); const grid = document.getElementById('grid');
+        if (!panel.contains(e.target) && !grid.contains(e.target)) { state.selectedId = null; panel.classList.remove('open'); }
     });
     render();
 };
