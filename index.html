@@ -36,14 +36,14 @@
         .animate-rfp { animation: rfp-blink 0.8s infinite ease-in-out; border-width: 2px !important; }
         .animate-build { animation: build-blink 1.2s infinite ease-in-out; border-width: 2px !important; }
         .animate-pink { animation: pink-blink 1.0s infinite ease-in-out; border-width: 2px !important; z-index: 10; }
-        .turn-popup { animation: popup-up 1.8s forwards; }
+        .turn-popup-animate { animation: popup-up 1.8s forwards; }
 
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
         .glass-panel {
             background: rgba(15, 23, 42, 0.6);
-            backdrop-filter: blur(16px);
+            backdrop-filter: blur(24px);
             border-left: 1px solid rgba(255, 255, 255, 0.1);
         }
     </style>
@@ -56,22 +56,22 @@
         <!-- HUD Header -->
         <div class="flex justify-between items-end mb-4 border-b border-slate-800 pb-3 px-5">
             <div>
-                <h1 class="text-[10px] font-bold tracking-[0.4em] text-[#D4AF37] uppercase leading-none mb-1">Elite Strategic HUD</h1>
+                <h1 class="text-[10px] font-bold tracking-[0.4em] text-[#D4AF37] uppercase leading-none mb-1 italic">Enterprise Strategic HUD</h1>
                 <div id="phase-display" class="text-3xl font-light text-white tracking-tight italic">FY26M1</div>
             </div>
             <div class="text-right">
-                <div class="text-[9px] text-slate-500 font-bold uppercase tracking-widest mb-1">MH Units</div>
+                <div class="text-[9px] text-slate-500 font-bold uppercase tracking-widest mb-1 italic">Resource (MH)</div>
                 <div id="man-hours-display" class="text-3xl font-light tabular-nums text-[#34D399]">30<span class="text-xs opacity-20 ml-2">/ 30</span></div>
             </div>
         </div>
 
         <!-- Grid View -->
-        <div id="grid-container" class="flex-1 relative bg-black rounded-3xl border border-slate-900 overflow-hidden shadow-inner p-4 flex justify-center items-center m-2">
+        <div id="grid-container" class="flex-1 relative bg-black rounded-3xl border border-slate-900 overflow-hidden shadow-inner p-4 flex justify-center items-center m-2 mb-0">
             <div id="grid" class="grid grid-cols-10 grid-rows-10 gap-[2.5px] w-full aspect-square transition-all duration-500"></div>
             
-            <!-- Popup -->
+            <!-- Popup Overlay -->
             <div id="popup-overlay" class="absolute inset-0 flex items-center justify-center z-[110] pointer-events-none hidden">
-                <div class="turn-popup bg-white/5 backdrop-blur-xl border border-white/20 px-16 py-10 rounded-full shadow-2xl text-7xl font-black italic text-white tracking-tighter"></div>
+                <div id="popup-text" class="bg-white/5 backdrop-blur-xl border border-white/20 px-16 py-10 rounded-full shadow-2xl text-7xl font-black italic text-white tracking-tighter"></div>
             </div>
 
             <!-- Execution Overlay -->
@@ -111,30 +111,36 @@
                     </div>
                 </div>
                 <div class="space-y-2 mt-4">
-                    <button onclick="addTask('VISIT', 5, '訪問')" class="w-full py-2 bg-slate-900 border border-slate-800 rounded-lg text-[10px] font-bold text-slate-400 hover:text-white transition-all uppercase">Visit (5)</button>
-                    <button onclick="addTask('PARTNER', 8, '勉強会')" class="w-full py-2 bg-slate-900 border border-slate-800 rounded-lg text-[10px] font-bold text-slate-400 hover:text-white transition-all uppercase">Study (8)</button>
-                    <button onclick="addTask('PROPOSAL', 10, '提案')" class="w-full py-3 bg-[#064e3b] border border-[#34D399] rounded-lg text-[11px] font-black text-[#ECFDF5] uppercase tracking-[0.2em] shadow-lg active:scale-95 transition-all">Submit (10)</button>
+                    <button onclick="addTask('VISIT', 5, '訪問')" class="w-full py-2 bg-slate-900 border border-slate-800 rounded-lg text-[10px] font-bold text-slate-400 hover:text-white transition-all uppercase italic">Visit (5)</button>
+                    <button onclick="addTask('PARTNER', 8, '勉強会')" class="w-full py-2 bg-slate-900 border border-slate-800 rounded-lg text-[10px] font-bold text-slate-400 hover:text-white transition-all uppercase italic">Study (8)</button>
+                    <button id="proposal-btn-label" onclick="addTask('PROPOSAL', 10, '提案')" class="w-full py-3 bg-[#064e3b] border border-[#34D399] rounded-lg text-[11px] font-black text-[#ECFDF5] uppercase tracking-[0.2em] shadow-lg active:scale-95 transition-all italic">Proposal (10)</button>
                 </div>
             </div>
         </div>
 
-        <!-- Task Queue -->
-        <div class="bg-[#020617] border-x border-slate-800 px-6 py-2 h-24 overflow-y-auto border-b border-slate-800 shadow-inner text-white">
-            <div id="task-list" class="flex flex-wrap gap-2 items-start content-start"></div>
+        <!-- Task List Area -->
+        <div class="px-2 pt-2">
+            <div class="bg-[#020617] border-x border-t border-slate-800 px-6 py-2 h-20 overflow-y-auto border-b border-slate-800 shadow-inner text-white rounded-t-2xl">
+                <div id="task-list" class="flex flex-wrap gap-2 items-start content-start"></div>
+            </div>
+            
+            <button id="execute-btn" disabled class="w-full py-5 font-black text-[12px] shadow-2xl flex items-center justify-center gap-4 transition-all uppercase tracking-[0.4em] border-x border-slate-800 bg-slate-900 text-slate-700 cursor-not-allowed opacity-50">
+                Execute M1 Strategy <i data-lucide="list-checks" size="20"></i>
+            </button>
         </div>
 
         <!-- Log Feed -->
         <div class="bg-[#0F172A] border-x border-slate-800 p-4 font-mono text-[10px] h-32 overflow-hidden shadow-inner relative text-white">
-            <div class="absolute top-0 right-4 h-full flex items-center opacity-[0.03] pointer-events-none uppercase font-black text-6xl italic select-none">Log</div>
+            <div class="absolute top-0 right-4 h-full flex items-center opacity-[0.03] pointer-events-none uppercase font-black text-6xl italic select-none">Intel</div>
             <div id="log-feed" class="flex flex-col gap-1"></div>
         </div>
 
         <!-- Score Bar -->
         <div class="bg-slate-950 rounded-b-[3rem] p-6 flex justify-between items-center border-x border-b border-slate-800 shadow-2xl relative overflow-hidden">
             <div class="flex gap-4 items-center z-10">
-                <div class="flex items-center gap-2 text-[10px] font-bold text-slate-600 tracking-[0.2em] uppercase"><div class="w-3 h-3 rounded-sm bg-[#064e3b]"></div> H</div>
-                <div class="flex items-center gap-2 text-[10px] font-bold text-slate-600 tracking-[0.2em] uppercase"><div class="w-3 h-3 rounded-sm bg-[#075985]"></div> I</div>
-                <div class="flex items-center gap-2 text-[10px] font-bold text-slate-600 tracking-[0.2em] uppercase"><div class="w-3 h-3 rounded-sm bg-[#4c1d95]"></div> A</div>
+                <div class="flex items-center gap-2 text-[10px] font-bold text-slate-600 tracking-[0.2em] uppercase"><div class="w-3 h-3 rounded-sm bg-[#064e3b]"></div> SELF</div>
+                <div class="flex items-center gap-2 text-[10px] font-bold text-slate-600 tracking-[0.2em] uppercase"><div class="w-3 h-3 rounded-sm bg-[#075985]"></div> RIVAL_I</div>
+                <div class="flex items-center gap-2 text-[10px] font-bold text-slate-600 tracking-[0.2em] uppercase"><div class="w-3 h-3 rounded-sm bg-[#4c1d95]"></div> RIVAL_A</div>
             </div>
             <div class="flex items-center gap-4 border-l border-slate-800 pl-8 z-10">
                 <i data-lucide="trophy" size="26" class="text-[#D4AF37] opacity-80"></i>
@@ -142,32 +148,26 @@
             </div>
         </div>
 
-        <!-- Execute Button -->
-        <button id="execute-btn" disabled class="absolute bottom-12 left-1/2 -translate-x-1/2 px-16 py-7 rounded-full font-black text-[12px] shadow-2xl flex items-center gap-4 transition-all uppercase tracking-[0.4em] z-[120] bg-slate-900 text-slate-700 cursor-not-allowed opacity-50">
-            Execute Strategy <i data-lucide="list-checks" size="20"></i>
-        </button>
-
-        <!-- Save/Export Tools -->
+        <!-- Tools -->
         <div class="absolute top-2 right-4 flex gap-2 z-[200]">
             <button onclick="saveToLocal()" title="Save Session" class="p-2 bg-slate-900/50 rounded-full hover:bg-slate-800 text-slate-500 hover:text-white transition-all"><i data-lucide="save" size="14"></i></button>
-            <button onclick="exportHTML()" title="Export updated HTML" class="p-2 bg-slate-900/50 rounded-full hover:bg-slate-800 text-slate-500 hover:text-white transition-all"><i data-lucide="download" size="14"></i></button>
+            <button onclick="exportHTML()" title="Export HTML with State" class="p-2 bg-slate-900/50 rounded-full hover:bg-slate-800 text-slate-500 hover:text-white transition-all"><i data-lucide="download" size="14"></i></button>
         </div>
     </div>
 
     <!-- Summary Modal -->
     <div id="summary-modal" class="fixed inset-0 bg-slate-950/98 z-[200] flex items-center justify-center p-8 backdrop-blur-2xl hidden animate-in fade-in duration-1000">
-        <div class="bg-[#0F172A] border border-slate-800 rounded-[4rem] p-12 w-full max-w-md shadow-2xl relative overflow-hidden ring-1 ring-white/10 text-center">
-            <h2 class="text-5xl font-black italic tracking-tighter mb-10 text-white leading-none">FY26 COMPLETE</h2>
+        <div class="bg-[#0F172A] border border-slate-800 rounded-[4rem] p-12 w-full max-w-md shadow-2xl relative overflow-hidden text-center">
+            <h2 class="text-5xl font-black italic tracking-tighter mb-10 text-white leading-none uppercase">FY26 Complete</h2>
             <div class="bg-slate-900/50 p-10 rounded-[3rem] border border-slate-800 mb-8 shadow-inner">
-                <span class="text-[12px] font-bold text-slate-500 uppercase tracking-[0.4em] block mb-2">Final Performance Index</span>
+                <span class="text-[12px] font-bold text-slate-500 uppercase tracking-[0.4em] block mb-2">Total Revenue</span>
                 <div id="final-sales" class="text-8xl font-black tracking-tighter text-[#34D399] italic leading-none">¥0<span class="text-3xl ml-3 opacity-30 font-light text-white">M</span></div>
             </div>
-            <button onclick="resetGame()" class="w-full bg-white text-slate-950 py-7 rounded-3xl font-black text-sm uppercase tracking-[0.4em] shadow-2xl flex items-center justify-center gap-4 hover:bg-emerald-50 transition-all">RESTART SIMULATION <i data-lucide="chevron-right"></i></button>
+            <button onclick="resetGame()" class="w-full bg-white text-slate-950 py-7 rounded-3xl font-black text-sm uppercase tracking-[0.4em] flex items-center justify-center gap-4 hover:bg-emerald-50 transition-all">Restart Mission <i data-lucide="chevron-right"></i></button>
         </div>
     </div>
 
     <script>
-        // Constants
         const VENDORS = {
             H: { id: 'H', name: 'H社 (自社)', color: '#064e3b' },
             D: { id: 'D', name: 'D社 (競合)', color: '#0f172a' },
@@ -178,7 +178,6 @@
 
         const MAX_MAN_HOURS = 30;
 
-        // Game State
         let state = {
             month: 1,
             currentTurn: 'H',
@@ -206,12 +205,6 @@
             ]
         };
 
-        // Initialize Icons
-        function refreshIcons() {
-            lucide.createIcons();
-        }
-
-        // Logic
         function calculateWinRate(target) {
             if (!target) return 0;
             let base = 10;
@@ -229,20 +222,16 @@
         }
 
         function updateUI() {
-            // Header
             document.getElementById('phase-display').innerText = `FY26M${state.month}`;
             const mhEl = document.getElementById('man-hours-display');
             mhEl.innerHTML = `${state.manHours}<span class="text-xs opacity-20 ml-2">/ ${MAX_MAN_HOURS}</span>`;
             mhEl.className = `text-3xl font-light tabular-nums ${state.manHours < 5 ? 'text-rose-500' : 'text-[#34D399]'}`;
-            
             document.getElementById('sales-display').innerHTML = `¥${state.sales}<span class="text-[14px] ml-1 opacity-20 font-normal">M</span>`;
 
-            // Share Bar
             const stats = { H: 0, D: 0, I: 0, A: 0, NONE: 0 };
             state.customers.forEach(c => stats[c.vendor] += c.budget);
             const total = 1000;
             stats.NONE = Math.max(0, total - Object.values(stats).reduce((a, b) => a + b, 0));
-            
             const bar = document.getElementById('share-bar');
             bar.innerHTML = '';
             ['H', 'D', 'I', 'A', 'NONE'].forEach(v => {
@@ -257,7 +246,6 @@
                 }
             });
 
-            // Grid
             const grid = document.getElementById('grid');
             grid.innerHTML = '';
             let tiles = [];
@@ -272,7 +260,7 @@
             });
             while (tiles.length < 100) tiles.push({ id: null, vendor: 'NONE' });
 
-            tiles.slice(0, 100).forEach(t => {
+            tiles.forEach(t => {
                 const tile = document.createElement('div');
                 tile.className = `w-full aspect-square cursor-pointer transition-all duration-300 border-[1.5px] border-white/10 relative flex items-center justify-center 
                                 ${t.isRFP ? 'animate-rfp' : ''} ${t.isBuild ? 'animate-build' : ''} 
@@ -285,11 +273,10 @@
                     span.innerText = t.isInfoDisclosed ? `Y${t.year}` : 'Y?';
                     tile.appendChild(span);
                 }
-                tile.onclick = () => selectCustomer(t.id);
+                tile.onclick = () => { state.selectedId = t.id; updateUI(); };
                 grid.appendChild(tile);
             });
 
-            // Side Panel
             const panel = document.getElementById('side-panel');
             if (state.selectedId) {
                 const c = state.customers.find(x => x.id === state.selectedId);
@@ -299,7 +286,6 @@
                 document.getElementById('panel-visit').innerText = c.visitCount;
                 document.getElementById('panel-study').innerText = c.studyCount;
                 document.getElementById('panel-win-rate').innerText = `${calculateWinRate(c)}%`;
-                
                 const statusEl = document.getElementById('panel-status');
                 if (c.visitCount > 0 || c.vendor === 'H') {
                     statusEl.className = `text-[11px] font-bold ${c.internalMonth >= 50 ? 'text-white' : c.internalMonth >= 48 ? 'text-yellow-400 animate-pulse' : 'text-slate-400'}`;
@@ -308,19 +294,16 @@
                     statusEl.className = "text-[11px] font-bold text-slate-600 italic";
                     statusEl.innerText = "情報未取得";
                 }
-            } else {
-                panel.classList.add('hidden');
-            }
+            } else { panel.classList.add('hidden'); }
 
-            // Task Queue
             const taskList = document.getElementById('task-list');
             taskList.innerHTML = '';
             if (state.pendingTasks.length === 0) {
-                taskList.innerHTML = '<span class="text-[10px] text-slate-700 italic tracking-widest uppercase">>>> Recon needed. No tasks queued.</span>';
+                taskList.innerHTML = '<span class="text-[10px] text-slate-700 italic tracking-widest uppercase">{" >>> "} Recon needed. No tasks queued.</span>';
             } else {
                 state.pendingTasks.forEach((t, i) => {
                     const div = document.createElement('div');
-                    div.className = "bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-1.5 flex items-center gap-2 animate-in slide-in-from-left-2 duration-300";
+                    div.className = "bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 flex items-center gap-2 animate-in slide-in-from-left-2 duration-300";
                     div.innerHTML = `<span class="text-[10px] font-black text-[#34D399] uppercase leading-none">${t.customerName}</span>
                                      <span class="text-[9px] text-slate-500 uppercase font-bold tracking-tighter">${t.label}</span>
                                      <button onclick="removeTask(${i})" class="text-rose-500 hover:text-rose-300"><i data-lucide="x" size="12"></i></button>`;
@@ -328,7 +311,16 @@
                 });
             }
 
-            // Log
+            const btn = document.getElementById('execute-btn');
+            btn.innerText = `Execute M${state.month} Strategy`;
+            if (state.pendingTasks.length > 0) {
+                btn.disabled = false;
+                btn.className = "w-full py-5 font-black text-[12px] shadow-2xl flex items-center justify-center gap-4 transition-all uppercase tracking-[0.4em] border-x border-slate-800 bg-white text-slate-950 hover:bg-emerald-50 active:scale-95 cursor-pointer";
+            } else {
+                btn.disabled = true;
+                btn.className = "w-full py-5 font-black text-[12px] shadow-2xl flex items-center justify-center gap-4 transition-all uppercase tracking-[0.4em] border-x border-slate-800 bg-slate-900 text-slate-700 cursor-not-allowed opacity-50";
+            }
+
             const feed = document.getElementById('log-feed');
             feed.innerHTML = '';
             state.logs.forEach((l, i) => {
@@ -338,29 +330,13 @@
                 feed.appendChild(div);
             });
 
-            // Execute Button
-            const btn = document.getElementById('execute-btn');
-            if (state.pendingTasks.length > 0) {
-                btn.disabled = false;
-                btn.className = "absolute bottom-12 left-1/2 -translate-x-1/2 px-16 py-7 rounded-full font-black text-[12px] shadow-2xl flex items-center gap-4 transition-all uppercase tracking-[0.4em] z-[120] bg-white text-slate-950 hover:scale-105 active:scale-95";
-            } else {
-                btn.disabled = true;
-                btn.className = "absolute bottom-12 left-1/2 -translate-x-1/2 px-16 py-7 rounded-full font-black text-[12px] shadow-2xl flex items-center gap-4 transition-all uppercase tracking-[0.4em] z-[120] bg-slate-900 text-slate-700 cursor-not-allowed opacity-50";
-            }
-
-            refreshIcons();
-        }
-
-        function selectCustomer(id) {
-            state.selectedId = id;
-            updateUI();
+            lucide.createIcons();
         }
 
         function addTask(type, cost, label) {
             if (state.manHours < cost) {
-                state.logs.unshift("! 工数不足。");
-                updateUI();
-                return;
+                state.logs.unshift("! 工数リソースが不足しています。");
+                updateUI(); return;
             }
             const c = state.customers.find(x => x.id === state.selectedId);
             state.pendingTasks.push({ customerId: c.id, customerName: c.name, type, cost, label });
@@ -375,34 +351,39 @@
             updateUI();
         }
 
+        function showPopup(text) {
+            const el = document.getElementById('popup-overlay');
+            const txt = document.getElementById('popup-text');
+            txt.innerText = text;
+            txt.classList.remove('turn-popup-animate');
+            void txt.offsetWidth;
+            txt.classList.add('turn-popup-animate');
+            el.classList.remove('hidden');
+            setTimeout(() => el.classList.add('hidden'), 2000);
+        }
+
         async function executeStrategy() {
             document.getElementById('exec-overlay').classList.remove('hidden');
             let turnSales = 0;
             let turnChanges = [];
 
-            state.logs.unshift(`--- FY26M${state.month} 戦略実行中 ---`);
+            state.logs.unshift(`--- FY26M${state.month} 戦略フェーズ実行 ---`);
 
             for (let task of state.pendingTasks) {
                 await new Promise(r => setTimeout(r, 400));
                 let c = state.customers.find(x => x.id === task.customerId);
                 if (task.type === 'VISIT') {
                     c.visitCount++;
-                    state.logs.unshift(`[H] ${c.name} 訪問`);
+                    state.logs.unshift(`[H] ${c.name} へ訪問。`);
                 } else if (task.type === 'PARTNER') {
                     c.studyCount++;
-                    state.logs.unshift(`[H] ${c.name} 勉強会`);
+                    state.logs.unshift(`[H] ${c.name} 勉強会実施。`);
                 } else if (task.type === 'PROPOSAL') {
                     if (Math.random() * 100 < calculateWinRate(c)) {
-                        c.vendor = 'H';
-                        c.internalMonth = 1;
-                        c.visitCount = 1;
-                        c.studyCount = 0;
-                        turnSales += c.budget;
-                        turnChanges.push(c.id);
-                        state.logs.unshift(`[SUCCESS] ${c.name} 奪還`);
-                    } else {
-                        state.logs.unshift(`[FAILED] ${c.name} 失注`);
-                    }
+                        c.vendor = 'H'; c.internalMonth = 1; c.visitCount = 1; c.studyCount = 0;
+                        turnSales += c.budget; turnChanges.push(c.id);
+                        state.logs.unshift(`[SUCCESS] ${c.name} 奪還！`);
+                    } else { state.logs.unshift(`[FAILED] ${c.name} 失注。`); }
                 }
                 updateUI();
             }
@@ -410,7 +391,6 @@
             state.sales += turnSales;
             state.pendingTasks = [];
 
-            // Rivals
             state.logs.unshift(`--- ライバル同期 ---`);
             const rivals = ['D', 'I', 'A'];
             for (let rid of rivals) {
@@ -422,98 +402,50 @@
 
                 const chance = 10 + (target.internalMonth >= 48 ? 20 : 0);
                 if (Math.random() * 100 < chance) {
-                    target.vendor = rid;
-                    target.internalMonth = 1;
-                    target.visitCount = 0;
-                    target.studyCount = 0;
+                    target.vendor = rid; target.internalMonth = 1; target.visitCount = 0; target.studyCount = 0;
                     turnChanges.push(target.id);
-                    state.logs.unshift(`[${rid}] ${target.name} 奪取`);
+                    state.logs.unshift(`[${rid}] ${target.name} を奪取。`);
                 }
             }
 
-            // Month advance
-            state.customers.forEach(c => {
-                c.internalMonth = c.internalMonth >= 60 ? 1 : c.internalMonth + 1;
-            });
-
+            state.customers.forEach(c => { c.internalMonth = c.internalMonth >= 60 ? 1 : c.internalMonth + 1; });
             state.changedIds = turnChanges;
             document.getElementById('exec-overlay').classList.add('hidden');
             
             if (state.month === 12) {
-                showFinalSummary();
+                document.getElementById('final-sales').innerHTML = `¥${state.sales}<span class="text-3xl ml-3 opacity-30 font-light text-white">M</span>`;
+                document.getElementById('summary-modal').classList.remove('hidden');
             } else {
                 state.month++;
                 state.manHours = MAX_MAN_HOURS;
                 showPopup(`FY26M${state.month}`);
-                setTimeout(() => {
-                    state.changedIds = [];
-                    updateUI();
-                }, 2000);
+                setTimeout(() => { state.changedIds = []; updateUI(); }, 2000);
                 updateUI();
             }
-            saveToLocal();
-        }
-
-        function showPopup(text) {
-            const el = document.getElementById('popup-overlay');
-            el.querySelector('.turn-popup').innerText = text;
-            el.classList.remove('hidden');
-            setTimeout(() => el.classList.add('hidden'), 2000);
-        }
-
-        function showFinalSummary() {
-            document.getElementById('final-sales').innerHTML = `¥${state.sales}<span class="text-3xl ml-3 opacity-30 font-light text-white">M</span>`;
-            document.getElementById('summary-modal').classList.remove('hidden');
-        }
-
-        function resetGame() {
-            localStorage.removeItem('enterprise_hud_state');
-            location.reload();
-        }
-
-        // Persistence in LocalStorage
-        function saveToLocal() {
             localStorage.setItem('enterprise_hud_state', JSON.stringify(state));
-            console.log("State Saved.");
         }
 
-        function loadFromLocal() {
-            const saved = localStorage.getItem('enterprise_hud_state');
-            if (saved) {
-                state = JSON.parse(saved);
-                state.pendingTasks = []; // Clear unsaved tasks on load
-                state.manHours = MAX_MAN_HOURS;
-                updateUI();
-            }
-        }
-
-        // Fulfilling "Save in HTML" via Export
+        function resetGame() { localStorage.removeItem('enterprise_hud_state'); location.reload(); }
+        function saveToLocal() { localStorage.setItem('enterprise_hud_state', JSON.stringify(state)); state.logs.unshift("セッションを保存しました。"); updateUI(); }
         function exportHTML() {
-            const scriptContent = `
-                <script>
-                    window.INITIAL_STATE = ${JSON.stringify(state)};
-                <\/script>
-            `;
-            // Get current HTML, inject current state as initial
             let html = document.documentElement.outerHTML;
             const blob = new Blob([html], { type: 'text/html' });
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
             a.download = `TheEnterprise_FY26M${state.month}_State.html`;
             a.click();
-            state.logs.unshift("HTMLファイルをエクスポートしました。");
-            updateUI();
         }
 
-        // Event Listeners
-        document.getElementById('close-panel').onclick = () => { state.selectedId = null; updateUI(); };
-        document.getElementById('execute-btn').onclick = executeStrategy;
-
-        // Init
         window.onload = () => {
-            loadFromLocal();
+            const saved = localStorage.getItem('enterprise_hud_state');
+            if (saved) {
+                const loaded = JSON.parse(saved);
+                state = loaded;
+                state.pendingTasks = []; state.manHours = MAX_MAN_HOURS;
+            }
             updateUI();
-            refreshIcons();
+            document.getElementById('close-panel').onclick = () => { state.selectedId = null; updateUI(); };
+            document.getElementById('execute-btn').onclick = executeStrategy;
         };
     </script>
 </body>
