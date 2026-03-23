@@ -28,29 +28,29 @@
             50% { border-color: #fce7f3; box-shadow: 0 0 20px #f472b6; } 
         }
         @keyframes popup-up { 
-            0% { transform: scale(0.9); opacity: 0; } 
+            0% { transform: scale(0.95); opacity: 0; } 
             100% { transform: scale(1); opacity: 1; } 
         }
 
         .animate-rfp { animation: rfp-blink 0.8s infinite ease-in-out; border-width: 2px !important; }
         .animate-build { animation: build-blink 1.2s infinite ease-in-out; border-width: 2px !important; }
         .animate-pink { animation: pink-blink 1.0s infinite ease-in-out; border-width: 2px !important; z-index: 10; }
-        .result-popup-animate { animation: popup-up 0.4s forwards cubic-bezier(0, 0, 0.2, 1); }
+        .result-popup-animate { animation: popup-up 0.3s forwards cubic-bezier(0, 0, 0.2, 1); }
 
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
         .glass-panel {
-            background: rgba(15, 23, 42, 0.75);
+            background: rgba(15, 23, 42, 0.85);
             backdrop-filter: blur(32px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.15);
         }
         
-        .result-item {
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            padding: 12px 0;
+        .result-customer-block {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 16px 0;
         }
-        .result-item:last-child { border-bottom: none; }
+        .result-customer-block:last-child { border-bottom: none; }
     </style>
 </head>
 <body class="overflow-hidden">
@@ -72,31 +72,31 @@
 
         <!-- Grid View (8x8) -->
         <div id="grid-container" class="flex-1 relative bg-black rounded-3xl border border-slate-900 overflow-hidden shadow-inner p-4 flex justify-center items-center m-2 mb-0">
-            <div id="grid" class="grid grid-cols-8 grid-rows-8 gap-1 w-full aspect-square transition-all duration-500"></div>
+            <div id="grid" class="grid grid-cols-8 grid-rows-8 gap-1.5 w-full aspect-square transition-all duration-500"></div>
             
             <!-- Result Summary Overlay -->
-            <div id="result-overlay" class="absolute inset-0 flex items-center justify-center z-[150] bg-slate-950/40 backdrop-blur-sm hidden">
-                <div id="result-box" class="glass-panel w-5/6 max-h-[75%] rounded-[2rem] p-6 shadow-2xl overflow-hidden flex flex-col result-popup-animate">
+            <div id="result-overlay" class="absolute inset-0 flex items-center justify-center z-[150] bg-slate-950/60 backdrop-blur-sm hidden">
+                <div id="result-box" class="glass-panel w-[92%] max-h-[85%] rounded-[2.5rem] p-6 shadow-2xl overflow-hidden flex flex-col result-popup-animate">
                     <div class="flex justify-between items-center mb-4">
-                        <h3 id="result-title" class="text-sm font-black text-[#D4AF37] uppercase tracking-[0.3em] italic">FY26 Activity Report</h3>
-                        <div class="w-8 h-8 rounded-full bg-slate-800/50 flex items-center justify-center"><i data-lucide="activity" size="14" class="text-white/50"></i></div>
+                        <h3 id="result-title" class="text-xs font-black text-[#D4AF37] uppercase tracking-[0.4em] italic">Intel Report Summary</h3>
+                        <div class="w-10 h-10 rounded-full bg-slate-800/50 flex items-center justify-center border border-white/5"><i data-lucide="shield-check" size="18" class="text-[#34D399]"></i></div>
                     </div>
-                    <div id="result-list" class="flex-1 overflow-y-auto pr-2 scrollbar-hide space-y-1">
-                        <!-- Items injected here -->
+                    <div id="result-list" class="flex-1 overflow-y-auto pr-2 scrollbar-hide">
+                        <!-- Customer-based groups will be injected here -->
                     </div>
-                    <button onclick="closeResult()" class="mt-6 w-full py-4 bg-white text-slate-950 font-black text-[10px] uppercase tracking-[0.4em] rounded-xl shadow-xl hover:scale-[1.02] active:scale-95 transition-all">
-                        Initiate Next Planning <i data-lucide="chevron-right" class="inline ml-1" size="12"></i>
+                    <button onclick="closeResult()" class="mt-6 w-full py-4 bg-white text-slate-950 font-black text-[11px] uppercase tracking-[0.5em] rounded-2xl shadow-2xl hover:bg-emerald-50 active:scale-[0.98] transition-all">
+                        Initiate Next Planning <i data-lucide="chevron-right" class="inline ml-1" size="14"></i>
                     </button>
                 </div>
             </div>
 
-            <!-- Execution Progress Overlay -->
+            <!-- Execution Overlay -->
             <div id="exec-overlay" class="absolute inset-0 flex items-center justify-center z-[100] bg-slate-950/20 backdrop-blur-[2px] hidden">
                 <div class="bg-slate-900 px-12 py-6 rounded-full border border-slate-700 text-xs font-black tracking-[0.5em] text-white animate-pulse uppercase">Syncing Strategies...</div>
             </div>
 
-            <!-- Side Panel (Selected Customer) -->
-            <div id="side-panel" class="absolute top-4 right-4 bottom-4 w-44 glass-panel p-4 rounded-2xl shadow-2xl z-[100] hidden transition-all flex flex-col justify-between">
+            <!-- Side Panel -->
+            <div id="side-panel" class="absolute top-4 right-4 bottom-4 w-44 glass-panel p-4 rounded-2xl shadow-2xl z-[100] hidden flex flex-col justify-between">
                 <div>
                     <div class="flex justify-between items-start mb-4">
                         <div class="text-[10px] font-bold text-[#34D399] uppercase tracking-widest">Selected</div>
@@ -136,7 +136,7 @@
 
         <!-- Task List Area -->
         <div class="px-2 pt-2">
-            <div class="bg-[#020617] border-x border-t border-slate-800 px-6 py-2 h-20 overflow-y-auto border-b border-slate-800 shadow-inner text-white rounded-t-2xl">
+            <div class="bg-[#020617] border-x border-t border-slate-800 px-6 py-2 h-20 overflow-y-auto border-b border-slate-800 shadow-inner text-white rounded-t-2xl scrollbar-hide">
                 <div id="task-list" class="flex flex-wrap gap-2 items-start content-start"></div>
             </div>
             
@@ -147,7 +147,6 @@
 
         <!-- Log Feed -->
         <div class="bg-[#0F172A] border-x border-slate-800 p-4 font-mono text-[10px] h-32 overflow-hidden shadow-inner relative text-white">
-            <div class="absolute top-0 right-4 h-full flex items-center opacity-[0.03] pointer-events-none uppercase font-black text-6xl italic select-none">Intel</div>
             <div id="log-feed" class="flex flex-col gap-1"></div>
         </div>
 
@@ -158,10 +157,7 @@
                 <div class="flex items-center gap-2 text-[10px] font-bold text-slate-600 tracking-[0.2em] uppercase"><div class="w-3 h-3 rounded-sm bg-[#075985]"></div> RIVAL_I</div>
                 <div class="flex items-center gap-2 text-[10px] font-bold text-slate-600 tracking-[0.2em] uppercase"><div class="w-3 h-3 rounded-sm bg-[#4c1d95]"></div> RIVAL_A</div>
             </div>
-            <div class="flex items-center gap-4 border-l border-slate-800 pl-8 z-10">
-                <i data-lucide="trophy" size="26" class="text-[#D4AF37] opacity-80"></i>
-                <div id="sales-display" class="text-3xl font-light text-white tabular-nums italic tracking-tighter">¥0<span class="text-[14px] ml-1 opacity-20 font-normal">M</span></div>
-            </div>
+            <div id="sales-display" class="text-3xl font-light text-white tabular-nums italic tracking-tighter pl-8 border-l border-slate-800">¥0<span class="text-[14px] ml-1 opacity-20 font-normal">M</span></div>
         </div>
 
         <!-- Tools -->
@@ -193,7 +189,7 @@
             UNKNOWN: { id: 'UNKNOWN', name: '不明', color: '#1e293b' }
         };
 
-        const MAX_MAN_HOURS = 20; // 30から20に変更
+        const MAX_MAN_HOURS = 20;
 
         let state = {
             month: 1,
@@ -201,8 +197,7 @@
             sales: 0,
             selectedId: null,
             pendingTasks: [],
-            logs: ["インテリジェンス同期。盤面をスキャン中..."],
-            currentResults: [],
+            logs: ["盤面同期完了。戦略フェーズ待機中。"],
             changedIds: [],
             customers: [
                 { id: 1, name: 'NIT', full: 'ニトリHD', budget: 200, tileCount: 12, sier: 'BIPROGY', vendor: 'D', internalMonth: 42, visitCount: 0, studyCount: 0 },
@@ -233,7 +228,7 @@
             const pendingVisits = state.pendingTasks.filter(t => t.customerId === target.id && t.type === 'VISIT').length;
             const pendingStudies = state.pendingTasks.filter(t => t.customerId === target.id && t.type === 'PARTNER').length;
             const liveEffortBonus = (pendingVisits * 5) + (pendingStudies * 10);
-            return Math.max(5, Math.min(Math.round(base + vendorBonus + phaseBonus + effortBonus + liveEffortBonus), 99));
+            return Math.min(Math.max(5, Math.round(base + vendorBonus + phaseBonus + effortBonus + liveEffortBonus)), 99);
         }
 
         function updateUI() {
@@ -246,14 +241,13 @@
             const stats = { H: 0, D: 0, I: 0, A: 0, NONE: 0 };
             state.customers.forEach(c => stats[c.vendor] += c.budget);
             const total = 1000;
-            stats.NONE = Math.max(0, total - Object.values(stats).reduce((a, b) => a + b, 0));
             const bar = document.getElementById('share-bar');
             bar.innerHTML = '';
             ['H', 'D', 'I', 'A', 'NONE'].forEach(v => {
                 const pct = Math.round((stats[v] / total) * 100);
                 if (pct > 0) {
                     const div = document.createElement('div');
-                    div.className = "h-full flex items-center justify-center transition-all duration-700 border-r border-black/20 text-[9px] font-black text-white/90 uppercase px-1";
+                    div.className = "h-full flex items-center justify-center border-r border-black/20 text-[9px] font-black text-white px-1 transition-all";
                     div.style.width = `${pct}%`;
                     div.style.backgroundColor = VENDORS[v].color;
                     if (pct >= 8) div.innerText = `${v}:${pct}%`;
@@ -298,20 +292,19 @@
                 panel.classList.remove('hidden');
                 document.getElementById('panel-name').innerText = c.name;
                 document.getElementById('panel-full').innerText = c.full;
-                document.getElementById('panel-visit').innerText = c.visitCount;
-                document.getElementById('panel-study').innerText = c.studyCount;
+                document.getElementById('panel-visit').innerText = c.visitCount || 0;
+                document.getElementById('panel-study').innerText = c.studyCount || 0;
                 document.getElementById('panel-win-rate').innerText = `${calculateWinRate(c)}%`;
                 const statusEl = document.getElementById('panel-status');
                 if (c.visitCount > 0 || c.vendor === 'H') {
-                    // 改修ポイント：構築中の場合はベンダー名を表示
                     if (c.internalMonth >= 50) {
-                        statusEl.className = "text-[11px] font-bold text-white";
+                        statusEl.className = "text-[11px] font-bold text-white uppercase";
                         statusEl.innerText = `${VENDORS[c.vendor].name}が構築中 (M${c.internalMonth})`;
                     } else if (c.internalMonth >= 48) {
-                        statusEl.className = "text-[11px] font-bold text-yellow-400 animate-pulse";
+                        statusEl.className = "text-[11px] font-bold text-yellow-400 animate-pulse uppercase";
                         statusEl.innerText = `📄 提案依頼中 (M${c.internalMonth})`;
                     } else {
-                        statusEl.className = "text-[11px] font-bold text-slate-400";
+                        statusEl.className = "text-[11px] font-bold text-slate-400 uppercase";
                         statusEl.innerText = `通常運用 (M${c.internalMonth})`;
                     }
                 } else {
@@ -323,7 +316,7 @@
             const taskList = document.getElementById('task-list');
             taskList.innerHTML = '';
             if (state.pendingTasks.length === 0) {
-                taskList.innerHTML = '<span class="text-[10px] text-slate-700 italic tracking-widest uppercase">{" >>> "} Recon needed. No tasks queued.</span>';
+                taskList.innerHTML = '<span class="text-[10px] text-slate-700 italic tracking-widest uppercase italic">>>> WAITING FOR ORDERS...</span>';
             } else {
                 state.pendingTasks.forEach((t, i) => {
                     const div = document.createElement('div');
@@ -359,7 +352,7 @@
 
         function addTask(type, cost, label) {
             if (state.manHours < cost) {
-                state.logs.unshift("! 工数リソースが不足しています。");
+                state.logs.unshift("! 工数不足。");
                 updateUI(); return;
             }
             const c = state.customers.find(x => x.id === state.selectedId);
@@ -392,101 +385,139 @@
             document.getElementById('exec-overlay').classList.remove('hidden');
             let turnSales = 0;
             let turnChanges = [];
-            let monthResults = [];
+            let monthResultsByCustomer = {}; // グループ化
 
-            state.logs.unshift(`--- FY26M${state.month} 戦略フェーズ実行 ---`);
+            state.logs.unshift(`--- FY26M${state.month} オペレーション開始 ---`);
 
+            // 接触した顧客IDを収集
+            const interactedCustomerIds = [...new Set(state.pendingTasks.map(t => t.customerId))];
+            interactedCustomerIds.forEach(id => { monthResultsByCustomer[id] = []; });
+
+            // 1. User Actions
             for (let task of state.pendingTasks) {
                 await new Promise(r => setTimeout(r, 400));
                 let c = state.customers.find(x => x.id === task.customerId);
+                let res = { vendor: 'H', type: task.type };
+
                 if (task.type === 'VISIT') {
                     c.visitCount++;
-                    const msg = `[SELF] ${c.name} へ訪問。インテリジェンスを獲得しました。`;
-                    state.logs.unshift(msg);
-                    monthResults.push({ vendor: 'H', msg });
+                    res.msg = `[SELF] ${c.name} へ訪問。インテリジェンスを獲得しました。`;
+                    state.logs.unshift(res.msg);
                 } else if (task.type === 'PARTNER') {
                     c.studyCount++;
-                    const msg = `[SELF] ${c.name} 勉強会を実施。SIer連携を最適化しました。`;
-                    state.logs.unshift(msg);
-                    monthResults.push({ vendor: 'H', msg });
+                    res.msg = `[SELF] ${c.name} 勉強会実施。SIer連携を深めました。`;
+                    state.logs.unshift(res.msg);
                 } else if (task.type === 'PROPOSAL') {
-                    monthResults.push({ vendor: 'H', msg: `H社が${c.name}に提案を開始しました。` });
-                    await new Promise(r => setTimeout(r, 200));
+                    res.msg = `H社が${c.name}に提案を開始しました。`;
+                    await new Promise(r => setTimeout(r, 400));
                     if (Math.random() * 100 < calculateWinRate(c)) {
                         c.vendor = 'H'; c.internalMonth = 1; c.visitCount = 1; c.studyCount = 0;
                         turnSales += c.budget; turnChanges.push(c.id);
-                        const resMsg = `結果は、H社が受注しました。`;
+                        res.result = `結果は、H社が受注しました。`;
+                        res.success = true;
                         state.logs.unshift(`[SUCCESS] ${c.name} 奪還！`);
-                        monthResults.push({ vendor: 'H', msg: resMsg, success: true });
                     } else { 
-                        const resMsg = `結果は、H社が失注しました。`;
-                        state.logs.unshift(`[FAILED] ${c.name} 奪還ならず。`);
-                        monthResults.push({ vendor: 'H', msg: resMsg, success: false });
+                        res.result = `結果は、H社が失注しました。`;
+                        res.success = false;
+                        state.logs.unshift(`[FAILED] ${c.name} 失注。`);
                     }
                 }
+                monthResultsByCustomer[c.id].push(res);
                 updateUI();
             }
 
             state.sales += turnSales;
             state.pendingTasks = [];
 
-            // Rival Actions
-            state.logs.unshift(`--- ライバルベンダー同期 ---`);
+            // 2. Rivals Actions
+            state.logs.unshift(`--- 敵対勢力同期 ---`);
             const rivals = ['D', 'I', 'A'];
+            const rivalPicks = {};
+
             for (let rid of rivals) {
-                await new Promise(r => setTimeout(r, 400));
+                await new Promise(r => setTimeout(r, 300));
                 const targets = state.customers.filter(c => c.vendor !== rid);
-                let target = targets.sort((a, b) => b.budget - a.budget)[0];
-                const rfp = targets.filter(c => c.internalMonth >= 48 && c.internalMonth < 50);
-                if (rfp.length > 0) target = rfp[0];
+                if (targets.length === 0) continue;
 
-                monthResults.push({ vendor: rid, msg: `${VENDORS[rid].name}が${target.name}に提案を開始しました。` });
-                await new Promise(r => setTimeout(r, 200));
+                // Priority: RFP or High Budget
+                let rfpTargets = targets.filter(c => c.internalMonth >= 48 && c.internalMonth < 50);
+                let target = rfpTargets.length > 0 ? rfpTargets[Math.floor(Math.random() * rfpTargets.length)] : targets.sort((a, b) => b.budget - a.budget)[0];
+                
+                rivalPicks[rid] = target.id;
 
-                const chance = 10 + (target.internalMonth >= 48 ? 20 : 0);
-                if (Math.random() * 100 < chance) {
-                    const oldVendor = target.vendor;
+                const chance = 12 + (target.internalMonth >= 48 ? 20 : 0);
+                const isWin = Math.random() * 100 < chance;
+                if (isWin) {
                     target.vendor = rid; target.internalMonth = 1; target.visitCount = 0; target.studyCount = 0;
                     turnChanges.push(target.id);
-                    const resMsg = `結果は、${VENDORS[rid].name}が受注しました。`;
-                    state.logs.unshift(`[${rid}] ${target.name} を制圧。`);
-                    monthResults.push({ vendor: rid, msg: resMsg, success: true });
-                } else {
-                    const resMsg = `結果は、${VENDORS[rid].name}が失注しました。`;
-                    monthResults.push({ vendor: rid, msg: resMsg, success: false });
+                    state.logs.unshift(`[${rid}] ${target.name} 陥落。`);
+                }
+                
+                // 接触した顧客への攻撃であれば記録
+                if (interactedCustomerIds.includes(target.id)) {
+                    monthResultsByCustomer[target.id].push({
+                        vendor: rid,
+                        isProposal: true,
+                        success: isWin,
+                        msg: `${VENDORS[rid].name}が${target.name}に提案を開始しました。`,
+                        result: `結果は、${VENDORS[rid].name}が${isWin ? '受注' : '失注'}しました。`
+                    });
                 }
             }
 
+            // 3. Time Advance
             state.customers.forEach(c => { c.internalMonth = c.internalMonth >= 60 ? 1 : c.internalMonth + 1; });
             state.changedIds = turnChanges;
-            state.currentResults = monthResults;
-            
             document.getElementById('exec-overlay').classList.add('hidden');
             
+            // 4. Update Summary Popup
             const resultList = document.getElementById('result-list');
             resultList.innerHTML = '';
-            document.getElementById('result-title').innerText = `FY26M${state.month} Activity Summary`;
             
-            monthResults.forEach(r => {
-                const div = document.createElement('div');
-                div.className = "result-item flex items-start gap-3 animate-in fade-in slide-in-from-bottom-2 duration-300";
+            interactedCustomerIds.forEach(custId => {
+                const c = state.customers.find(x => x.id === custId);
+                const block = document.createElement('div');
+                block.className = "result-customer-block";
                 
-                let iconClass = "text-slate-500";
-                let iconName = "chevron-right";
-                if (r.vendor === 'H') {
-                    iconClass = r.success === false ? "text-rose-500" : (r.success === true ? "text-emerald-500" : "text-slate-400");
-                    iconName = r.success === false ? "shield-alert" : "shield-check";
-                } else {
-                    iconClass = r.success === true ? "text-sky-500" : "text-slate-600";
-                    iconName = r.success === true ? "zap" : "slash";
-                }
+                let html = `<div class="text-[10px] font-black text-[#D4AF37] mb-2 border-l-2 border-[#D4AF37] pl-2 uppercase italic tracking-widest">${c.name} Report</div>`;
+                
+                // 自社アクション
+                monthResultsByCustomer[custId].filter(r => r.vendor === 'H').forEach(r => {
+                    html += `
+                        <div class="flex items-start gap-2 mb-1 pl-2">
+                            <i data-lucide="${r.success === false ? 'shield-alert' : 'shield-check'}" size="12" class="${r.success === false ? 'text-rose-500' : 'text-[#34D399]'} mt-0.5"></i>
+                            <div class="text-[11px] text-slate-100">${r.msg} ${r.result || ''}</div>
+                        </div>
+                    `;
+                });
 
-                div.innerHTML = `
-                    <div class="mt-1"><i data-lucide="${iconName}" size="14" class="${iconClass}"></i></div>
-                    <div class="text-[10px] leading-relaxed text-slate-100 font-bold">${r.msg}</div>
-                `;
-                resultList.appendChild(div);
+                // 競合アクション状況
+                rivals.forEach(rid => {
+                    const rivalAct = monthResultsByCustomer[custId].find(r => r.vendor === rid);
+                    if (rivalAct) {
+                        html += `
+                            <div class="flex items-start gap-2 mb-1 pl-2">
+                                <i data-lucide="zap" size="12" class="text-sky-400 mt-0.5"></i>
+                                <div class="text-[11px] text-slate-100">${rivalAct.msg} <span class="block opacity-80">${rivalAct.result}</span></div>
+                            </div>
+                        `;
+                    } else {
+                        html += `
+                            <div class="flex items-start gap-2 mb-1 pl-2 opacity-40">
+                                <i data-lucide="minus" size="12" class="mt-0.5"></i>
+                                <div class="text-[11px] text-slate-400">${VENDORS[rid].name}の動きは確認できませんでした。</div>
+                            </div>
+                        `;
+                    }
+                });
+
+                block.innerHTML = html;
+                resultList.appendChild(block);
             });
+
+            if (interactedCustomerIds.length === 0) {
+                resultList.innerHTML = '<div class="text-[11px] text-slate-500 italic py-8 text-center">今月、接触したターゲット顧客において特筆すべき他社の動きは確認されませんでした。</div>';
+            }
 
             document.getElementById('result-overlay').classList.remove('hidden');
             lucide.createIcons();
@@ -494,21 +525,20 @@
         }
 
         function resetGame() { localStorage.removeItem('enterprise_hud_state'); location.reload(); }
-        function saveToLocal() { localStorage.setItem('enterprise_hud_state', JSON.stringify(state)); state.logs.unshift("セッションを保存しました。"); updateUI(); }
+        function saveToLocal() { localStorage.setItem('enterprise_hud_state', JSON.stringify(state)); state.logs.unshift("セッション保存完了。"); updateUI(); }
         function exportHTML() {
             let html = document.documentElement.outerHTML;
             const blob = new Blob([html], { type: 'text/html' });
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
-            a.download = `TheEnterprise_FY26M${state.month}_State.html`;
+            a.download = `TheEnterprise_FY26M${state.month}.html`;
             a.click();
         }
 
         window.onload = () => {
             const saved = localStorage.getItem('enterprise_hud_state');
             if (saved) {
-                const loaded = JSON.parse(saved);
-                state = loaded;
+                state = JSON.parse(saved);
                 state.pendingTasks = []; state.manHours = MAX_MAN_HOURS;
             }
             updateUI();
