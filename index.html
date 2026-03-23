@@ -1,147 +1,573 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The Enterprise: Strategic HUD</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Enterprise: 覇権奪還 - Strategic HUD</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #020617;
+            color: #94a3b8;
+        }
 
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://unpkg.com/lucide@latest"></script>
+        @keyframes rfp-blink { 
+            0%, 100% { border-color: #eab308; box-shadow: inset 0 0 10px #eab308; } 
+            50% { border-color: #fef08a; box-shadow: inset 0 0 4px #eab308; } 
+        }
+        @keyframes build-blink { 
+            0%, 100% { border-color: #ffffff; box-shadow: inset 0 0 10px #ffffff; } 
+            50% { border-color: #94a3b8; box-shadow: inset 0 0 2px #ffffff; } 
+        }
+        @keyframes pink-blink { 
+            0%, 100% { border-color: #f472b6; box-shadow: 0 0 10px #f472b6; } 
+            50% { border-color: #fce7f3; box-shadow: 0 0 20px #f472b6; } 
+        }
+        @keyframes popup-up { 
+            0% { transform: scale(0.95); opacity: 0; } 
+            100% { transform: scale(1); opacity: 1; } 
+        }
 
-<style>
-body { font-family: Inter, sans-serif; background:#020617; color:#94a3b8; }
+        .animate-rfp { animation: rfp-blink 0.8s infinite ease-in-out; border-width: 2px !important; }
+        .animate-build { animation: build-blink 1.2s infinite ease-in-out; border-width: 2px !important; }
+        .animate-pink { animation: pink-blink 1.0s infinite ease-in-out; border-width: 2px !important; z-index: 10; }
+        .result-popup-animate { animation: popup-up 0.3s forwards cubic-bezier(0, 0, 0.2, 1); }
 
-/* animations */
-@keyframes blink {0%,100%{opacity:1}50%{opacity:.4}}
-.animate-blink{animation:blink 1s infinite}
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
-.glass{background:rgba(15,23,42,.85);backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,.1)}
-</style>
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(32px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+        
+        .result-customer-block {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 16px 0;
+        }
+        .result-customer-block:last-child { border-bottom: none; }
+
+        .title-glow {
+            text-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+        }
+    </style>
 </head>
-
 <body class="overflow-hidden">
-<div id="app" class="max-w-lg mx-auto min-h-screen flex flex-col">
+    <div id="app" class="min-h-screen flex flex-col max-w-lg mx-auto shadow-2xl relative border-x border-slate-900 bg-[#020617]">
+        <!-- Share Bar -->
+        <div id="share-bar" class="w-full flex h-6 bg-slate-900 rounded-full overflow-hidden mt-2 mb-3 border border-slate-800 shadow-inner mx-2 w-[calc(100%-1rem)]"></div>
 
-<!-- HEADER -->
-<header class="p-4 border-b border-slate-800 flex justify-between">
-  <div>
-    <div class="text-xs text-yellow-400 tracking-widest">THE ENTERPRISE</div>
-    <div id="phase" class="text-3xl text-white">FY26M1</div>
-  </div>
-  <div class="text-right">
-    <div class="text-xs text-slate-500">MH</div>
-    <div id="mh" class="text-3xl text-green-400">20</div>
-  </div>
-</header>
+        <!-- HUD Header (Refined Title Bar) -->
+        <div class="flex justify-between items-start mb-4 border-b border-slate-800 pb-3 px-5 pt-2">
+            <div>
+                <div class="flex items-center gap-2 mb-1">
+                    <div class="w-2 h-2 rounded-full bg-[#D4AF37] animate-pulse"></div>
+                    <h1 class="text-[11px] font-black tracking-[0.5em] text-[#D4AF37] uppercase italic title-glow">The Enterprise</h1>
+                </div>
+                <div id="phase-display" class="text-4xl font-light text-white tracking-tighter italic leading-none">FY26M1</div>
+                <div class="text-[9px] text-slate-600 mt-1 uppercase font-bold tracking-widest">Architect Domain Status: Active</div>
+            </div>
+            <div class="text-right">
+                <div class="flex items-center justify-end gap-1 mb-1">
+                    <span class="text-[8px] text-slate-500 font-bold uppercase tracking-tighter">nimogram internal 4.0</span>
+                    <i data-lucide="info" size="8" class="text-slate-700"></i>
+                </div>
+                <div class="text-[9px] text-slate-500 font-bold uppercase tracking-[0.2em] italic mb-1">Resource (MH)</div>
+                <div id="man-hours-display" class="text-4xl font-light tabular-nums text-[#34D399] leading-none">20<span class="text-xs opacity-20 ml-1">/ 20</span></div>
+            </div>
+        </div>
 
-<!-- GRID -->
-<main class="flex-1 flex items-center justify-center p-4">
-  <div id="grid" class="grid grid-cols-8 gap-1 w-full aspect-square"></div>
-</main>
+        <!-- Grid View (8x8) -->
+        <div id="grid-container" class="flex-1 relative bg-black rounded-3xl border border-slate-900 overflow-hidden shadow-inner p-4 flex justify-center items-center m-2 mb-0">
+            <div id="grid" class="grid grid-cols-8 grid-rows-8 gap-1.5 w-full aspect-square transition-all duration-500"></div>
+            
+            <!-- Result Summary Overlay -->
+            <div id="result-overlay" class="absolute inset-0 flex items-center justify-center z-[150] bg-slate-950/60 backdrop-blur-sm hidden">
+                <div id="result-box" class="glass-panel w-[92%] max-h-[85%] rounded-[2.5rem] p-6 shadow-2xl overflow-hidden flex flex-col result-popup-animate">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 id="result-title" class="text-xs font-black text-[#D4AF37] uppercase tracking-[0.4em] italic">Intel Report Summary</h3>
+                        <div class="w-10 h-10 rounded-full bg-slate-800/50 flex items-center justify-center border border-white/5"><i data-lucide="shield-check" size="18" class="text-[#34D399]"></i></div>
+                    </div>
+                    <div id="result-list" class="flex-1 overflow-y-auto pr-2 scrollbar-hide">
+                        <!-- Customer-based groups will be injected here -->
+                    </div>
+                    <button onclick="closeResult()" class="mt-6 w-full py-4 bg-white text-slate-950 font-black text-[11px] uppercase tracking-[0.5em] rounded-2xl shadow-2xl hover:bg-emerald-50 active:scale-[0.98] transition-all">
+                        Initiate Next Planning <i data-lucide="chevron-right" class="inline ml-1" size="14"></i>
+                    </button>
+                </div>
+            </div>
 
-<!-- TASK -->
-<div class="p-4 border-t border-slate-800">
-  <button id="execute" class="w-full py-3 bg-white text-black font-bold disabled:opacity-30">
-    EXECUTE
-  </button>
-</div>
+            <!-- Execution Overlay -->
+            <div id="exec-overlay" class="absolute inset-0 flex items-center justify-center z-[100] bg-slate-950/20 backdrop-blur-[2px] hidden">
+                <div class="bg-slate-900 px-12 py-6 rounded-full border border-slate-700 text-xs font-black tracking-[0.5em] text-white animate-pulse uppercase">Syncing Strategies...</div>
+            </div>
 
-</div>
+            <!-- Side Panel -->
+            <div id="side-panel" class="absolute top-4 right-4 bottom-4 w-44 glass-panel p-4 rounded-2xl shadow-2xl z-[100] hidden flex flex-col justify-between border border-white/5">
+                <div>
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="text-[10px] font-bold text-[#34D399] uppercase tracking-widest">Target Intel</div>
+                        <button id="close-panel" class="text-slate-500 hover:text-white"><i data-lucide="x" size="16"></i></button>
+                    </div>
+                    <div id="panel-name" class="text-xl font-black text-white leading-tight mb-2 truncate">Customer</div>
+                    <div id="panel-full" class="text-[10px] text-slate-500 mb-4 italic leading-relaxed">Description</div>
+                    
+                    <div class="space-y-3 pt-4 border-t border-white/5">
+                        <div class="flex flex-col">
+                            <span class="text-[9px] uppercase text-slate-500 font-bold tracking-tighter mb-1">Current Status</span>
+                            <span id="panel-status" class="text-[11px] font-bold tracking-tight">Status Text</span>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-[9px] uppercase text-slate-500 font-bold tracking-widest">Win Prob</span>
+                            <span id="panel-win-rate" class="text-3xl font-light text-[#34D399] italic mt-1">0%</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 text-[10px]">
+                            <div class="bg-slate-900/50 p-2 rounded border border-white/5">
+                                <div class="text-slate-500 uppercase text-[8px]">Visit</div>
+                                <div id="panel-visit" class="text-white font-bold">0</div>
+                            </div>
+                            <div class="bg-slate-900/50 p-2 rounded border border-white/5">
+                                <div class="text-slate-500 uppercase text-[8px]">Study</div>
+                                <div id="panel-study" class="text-white font-bold">0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="space-y-2 mt-4">
+                    <button onclick="addTask('VISIT', 5, '訪問')" class="w-full py-2 bg-slate-900 border border-slate-800 rounded-lg text-[10px] font-bold text-slate-400 hover:text-white transition-all uppercase italic">Visit (5)</button>
+                    <button onclick="addTask('PARTNER', 8, '勉強会')" class="w-full py-2 bg-slate-900 border border-slate-800 rounded-lg text-[10px] font-bold text-slate-400 hover:text-white transition-all uppercase italic">Study (8)</button>
+                    <button id="proposal-btn-label" onclick="addTask('PROPOSAL', 10, '提案')" class="w-full py-3 rounded-lg text-[11px] font-black uppercase tracking-[0.2em] shadow-lg active:scale-95 transition-all italic border">Proposal (10)</button>
+                </div>
+            </div>
+        </div>
 
-<script>
-const MAX_MH = 20;
+        <!-- Task List Area -->
+        <div class="px-2 pt-2">
+            <div class="bg-[#020617] border-x border-t border-slate-800 px-6 py-2 h-20 overflow-y-auto border-b border-slate-800 shadow-inner text-white rounded-t-2xl scrollbar-hide">
+                <div id="task-list" class="flex flex-wrap gap-2 items-start content-start"></div>
+            </div>
+            
+            <button id="execute-btn" disabled class="w-full py-5 font-black text-[12px] shadow-2xl flex items-center justify-center gap-4 transition-all uppercase tracking-[0.4em] border-x border-slate-800 bg-slate-900 text-slate-700 cursor-not-allowed opacity-50">
+                Execute Operations <i data-lucide="list-checks" size="20"></i>
+            </button>
+        </div>
 
-const state = {
-  month:1,
-  mh:MAX_MH,
-  selected:null,
-  customers:[
-    {id:1,name:"札幌市",tiles:10,vendor:"D",month:48,visit:0},
-    {id:2,name:"北海道庁",tiles:8,vendor:"I",month:30,visit:0},
-    {id:3,name:"北大",tiles:6,vendor:"A",month:20,visit:0}
-  ]
-};
+        <!-- Log Feed -->
+        <div class="bg-[#0F172A] border-x border-slate-800 p-4 font-mono text-[10px] h-32 overflow-hidden shadow-inner relative text-white">
+            <div id="log-feed" class="flex flex-col gap-1"></div>
+        </div>
 
-const el = {
-  grid:document.getElementById("grid"),
-  phase:document.getElementById("phase"),
-  mh:document.getElementById("mh"),
-  execute:document.getElementById("execute")
-};
+        <!-- Score Bar -->
+        <div class="bg-slate-950 rounded-b-[3rem] p-6 flex justify-between items-center border-x border-b border-slate-800 shadow-2xl relative overflow-hidden">
+            <div class="flex gap-4 items-center z-10">
+                <div class="flex items-center gap-2 text-[10px] font-bold text-slate-600 tracking-[0.2em] uppercase"><div class="w-3 h-3 rounded-sm bg-[#064e3b]"></div> SELF</div>
+                <div class="flex items-center gap-2 text-[10px] font-bold text-slate-600 tracking-[0.2em] uppercase"><div class="w-3 h-3 rounded-sm bg-[#075985]"></div> RIVAL_I</div>
+                <div class="flex items-center gap-2 text-[10px] font-bold text-slate-600 tracking-[0.2em] uppercase"><div class="w-3 h-3 rounded-sm bg-[#4c1d95]"></div> RIVAL_A</div>
+            </div>
+            <div id="sales-display" class="text-3xl font-light text-white tabular-nums italic tracking-tighter pl-8 border-l border-slate-800">¥0<span class="text-[14px] ml-1 opacity-20 font-normal">M</span></div>
+        </div>
 
-/* ---------- CORE ---------- */
+        <!-- Tools -->
+        <div class="absolute top-2 right-4 flex gap-2 z-[200]">
+            <button onclick="saveToLocal()" title="Save Session" class="p-2 bg-slate-900/50 rounded-full hover:bg-slate-800 text-slate-500 hover:text-white transition-all"><i data-lucide="save" size="14"></i></button>
+            <button onclick="exportHTML()" title="Export HTML with State" class="p-2 bg-slate-900/50 rounded-full hover:bg-slate-800 text-slate-500 hover:text-white transition-all"><i data-lucide="download" size="14"></i></button>
+        </div>
+    </div>
 
-function render(){
-  el.phase.textContent = `FY26M${state.month}`;
-  el.mh.textContent = state.mh;
+    <!-- Final Summary Modal -->
+    <div id="summary-modal" class="fixed inset-0 bg-slate-950/98 z-[200] flex items-center justify-center p-8 backdrop-blur-2xl hidden animate-in fade-in duration-1000">
+        <div class="bg-[#0F172A] border border-slate-800 rounded-[4rem] p-12 w-full max-w-md shadow-2xl relative overflow-hidden text-center">
+            <h2 class="text-5xl font-black italic tracking-tighter mb-10 text-white leading-none uppercase">FY26 Complete</h2>
+            <div class="bg-slate-900/50 p-10 rounded-[3rem] border border-slate-800 mb-8 shadow-inner">
+                <span class="text-[12px] font-bold text-slate-500 uppercase tracking-[0.4em] block mb-2">Total Revenue</span>
+                <div id="final-sales" class="text-8xl font-black tracking-tighter text-[#34D399] italic leading-none">¥0<span class="text-3xl ml-3 opacity-30 font-light text-white">M</span></div>
+            </div>
+            <button onclick="resetGame()" class="w-full bg-white text-slate-950 py-7 rounded-3xl font-black text-sm uppercase tracking-[0.4em] flex items-center justify-center gap-4 hover:bg-emerald-50 transition-all">Restart Mission <i data-lucide="chevron-right"></i></button>
+        </div>
+    </div>
 
-  renderGrid();
-}
+    <script>
+        const VENDORS = {
+            H: { id: 'H', name: 'H社', color: '#064e3b' },
+            D: { id: 'D', name: 'D社', color: '#0f172a' },
+            I: { id: 'I', name: 'I社', color: '#075985' },
+            A: { id: 'A', name: 'A社', color: '#4c1d95' },
+            NONE: { id: 'NONE', name: '未開拓', color: '#020617' },
+            UNKNOWN: { id: 'UNKNOWN', name: '不明', color: '#1e293b' }
+        };
 
-function renderGrid(){
-  el.grid.innerHTML = "";
+        const MAX_MAN_HOURS = 20;
 
-  let tiles = [];
+        let state = {
+            month: 1,
+            manHours: MAX_MAN_HOURS,
+            sales: 0,
+            selectedId: null,
+            pendingTasks: [],
+            logs: ["盤面同期完了。戦略フェーズ待機中。"],
+            changedIds: [],
+            customers: [
+                { id: 1, name: 'NIT', full: 'ニトリHD', budget: 200, tileCount: 12, sier: 'BIPROGY', vendor: 'D', internalMonth: 42, visitCount: 0, studyCount: 0 },
+                { id: 2, name: 'SAP', full: '札幌市', budget: 135, tileCount: 9, sier: 'HBA', vendor: 'I', internalMonth: 48, visitCount: 0, studyCount: 0 },
+                { id: 3, name: 'HDC', full: '北海道庁', budget: 120, tileCount: 8, sier: 'HBA', vendor: 'I', internalMonth: 30, visitCount: 0, studyCount: 0 },
+                { id: 4, name: 'HOU', full: '北海道大学', budget: 110, tileCount: 7, sier: 'BIPROGY', vendor: 'A', internalMonth: 18, visitCount: 0, studyCount: 0 },
+                { id: 5, name: 'TSU', full: 'ツルハHD', budget: 80, tileCount: 5, sier: 'BIPROGY', vendor: 'D', internalMonth: 45, visitCount: 0, studyCount: 0 },
+                { id: 6, name: 'JRH', full: 'JR北海道', budget: 70, tileCount: 4, sier: 'NTTD', vendor: 'I', internalMonth: 50, visitCount: 0, studyCount: 0 },
+                { id: 7, name: 'HKL', full: 'ホクレン', budget: 60, tileCount: 4, sier: 'HBA', vendor: 'H', internalMonth: 5, visitCount: 0, studyCount: 0 },
+                { id: 8, name: 'AIN', full: 'アインHD', budget: 50, tileCount: 3, sier: 'BIPROGY', vendor: 'D', internalMonth: 35, visitCount: 0, studyCount: 0 },
+                { id: 9, name: 'HYB', full: '北洋銀行', budget: 50, tileCount: 3, sier: 'NTTD', vendor: 'I', internalMonth: 40, visitCount: 0, studyCount: 0 },
+                { id: 10, name: 'SAT', full: 'サツドラHD', budget: 40, tileCount: 3, sier: 'NTTD', vendor: 'H', internalMonth: 58, visitCount: 0, studyCount: 0 },
+                { id: 11, name: 'HRP', full: 'HARP', budget: 30, tileCount: 2, sier: 'HBA', vendor: 'I', internalMonth: 20, visitCount: 0, studyCount: 0 },
+                { id: 12, name: 'HPP', full: '北海道警察', budget: 25, tileCount: 2, sier: 'HBA', vendor: 'I', internalMonth: 32, visitCount: 0, studyCount: 0 },
+                { id: 13, name: 'GAS', full: '北海道ガス', budget: 20, tileCount: 1, sier: 'OTHER', vendor: 'A', internalMonth: 44, visitCount: 0, studyCount: 0 },
+                { id: 14, name: 'KNM', full: 'カナモト', budget: 20, tileCount: 1, sier: 'HBA', vendor: 'D', internalMonth: 12, visitCount: 0, studyCount: 0 },
+            ]
+        };
 
-  state.customers.forEach(c=>{
-    for(let i=0;i<c.tiles;i++){
-      tiles.push(c);
-    }
-  });
+        function calculateWinRate(target) {
+            if (!target) return 0;
+            let base = 10;
+            const vendorBonus = target.vendor === 'H' ? 40 : 0;
+            let phaseBonus = 0;
+            if (target.internalMonth >= 48 && target.internalMonth < 50) phaseBonus = 40;
+            else if (target.internalMonth >= 50) phaseBonus = -20;
+            const effortBonus = (target.visitCount * 5) + (target.studyCount * 10);
+            const pendingVisits = state.pendingTasks.filter(t => t.customerId === target.id && t.type === 'VISIT').length;
+            const pendingStudies = state.pendingTasks.filter(t => t.customerId === target.id && t.type === 'PARTNER').length;
+            const liveEffortBonus = (pendingVisits * 5) + (pendingStudies * 10);
+            return Math.min(Math.max(5, Math.round(base + vendorBonus + phaseBonus + effortBonus + liveEffortBonus)), 99);
+        }
 
-  while(tiles.length<64) tiles.push(null);
+        function updateUI() {
+            document.getElementById('phase-display').innerText = `FY26M${state.month}`;
+            const mhEl = document.getElementById('man-hours-display');
+            mhEl.innerHTML = `${state.manHours}<span class="text-xs opacity-20 ml-2">/ ${MAX_MAN_HOURS}</span>`;
+            mhEl.className = `text-4xl font-light tabular-nums ${state.manHours < 5 ? 'text-rose-500' : 'text-[#34D399]'}`;
+            document.getElementById('sales-display').innerHTML = `¥${state.sales}<span class="text-[14px] ml-1 opacity-20 font-normal">M</span>`;
 
-  tiles.forEach(c=>{
-    const div=document.createElement("div");
+            const stats = { H: 0, D: 0, I: 0, A: 0, NONE: 0 };
+            state.customers.forEach(c => stats[c.vendor] += c.budget);
+            const total = 1000;
+            const bar = document.getElementById('share-bar');
+            bar.innerHTML = '';
+            ['H', 'D', 'I', 'A', 'NONE'].forEach(v => {
+                const pct = Math.round((stats[v] / total) * 100);
+                if (pct > 0) {
+                    const div = document.createElement('div');
+                    div.className = "h-full flex items-center justify-center border-r border-black/20 text-[9px] font-black text-white px-1 transition-all";
+                    div.style.width = `${pct}%`;
+                    div.style.backgroundColor = VENDORS[v].color;
+                    if (pct >= 8) div.innerText = `${v}:${pct}%`;
+                    bar.appendChild(div);
+                }
+            });
 
-    div.className="aspect-square border border-slate-700 cursor-pointer flex items-center justify-center text-xs";
+            const grid = document.getElementById('grid');
+            grid.innerHTML = '';
+            let tilesData = [];
+            state.customers.forEach(cust => {
+                const year = Math.ceil(cust.internalMonth / 12);
+                const isInfoDisclosed = (cust.visitCount > 0) || (cust.vendor === 'H');
+                const isRFP = isInfoDisclosed && (cust.internalMonth >= 48 && cust.internalMonth < 50);
+                const isBuild = isInfoDisclosed && (cust.internalMonth >= 50);
+                for (let i = 0; i < cust.tileCount; i++) {
+                    tilesData.push({ id: cust.id, vendor: cust.vendor, year, isRFP, isBuild, isInfoDisclosed });
+                }
+            });
+            while (tilesData.length < 64) tilesData.push({ id: null, vendor: 'NONE' });
 
-    if(c){
-      div.textContent = "Y"+Math.ceil(c.month/12);
-      div.style.background = getColor(c.vendor);
+            tilesData.slice(0, 64).forEach(t => {
+                const tile = document.createElement('div');
+                tile.className = `w-full aspect-square cursor-pointer transition-all duration-300 border-[1.5px] border-white/10 relative flex items-center justify-center 
+                                ${t.isRFP ? 'animate-rfp' : ''} ${t.isBuild ? 'animate-build' : ''} 
+                                ${state.changedIds.includes(t.id) ? 'animate-pink' : ''} 
+                                ${state.selectedId === t.id ? 'z-20 opacity-100 shadow-[0_0_20px_white] scale-110 border-white' : 'opacity-90'}`;
+                tile.style.backgroundColor = t.isInfoDisclosed ? VENDORS[t.vendor].color : VENDORS.UNKNOWN.color;
+                if (t.year > 0) {
+                    const span = document.createElement('span');
+                    span.className = "text-[10px] font-black text-white/80 pointer-events-none drop-shadow-md";
+                    span.innerText = t.isInfoDisclosed ? `Y${t.year}` : 'Y?';
+                    tile.appendChild(span);
+                }
+                tile.onclick = () => { state.selectedId = t.id; updateUI(); };
+                grid.appendChild(tile);
+            });
 
-      if(state.selected===c.id){
-        div.classList.add("ring-2","ring-white");
-      }
+            const panel = document.getElementById('side-panel');
+            if (state.selectedId) {
+                const c = state.customers.find(x => x.id === state.selectedId);
+                panel.classList.remove('hidden');
+                document.getElementById('panel-name').innerText = c.name;
+                document.getElementById('panel-full').innerText = c.full;
+                document.getElementById('panel-visit').innerText = c.visitCount || 0;
+                document.getElementById('panel-study').innerText = c.studyCount || 0;
+                document.getElementById('panel-win-rate').innerText = `${calculateWinRate(c)}%`;
+                
+                const statusEl = document.getElementById('panel-status');
+                const proposalBtn = document.getElementById('proposal-btn-label');
+                const isRFP = c.internalMonth >= 48 && c.internalMonth < 50;
+                
+                // Proposal Button Logic (Hidden or Grayed out)
+                if ((c.visitCount > 0 || c.vendor === 'H') && isRFP) {
+                    proposalBtn.disabled = false;
+                    proposalBtn.className = "w-full py-3 bg-[#064e3b] border-[#34D399] text-[#ECFDF5] rounded-lg text-[11px] font-black uppercase tracking-[0.2em] shadow-lg active:scale-95 transition-all italic border";
+                } else {
+                    proposalBtn.disabled = true;
+                    proposalBtn.className = "w-full py-3 bg-slate-900 border-slate-800 text-slate-700 rounded-lg text-[11px] font-black uppercase tracking-[0.2em] transition-all italic border cursor-not-allowed";
+                }
 
-      div.onclick=()=>{
-        state.selected=c.id;
-        render();
-      };
-    }
+                if (c.visitCount > 0 || c.vendor === 'H') {
+                    if (c.internalMonth >= 50) {
+                        statusEl.className = "text-[11px] font-bold text-white uppercase";
+                        statusEl.innerText = `${VENDORS[c.vendor].name}が構築中 (M${c.internalMonth})`;
+                    } else if (isRFP) {
+                        statusEl.className = "text-[11px] font-bold text-yellow-400 animate-pulse uppercase";
+                        statusEl.innerText = `📄 提案依頼中 (M${c.internalMonth})`;
+                    } else {
+                        statusEl.className = "text-[11px] font-bold text-slate-400 uppercase";
+                        statusEl.innerText = `通常運用 (M${c.internalMonth})`;
+                    }
+                } else {
+                    statusEl.className = "text-[11px] font-bold text-slate-600 italic";
+                    statusEl.innerText = "情報未取得";
+                }
+            } else { panel.classList.add('hidden'); }
 
-    el.grid.appendChild(div);
-  });
-}
+            const taskList = document.getElementById('task-list');
+            taskList.innerHTML = '';
+            if (state.pendingTasks.length === 0) {
+                taskList.innerHTML = '<span class="text-[10px] text-slate-700 italic tracking-widest uppercase italic">>>> WAITING FOR ORDERS...</span>';
+            } else {
+                state.pendingTasks.forEach((t, i) => {
+                    const div = document.createElement('div');
+                    div.className = "bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 flex items-center gap-2 animate-in slide-in-from-left-2 duration-300";
+                    div.innerHTML = `<span class="text-[10px] font-black text-[#34D399] uppercase leading-none">${t.customerName}</span>
+                                     <span class="text-[9px] text-slate-500 uppercase font-bold tracking-tighter">${t.label}</span>
+                                     <button onclick="removeTask(${i})" class="text-rose-500 hover:text-rose-300"><i data-lucide="x" size="12"></i></button>`;
+                    taskList.appendChild(div);
+                });
+            }
 
-/* ---------- LOGIC ---------- */
+            const btn = document.getElementById('execute-btn');
+            btn.innerText = `Execute M${state.month} Strategy`;
+            if (state.pendingTasks.length > 0) {
+                btn.disabled = false;
+                btn.className = "w-full py-5 font-black text-[12px] shadow-2xl flex items-center justify-center gap-4 transition-all uppercase tracking-[0.4em] border-x border-slate-800 bg-white text-slate-950 hover:bg-emerald-50 active:scale-95 cursor-pointer";
+            } else {
+                btn.disabled = true;
+                btn.className = "w-full py-5 font-black text-[12px] shadow-2xl flex items-center justify-center gap-4 transition-all uppercase tracking-[0.4em] border-x border-slate-800 bg-slate-900 text-slate-700 cursor-not-allowed opacity-50";
+            }
 
-function getColor(v){
-  return {
-    H:"#064e3b",
-    D:"#0f172a",
-    I:"#075985",
-    A:"#4c1d95"
-  }[v] || "#111";
-}
+            const feed = document.getElementById('log-feed');
+            feed.innerHTML = '';
+            state.logs.forEach((l, i) => {
+                const div = document.createElement('div');
+                div.className = `${i === 0 ? 'text-[#34D399] font-bold' : 'text-slate-600'} mb-1 truncate`;
+                div.innerText = `${i === 0 ? '>>> ' : '... '}${l}`;
+                feed.appendChild(div);
+            });
 
-/* ---------- ACTION ---------- */
+            lucide.createIcons();
+        }
 
-el.execute.onclick = ()=>{
-  state.month++;
-  state.mh = MAX_MH;
+        function addTask(type, cost, label) {
+            if (state.manHours < cost) {
+                state.logs.unshift("! 工数不足。");
+                updateUI(); return;
+            }
+            const c = state.customers.find(x => x.id === state.selectedId);
+            
+            // Double check RFP for proposal
+            if (type === 'PROPOSAL') {
+                const isRFP = c.internalMonth >= 48 && c.internalMonth < 50;
+                if (!isRFP) {
+                    state.logs.unshift(`! ${c.name} はまだRFPフェーズではありません。`);
+                    updateUI(); return;
+                }
+            }
 
-  state.customers.forEach(c=>{
-    c.month++;
-  });
+            state.pendingTasks.push({ customerId: c.id, customerName: c.name, type, cost, label });
+            state.manHours -= cost;
+            updateUI();
+        }
 
-  render();
-};
+        function removeTask(index) {
+            const task = state.pendingTasks[index];
+            state.manHours += task.cost;
+            state.pendingTasks.splice(index, 1);
+            updateUI();
+        }
 
-/* ---------- INIT ---------- */
-render();
-lucide.createIcons();
-</script>
+        function closeResult() {
+            document.getElementById('result-overlay').classList.add('hidden');
+            if (state.month === 12) {
+                document.getElementById('final-sales').innerHTML = `¥${state.sales}<span class="text-3xl ml-3 opacity-30 font-light text-white">M</span>`;
+                document.getElementById('summary-modal').classList.remove('hidden');
+            } else {
+                state.month++;
+                state.manHours = MAX_MAN_HOURS;
+                state.changedIds = [];
+                updateUI();
+            }
+        }
 
+        async function executeStrategy() {
+            document.getElementById('exec-overlay').classList.remove('hidden');
+            let turnSales = 0;
+            let turnChanges = [];
+            let monthResultsByCustomer = {}; 
+
+            state.logs.unshift(`--- FY26M${state.month} オペレーション開始 ---`);
+
+            const interactedCustomerIds = [...new Set(state.pendingTasks.map(t => t.customerId))];
+            interactedCustomerIds.forEach(id => { monthResultsByCustomer[id] = []; });
+
+            for (let task of state.pendingTasks) {
+                await new Promise(r => setTimeout(r, 400));
+                let c = state.customers.find(x => x.id === task.customerId);
+                let res = { vendor: 'H', type: task.type };
+
+                if (task.type === 'VISIT') {
+                    c.visitCount++;
+                    res.msg = `[SELF] ${c.name} へ訪問。インテリジェンスを獲得しました。`;
+                    state.logs.unshift(res.msg);
+                } else if (task.type === 'PARTNER') {
+                    c.studyCount++;
+                    res.msg = `[SELF] ${c.name} 勉強会実施。SIer連携を深めました。`;
+                    state.logs.unshift(res.msg);
+                } else if (task.type === 'PROPOSAL') {
+                    res.msg = `H社が${c.name}に提案を開始しました。`;
+                    await new Promise(r => setTimeout(r, 400));
+                    if (Math.random() * 100 < calculateWinRate(c)) {
+                        c.vendor = 'H'; c.internalMonth = 1; c.visitCount = 1; c.studyCount = 0;
+                        turnSales += c.budget; turnChanges.push(c.id);
+                        res.result = `結果は、H社が受注しました。`;
+                        res.success = true;
+                        state.logs.unshift(`[SUCCESS] ${c.name} 奪還！`);
+                    } else { 
+                        res.result = `結果は、H社が失注しました。`;
+                        res.success = false;
+                        state.logs.unshift(`[FAILED] ${c.name} 失注。`);
+                    }
+                }
+                monthResultsByCustomer[c.id].push(res);
+                updateUI();
+            }
+
+            state.sales += turnSales;
+            state.pendingTasks = [];
+
+            state.logs.unshift(`--- 敵対勢力同期 ---`);
+            const rivals = ['D', 'I', 'A'];
+
+            for (let rid of rivals) {
+                await new Promise(r => setTimeout(r, 300));
+                const targets = state.customers.filter(c => c.vendor !== rid);
+                if (targets.length === 0) continue;
+
+                let rfpTargets = targets.filter(c => c.internalMonth >= 48 && c.internalMonth < 50);
+                let target = rfpTargets.length > 0 ? rfpTargets[Math.floor(Math.random() * rfpTargets.length)] : targets.sort((a, b) => b.budget - a.budget)[0];
+                
+                const chance = 12 + (target.internalMonth >= 48 ? 20 : 0);
+                const isWin = Math.random() * 100 < chance;
+                if (isWin) {
+                    target.vendor = rid; target.internalMonth = 1; target.visitCount = 0; target.studyCount = 0;
+                    turnChanges.push(target.id);
+                    state.logs.unshift(`[${rid}] ${target.name} 陥落。`);
+                }
+                
+                if (interactedCustomerIds.includes(target.id)) {
+                    monthResultsByCustomer[target.id].push({
+                        vendor: rid,
+                        isProposal: true,
+                        success: isWin,
+                        msg: `${VENDORS[rid].name}が${target.name}に提案を開始しました。`,
+                        result: `結果は、${VENDORS[rid].name}が${isWin ? '受注' : '失注'}しました。`
+                    });
+                }
+            }
+
+            state.customers.forEach(c => { c.internalMonth = c.internalMonth >= 60 ? 1 : c.internalMonth + 1; });
+            state.changedIds = turnChanges;
+            document.getElementById('exec-overlay').classList.add('hidden');
+            
+            const resultList = document.getElementById('result-list');
+            resultList.innerHTML = '';
+            
+            interactedCustomerIds.forEach(custId => {
+                const c = state.customers.find(x => x.id === custId);
+                const block = document.createElement('div');
+                block.className = "result-customer-block";
+                
+                let html = `<div class="text-[10px] font-black text-[#D4AF37] mb-2 border-l-2 border-[#D4AF37] pl-2 uppercase italic tracking-widest">${c.name} Report</div>`;
+                
+                monthResultsByCustomer[custId].filter(r => r.vendor === 'H').forEach(r => {
+                    html += `
+                        <div class="flex items-start gap-2 mb-1 pl-2">
+                            <i data-lucide="${r.success === false ? 'shield-alert' : 'shield-check'}" size="12" class="${r.success === false ? 'text-rose-500' : 'text-[#34D399]'} mt-0.5"></i>
+                            <div class="text-[11px] text-slate-100">${r.msg} ${r.result || ''}</div>
+                        </div>
+                    `;
+                });
+
+                rivals.forEach(rid => {
+                    const rivalAct = monthResultsByCustomer[custId].find(r => r.vendor === rid);
+                    if (rivalAct) {
+                        html += `
+                            <div class="flex items-start gap-2 mb-1 pl-2">
+                                <i data-lucide="zap" size="12" class="text-sky-400 mt-0.5"></i>
+                                <div class="text-[11px] text-slate-100">${rivalAct.msg} <span class="block opacity-80">${rivalAct.result}</span></div>
+                            </div>
+                        `;
+                    } else {
+                        html += `
+                            <div class="flex items-start gap-2 mb-1 pl-2 opacity-40">
+                                <i data-lucide="minus" size="12" class="mt-0.5"></i>
+                                <div class="text-[11px] text-slate-400">${VENDORS[rid].name}の動きは確認できませんでした。</div>
+                            </div>
+                        `;
+                    }
+                });
+
+                block.innerHTML = html;
+                resultList.appendChild(block);
+            });
+
+            if (interactedCustomerIds.length === 0) {
+                resultList.innerHTML = '<div class="text-[11px] text-slate-500 italic py-8 text-center">接触履歴なし。戦域の静寂を確認。</div>';
+            }
+
+            document.getElementById('result-overlay').classList.remove('hidden');
+            lucide.createIcons();
+            localStorage.setItem('enterprise_hud_state', JSON.stringify(state));
+        }
+
+        function resetGame() { localStorage.removeItem('enterprise_hud_state'); location.reload(); }
+        function saveToLocal() { localStorage.setItem('enterprise_hud_state', JSON.stringify(state)); state.logs.unshift("セッション保存完了。"); updateUI(); }
+        function exportHTML() {
+            let html = document.documentElement.outerHTML;
+            const blob = new Blob([html], { type: 'text/html' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `TheEnterprise_FY26M${state.month}.html`;
+            a.click();
+        }
+
+        window.onload = () => {
+            const saved = localStorage.getItem('enterprise_hud_state');
+            if (saved) {
+                state = JSON.parse(saved);
+                state.pendingTasks = []; state.manHours = MAX_MAN_HOURS;
+            }
+            updateUI();
+            document.getElementById('close-panel').onclick = () => { state.selectedId = null; updateUI(); };
+            document.getElementById('execute-btn').onclick = executeStrategy;
+        };
+    </script>
 </body>
 </html>
