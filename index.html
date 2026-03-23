@@ -1,220 +1,147 @@
-<!-- ニモさん専用：プロダクト品質版 -->
-<!-- UI完全維持 / 内部完全リファクタ -->
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Enterprise: Strategic HUD</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+
+<style>
+body { font-family: Inter, sans-serif; background:#020617; color:#94a3b8; }
+
+/* animations */
+@keyframes blink {0%,100%{opacity:1}50%{opacity:.4}}
+.animate-blink{animation:blink 1s infinite}
+
+.glass{background:rgba(15,23,42,.85);backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,.1)}
+</style>
+</head>
+
+<body class="overflow-hidden">
+<div id="app" class="max-w-lg mx-auto min-h-screen flex flex-col">
+
+<!-- HEADER -->
+<header class="p-4 border-b border-slate-800 flex justify-between">
+  <div>
+    <div class="text-xs text-yellow-400 tracking-widest">THE ENTERPRISE</div>
+    <div id="phase" class="text-3xl text-white">FY26M1</div>
+  </div>
+  <div class="text-right">
+    <div class="text-xs text-slate-500">MH</div>
+    <div id="mh" class="text-3xl text-green-400">20</div>
+  </div>
+</header>
+
+<!-- GRID -->
+<main class="flex-1 flex items-center justify-center p-4">
+  <div id="grid" class="grid grid-cols-8 gap-1 w-full aspect-square"></div>
+</main>
+
+<!-- TASK -->
+<div class="p-4 border-t border-slate-800">
+  <button id="execute" class="w-full py-3 bg-white text-black font-bold disabled:opacity-30">
+    EXECUTE
+  </button>
+</div>
+
+</div>
 
 <script>
-/* ================= CONFIG ================= */
-const CONFIG = {
-  MAX_MAN_HOURS: 20,
-  LOG_LIMIT: 60
+const MAX_MH = 20;
+
+const state = {
+  month:1,
+  mh:MAX_MH,
+  selected:null,
+  customers:[
+    {id:1,name:"札幌市",tiles:10,vendor:"D",month:48,visit:0},
+    {id:2,name:"北海道庁",tiles:8,vendor:"I",month:30,visit:0},
+    {id:3,name:"北大",tiles:6,vendor:"A",month:20,visit:0}
+  ]
 };
 
-/* ================= STORE ================= */
-const Store = {
-  state: null,
-
-  init(initial) {
-    this.state = initial;
-  },
-
-  get() {
-    return this.state;
-  },
-
-  set(updater) {
-    this.state = updater(this.state);
-    UI.renderAll();
-  }
+const el = {
+  grid:document.getElementById("grid"),
+  phase:document.getElementById("phase"),
+  mh:document.getElementById("mh"),
+  execute:document.getElementById("execute")
 };
 
-/* ================= UTILS ================= */
-const delay = (ms) => new Promise(res => setTimeout(res, ms));
+/* ---------- CORE ---------- */
 
-const addLog = (msg) => {
-  const s = Store.get();
-  s.logs.unshift(msg);
-  if (s.logs.length > CONFIG.LOG_LIMIT) s.logs.pop();
-};
+function render(){
+  el.phase.textContent = `FY26M${state.month}`;
+  el.mh.textContent = state.mh;
 
-/* ================= GAME ================= */
-const Game = {
+  renderGrid();
+}
 
-  winRate(target) {
-    if (!target) return 0;
-    let base = 10;
-    if (target.vendor === 'H') base += 40;
+function renderGrid(){
+  el.grid.innerHTML = "";
 
-    if (target.internalMonth >= 48 && target.internalMonth < 50) base += 40;
-    else if (target.internalMonth >= 50) base -= 20;
+  let tiles = [];
 
-    base += target.visitCount * 5;
-    base += target.studyCount * 10;
+  state.customers.forEach(c=>{
+    for(let i=0;i<c.tiles;i++){
+      tiles.push(c);
+    }
+  });
 
-    return Math.min(Math.max(base, 5), 99);
-  },
+  while(tiles.length<64) tiles.push(null);
 
-  addTask(type, cost, label) {
-    Store.set(state => {
-      if (state.manHours < cost) {
-        addLog("! 工数不足");
-        return state;
+  tiles.forEach(c=>{
+    const div=document.createElement("div");
+
+    div.className="aspect-square border border-slate-700 cursor-pointer flex items-center justify-center text-xs";
+
+    if(c){
+      div.textContent = "Y"+Math.ceil(c.month/12);
+      div.style.background = getColor(c.vendor);
+
+      if(state.selected===c.id){
+        div.classList.add("ring-2","ring-white");
       }
 
-      const c = state.customers.find(x => x.id === state.selectedId);
-      if (!c) return state;
-
-      return {
-        ...state,
-        manHours: state.manHours - cost,
-        pendingTasks: [...state.pendingTasks, {
-          customerId: c.id,
-          customerName: c.name,
-          type,
-          cost,
-          label
-        }]
+      div.onclick=()=>{
+        state.selected=c.id;
+        render();
       };
-    });
-  },
-
-  removeTask(index) {
-    Store.set(state => {
-      const task = state.pendingTasks[index];
-      return {
-        ...state,
-        manHours: state.manHours + task.cost,
-        pendingTasks: state.pendingTasks.filter((_, i) => i !== index)
-      };
-    });
-  },
-
-  async execute() {
-    const state = Store.get();
-    DOM.execOverlay.classList.remove('hidden');
-
-    let turnSales = 0;
-    let turnChanges = [];
-
-    for (let task of state.pendingTasks) {
-      await delay(300);
-      const c = state.customers.find(x => x.id === task.customerId);
-
-      if (task.type === 'VISIT') {
-        c.visitCount++;
-        addLog(`訪問 ${c.name}`);
-      }
-
-      if (task.type === 'PARTNER') {
-        c.studyCount++;
-        addLog(`勉強会 ${c.name}`);
-      }
-
-      if (task.type === 'PROPOSAL') {
-        if (Math.random() * 100 < Game.winRate(c)) {
-          c.vendor = 'H';
-          c.internalMonth = 1;
-          turnSales += c.budget;
-          turnChanges.push(c.id);
-          addLog(`成功 ${c.name}`);
-        } else {
-          addLog(`失敗 ${c.name}`);
-        }
-      }
-
-      UI.renderAll();
     }
 
-    Store.set(s => ({
-      ...s,
-      sales: s.sales + turnSales,
-      pendingTasks: [],
-      month: s.month + 1,
-      manHours: CONFIG.MAX_MAN_HOURS,
-      changedIds: turnChanges
-    }));
+    el.grid.appendChild(div);
+  });
+}
 
-    DOM.execOverlay.classList.add('hidden');
-  }
+/* ---------- LOGIC ---------- */
+
+function getColor(v){
+  return {
+    H:"#064e3b",
+    D:"#0f172a",
+    I:"#075985",
+    A:"#4c1d95"
+  }[v] || "#111";
+}
+
+/* ---------- ACTION ---------- */
+
+el.execute.onclick = ()=>{
+  state.month++;
+  state.mh = MAX_MH;
+
+  state.customers.forEach(c=>{
+    c.month++;
+  });
+
+  render();
 };
 
-/* ================= DOM CACHE ================= */
-const DOM = {
-  grid: document.getElementById('grid'),
-  taskList: document.getElementById('task-list'),
-  logFeed: document.getElementById('log-feed'),
-  phase: document.getElementById('phase-display'),
-  mh: document.getElementById('man-hours-display'),
-  sales: document.getElementById('sales-display'),
-  execOverlay: document.getElementById('exec-overlay')
-};
-
-/* ================= UI ================= */
-const UI = {
-
-  renderHeader() {
-    const s = Store.get();
-    DOM.phase.innerText = `FY26M${s.month}`;
-    DOM.mh.innerHTML = `${s.manHours}<span class="text-xs opacity-20 ml-2">/ ${CONFIG.MAX_MAN_HOURS}</span>`;
-    DOM.sales.innerHTML = `¥${s.sales}<span class="text-[14px] ml-1 opacity-20">M</span>`;
-  },
-
-  renderGrid() {
-    const s = Store.get();
-    DOM.grid.innerHTML = '';
-
-    let tiles = [];
-
-    s.customers.forEach(c => {
-      const year = Math.ceil(c.internalMonth / 12);
-      for (let i = 0; i < c.tileCount; i++) {
-        tiles.push({ c, year });
-      }
-    });
-
-    while (tiles.length < 64) tiles.push(null);
-
-    tiles.slice(0, 64).forEach(t => {
-      const div = document.createElement('div');
-      div.className = "w-full aspect-square border border-white/10";
-
-      if (t) {
-        div.style.background = VENDORS[t.c.vendor].color;
-        div.innerText = "Y" + t.year;
-
-        div.onclick = () => {
-          Store.set(s => ({ ...s, selectedId: t.c.id }));
-        };
-      }
-
-      DOM.grid.appendChild(div);
-    });
-  },
-
-  renderTasks() {
-    const s = Store.get();
-    DOM.taskList.innerHTML = s.pendingTasks.map((t, i) =>
-      `<div>${t.customerName}:${t.label}
-       <button onclick="Game.removeTask(${i})">x</button></div>`
-    ).join("");
-  },
-
-  renderLogs() {
-    const s = Store.get();
-    DOM.logFeed.innerHTML = s.logs.map(l => `<div>${l}</div>`).join("");
-  },
-
-  renderAll() {
-    this.renderHeader();
-    this.renderGrid();
-    this.renderTasks();
-    this.renderLogs();
-  }
-};
-
-/* ================= INIT ================= */
-window.onload = () => {
-  Store.init(state);
-  UI.renderAll();
-
-  document.getElementById('execute-btn').onclick = Game.execute;
-};
+/* ---------- INIT ---------- */
+render();
+lucide.createIcons();
 </script>
+
+</body>
+</html>
