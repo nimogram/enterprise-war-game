@@ -12,7 +12,7 @@
             --emerald: #00D68F;
             --rose: #FF4D6D;
             --sky: #38BDF8;
-            --amber: #F59E0B; /* 新ベンダーS社の色 */
+            --amber: #F59E0B;
             --bg: #080C14;
             --surface: #0D1420;
             --border: rgba(255,255,255,0.06);
@@ -26,7 +26,7 @@
             --vendor-I-bright: #38BDF8;
             --vendor-A: #2D0A3D;
             --vendor-A-bright: #A855F7;
-            --vendor-S: #451A03; /* S社: 深いオレンジ背景 */
+            --vendor-S: #451A03;
             --vendor-S-bright: #F59E0B;
             --vendor-UNKNOWN: #141C28;
         }
@@ -363,17 +363,17 @@
             text-transform: uppercase; animation: pulse 0.8s infinite;
         }
 
-        /* ─── RESULT OVERLAY ─── */
+        /* ─── RESULT OVERLAY (透明度UP) ─── */
         .result-overlay {
-            background: rgba(8, 12, 20, 0.35); 
-            backdrop-filter: blur(6px);
+            background: rgba(8, 12, 20, 0.25); 
+            backdrop-filter: blur(4px);
             flex-direction: column;
         }
         .result-box {
             width: 94%; max-height: 90%;
             border: 1px solid rgba(255,255,255,0.08);
             border-radius: 28px;
-            background: rgba(13, 20, 32, 0.25); /* 指示：透明度向上 */
+            background: rgba(13, 20, 32, 0.25); 
             backdrop-filter: blur(24px);
             display: flex; flex-direction: column;
             overflow: hidden;
@@ -646,39 +646,37 @@ const VENDORS = {
     H:    { name: 'H社（SELF）', bg: '#00D68F', bright: '#00D68F' }, 
     I:    { name: 'I社',        bg: '#0A1F3D', bright: '#38BDF8' },
     A:    { name: 'A社',        bg: '#2D0A3D', bright: '#A855F7' },
-    S:    { name: 'S社',        bg: '#451A03', bright: '#F59E0B' }, // 指示：4社体制
+    S:    { name: 'S社',        bg: '#451A03', bright: '#F59E0B' },
     NONE: { name: '未開拓',      bg: '#080C14', bright: '#1e293b' },
     UNK:  { name: '情報未取得',  bg: '#141C28', bright: '#1e293b' },
 };
 
-// 指示：提案採用時や失注時の音
 function playFeedbackSound(type) {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    
-    if (type === 'success') {
-        // 明るい成功音（高音へのスライド）
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
-        osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.3); // A5
-        gain.gain.setValueAtTime(0.1, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
-    } else {
-        // 低い失注音（下降ノイズ風）
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(220, ctx.currentTime); // A3
-        osc.frequency.linearRampToValueAtTime(80, ctx.currentTime + 0.4); // 低下
-        gain.gain.setValueAtTime(0.1, ctx.currentTime);
-        gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.4);
-    }
-    osc.start();
-    osc.stop(ctx.currentTime + 0.5);
+    try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        
+        if (type === 'success') {
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(523.25, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.3);
+            gain.gain.setValueAtTime(0.1, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+        } else {
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(220, ctx.currentTime);
+            osc.frequency.linearRampToValueAtTime(80, ctx.currentTime + 0.4);
+            gain.gain.setValueAtTime(0.1, ctx.currentTime);
+            gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+        }
+        osc.start();
+        osc.stop(ctx.currentTime + 0.5);
+    } catch(e) { console.log("Audio not supported or blocked."); }
 }
 
-// 初期データのテンプレート
 const CUSTOMER_POOL = [
     { id:101, name:'NIT-Core',    full:'ニトリHD: 基幹システム',        budget:120, tiles:5 },
     { id:102, name:'NIT-Logi',    full:'ニトリHD: 物流インフラ',        budget:80,  tiles:4 },
@@ -709,15 +707,14 @@ let state = {
     customers: []
 };
 
-// 指示：リセット時にランダムに顧客環境を変更
 function initializeEnvironment(isRandom = false) {
     const rivalVendors = ['I', 'A', 'S'];
     state.customers = CUSTOMER_POOL.map(base => {
         let vendor = isRandom ? rivalVendors[Math.floor(Math.random()*rivalVendors.length)] : (base.id % 3 === 0 ? 'A' : 'I');
-        if (base.budget > 100 && !isRandom) vendor = 'I'; // 初期値調整
+        if (base.budget > 100 && !isRandom) vendor = 'I';
         return {
             ...base,
-            vendor: (isRandom && Math.random() < 0.2) ? 'H' : vendor, // 20%で最初から自社
+            vendor: (isRandom && Math.random() < 0.2) ? 'H' : vendor,
             mo: Math.floor(Math.random() * 58) + 1,
             vc: 0,
             sc: 0,
@@ -750,6 +747,7 @@ function calculateShare() {
 
 function renderBar(containerId, statsData) {
     const container = document.getElementById(containerId);
+    if(!container) return;
     container.innerHTML = '';
     const { stats, total } = statsData;
     [['H','#00D68F'],['I','#38BDF8'],['A','#A855F7'],['S','#F59E0B'],['NONE','#1e293b']].forEach(([v,col])=>{
@@ -786,7 +784,7 @@ function render() {
     });
     while(tiles.length<36) tiles.push({id:null,vendor:'NONE',year:0,rfp:false,bld:false,known:false,inc:false});
 
-    // 指示：大きい順ではなくランダムに配置
+    // 盤面のランダム配置
     tiles = tiles.slice(0, 36).sort(() => Math.random() - 0.5);
 
     tiles.forEach(t => {
@@ -843,10 +841,11 @@ function render() {
         sp.textContent = '>>> MISSION ON STANDBY';
         strip.appendChild(sp);
     } else {
-        state.tasks.forEach((t,i) => {
+        state.tasks.forEach((t, i) => {
             const chip = document.createElement('div');
             chip.className = 'task-chip';
-            chip.innerHTML = `<span class="task-chip-name">${t.cname}</span><span>${t.label}</span><button class="task-chip-rm" onclick="removeTask(${idx})">✕</button>`;
+            // iを正しく渡すように修正 (バグ修正箇所)
+            chip.innerHTML = `<span class="task-chip-name">${t.cname}</span><span>${t.label}</span><button class="task-chip-rm" onclick="removeTask(${i})">✕</button>`;
             strip.appendChild(chip);
         });
     }
@@ -899,7 +898,7 @@ async function executeStrategy() {
             monthResults[c.id].push({ icon:'📚', text:`${c.name} 勉強会実施。`, self:true });
         } else if (task.type==='PROPOSAL') {
             const ok = Math.random()*100 < winRate(c);
-            playFeedbackSound(ok ? 'success' : 'failure'); // 指示：成否で音を変える
+            playFeedbackSound(ok ? 'success' : 'failure');
             if (ok) {
                 c.vendor='H'; c.mo=1; c.vc=1; c.sc=0; c.lv = state.month;
                 gained = c.budget; changed.push(c.id);
@@ -929,7 +928,6 @@ async function executeStrategy() {
     state.sales += gained;
     state.tasks = [];
 
-    // 競合同期（指示：S社を含む4社体制）
     for (const rid of ['I','A','S']) {
         await new Promise(r=>setTimeout(r,300));
         interacted.forEach(cid => {
@@ -1000,19 +998,23 @@ function closeResult() {
     else { state.month++; state.mh = MAX_MH; state.changedIds = []; state.incidents = []; render(); }
 }
 
-// 指示：M12終了リセット時にランダム環境構築
 function resetGame() {
-    state.month = 1; state.sales = 0; state.tasks = []; state.logs = ["環境をランダム再構築完了。ミッション開始。"];
-    initializeEnvironment(true); // ランダム化
+    state.month = 1; state.sales = 0; state.tasks = []; state.logs = ["環境をランダム再構築。ミッション開始。"];
+    initializeEnvironment(true); 
     state.initialShare = calculateShare();
     document.getElementById('summary-modal').classList.add('hidden');
     render();
 }
 
-function saveToLocal() { localStorage.setItem('ent_state_v4', JSON.stringify(state)); state.logs.unshift('セーブ完了。'); render(); }
+function saveToLocal() { localStorage.setItem('ent_state_v5', JSON.stringify(state)); state.logs.unshift('セーブ完了。'); render(); }
+function exportHTML() {
+    const blob = new Blob([document.documentElement.outerHTML], {type:'text/html'});
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    a.download = `TheEnterprise_M${state.month}.html`; a.click();
+}
 
 window.onload = () => {
-    initializeEnvironment(false); // 最初は固定
+    initializeEnvironment(false);
     state.initialShare = calculateShare();
     document.getElementById('close-panel').onclick = () => { state.selectedId = null; render(); };
     render();
