@@ -9,10 +9,10 @@
     <style>
         :root {
             --gold: #C9A84C;
-            --gold-dim: #6b5520;
             --emerald: #00D68F;
             --rose: #FF4D6D;
             --sky: #38BDF8;
+            --amber: #F59E0B; /* 新ベンダーS社の色 */
             --bg: #080C14;
             --surface: #0D1420;
             --border: rgba(255,255,255,0.06);
@@ -22,11 +22,12 @@
             --font-body: 'Outfit', sans-serif;
             /* Vendor colors */
             --vendor-H: #00D68F; 
-            --vendor-H-bright: #00D68F;
             --vendor-I: #0A1F3D;
             --vendor-I-bright: #38BDF8;
             --vendor-A: #2D0A3D;
             --vendor-A-bright: #A855F7;
+            --vendor-S: #451A03; /* S社: 深いオレンジ背景 */
+            --vendor-S-bright: #F59E0B;
             --vendor-UNKNOWN: #141C28;
         }
 
@@ -362,9 +363,9 @@
             text-transform: uppercase; animation: pulse 0.8s infinite;
         }
 
-        /* ─── RESULT OVERLAY (指示：半透明化・アニメーション調整) ─── */
+        /* ─── RESULT OVERLAY ─── */
         .result-overlay {
-            background: rgba(8, 12, 20, 0.35); /* 指示：さらに透明度を上げる */
+            background: rgba(8, 12, 20, 0.35); 
             backdrop-filter: blur(6px);
             flex-direction: column;
         }
@@ -372,8 +373,8 @@
             width: 94%; max-height: 90%;
             border: 1px solid rgba(255,255,255,0.08);
             border-radius: 28px;
-            background: rgba(13, 20, 32, 0.3); /* 指示：さらに半透明 */
-            backdrop-filter: blur(20px);
+            background: rgba(13, 20, 32, 0.25); /* 指示：透明度向上 */
+            backdrop-filter: blur(24px);
             display: flex; flex-direction: column;
             overflow: hidden;
             box-shadow: 0 30px 60px rgba(0,0,0,0.6);
@@ -412,7 +413,6 @@
         }
         .result-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
         .result-text { font-size: 12px; line-height: 1.5; color: #aabbcc; }
-        /* 指示：H社のアクション（selfクラス）をエメラルドグリーンに */
         .result-text.self { color: var(--emerald); font-weight: 500; }
         .result-text .success { color: var(--emerald); font-weight: 700; display: block; font-size: 11px; margin-top: 3px; }
         .result-text .fail { color: var(--rose); font-weight: 700; display: block; font-size: 11px; margin-top: 3px; }
@@ -605,9 +605,10 @@
     <!-- SCORE BAR -->
     <div class="score-bar">
         <div class="legend-row">
-            <div class="legend-item"><div class="legend-dot" style="background:var(--vendor-H-bright)"></div>SELF</div>
-            <div class="legend-item"><div class="legend-dot" style="background:var(--vendor-I-bright)"></div>RVL-I</div>
-            <div class="legend-item"><div class="legend-dot" style="background:var(--vendor-A-bright)"></div>RVL-A</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--vendor-H)"></div>SELF</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--vendor-I-bright)"></div>I社</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--vendor-A-bright)"></div>A社</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--vendor-S-bright)"></div>S社</div>
         </div>
         <div class="score-val" id="score-val">¥0<span>M</span></div>
     </div>
@@ -645,9 +646,55 @@ const VENDORS = {
     H:    { name: 'H社（SELF）', bg: '#00D68F', bright: '#00D68F' }, 
     I:    { name: 'I社',        bg: '#0A1F3D', bright: '#38BDF8' },
     A:    { name: 'A社',        bg: '#2D0A3D', bright: '#A855F7' },
+    S:    { name: 'S社',        bg: '#451A03', bright: '#F59E0B' }, // 指示：4社体制
     NONE: { name: '未開拓',      bg: '#080C14', bright: '#1e293b' },
     UNK:  { name: '情報未取得',  bg: '#141C28', bright: '#1e293b' },
 };
+
+// 指示：提案採用時や失注時の音
+function playFeedbackSound(type) {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    
+    if (type === 'success') {
+        // 明るい成功音（高音へのスライド）
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
+        osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.3); // A5
+        gain.gain.setValueAtTime(0.1, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+    } else {
+        // 低い失注音（下降ノイズ風）
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(220, ctx.currentTime); // A3
+        osc.frequency.linearRampToValueAtTime(80, ctx.currentTime + 0.4); // 低下
+        gain.gain.setValueAtTime(0.1, ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+    }
+    osc.start();
+    osc.stop(ctx.currentTime + 0.5);
+}
+
+// 初期データのテンプレート
+const CUSTOMER_POOL = [
+    { id:101, name:'NIT-Core',    full:'ニトリHD: 基幹システム',        budget:120, tiles:5 },
+    { id:102, name:'NIT-Logi',    full:'ニトリHD: 物流インフラ',        budget:80,  tiles:4 },
+    { id:201, name:'SAP-Net',     full:'札幌市: 庁内ネットワーク',      budget:70,  tiles:4 },
+    { id:202, name:'SAP-Win',     full:'札幌市: 市民窓口システム',      budget:65,  tiles:3 },
+    { id:301, name:'HDC-Fin',     full:'北海道庁: 財務会計',            budget:60,  tiles:3 },
+    { id:401, name:'HOU-Edu',     full:'北海道大学: 教育インフラ',      budget:110, tiles:4 },
+    { id:501, name:'TSU-EC',      full:'ツルハHD: EC/店舗統合',        budget:80,  tiles:3 },
+    { id:601, name:'JRH-Tick',    full:'JR北海道: 発券システム',        budget:70,  tiles:4 },
+    { id:701, name:'HKL-Agri',    full:'ホクレン: 農業情報',            budget:60,  tiles:3 },
+    { id:801, name:'AIN-Ph',      full:'アインHD: 調剤管理',            budget:50,  tiles:2 },
+    { id:901, name:'HBA-Sec',     full:'HBA: セキュリティ基盤',         budget:50,  tiles:2 },
+    { id:1001,name:'SAT-POS',     full:'サツドラHD: 次世代POS',        budget:40,  tiles:2 },
+    { id:1101,name:'HRP-Base',    full:'HARP: 共通基盤システム',        budget:30,  tiles:1 },
+    { id:1201,name:'HPP-Sec',     full:'北海道警察: 公安NW基盤',        budget:25,  tiles:1 },
+];
 
 let state = {
     month: 1,
@@ -655,27 +702,29 @@ let state = {
     sales: 0,
     selectedId: null,
     tasks: [],
-    logs: ["システム起動。グリッド同期完了。"],
+    logs: ["システム起動。環境スキャン中..."],
     changedIds: [],
     incidents: [],
     initialShare: null, 
-    customers: [
-        { id:101, name:'NIT-Core',    full:'ニトリHD: 基幹システム',        budget:120, tiles:5, vendor:'I', mo:42, vc:0, sc:0, lv:0 },
-        { id:102, name:'NIT-Logi',    full:'ニトリHD: 物流インフラ',        budget:80,  tiles:4, vendor:'I', mo:12, vc:0, sc:0, lv:0 },
-        { id:201, name:'SAP-Net',     full:'札幌市: 庁内ネットワーク',      budget:70,  tiles:4, vendor:'I', mo:48, vc:0, sc:0, lv:0 },
-        { id:202, name:'SAP-Win',     full:'札幌市: 市民窓口システム',      budget:65,  tiles:3, vendor:'I', mo:30, vc:0, sc:0, lv:0 },
-        { id:301, name:'HDC-Fin',     full:'北海道庁: 財務会計',            budget:60,  tiles:3, vendor:'A', mo:50, vc:0, sc:0, lv:0 },
-        { id:401, name:'HOU-Edu',     full:'北海道大学: 教育インフラ',      budget:110, tiles:4, vendor:'A', mo:18, vc:0, sc:0, lv:0 },
-        { id:501, name:'TSU-EC',      full:'ツルハHD: EC/店舗統合',        budget:80,  tiles:3, vendor:'I', mo:45, vc:0, sc:0, lv:0 },
-        { id:601, name:'JRH-Tick',    full:'JR北海道: 発券システム',        budget:70,  tiles:4, vendor:'A', mo:50, vc:0, sc:0, lv:0 },
-        { id:701, name:'HKL-Agri',    full:'ホクレン: 農業情報',            budget:60,  tiles:3, vendor:'H', mo:5,  vc:0, sc:0, lv:0 },
-        { id:801, name:'AIN-Ph',      full:'アインHD: 調剤管理',            budget:50,  tiles:2, vendor:'I', mo:35, vc:0, sc:0, lv:0 },
-        { id:901, name:'HBA-Sec',     full:'HBA: セキュリティ基盤',         budget:50,  tiles:2, vendor:'A', mo:40, vc:0, sc:0, lv:0 },
-        { id:1001,name:'SAT-POS',     full:'サツドラHD: 次世代POS',        budget:40,  tiles:2, vendor:'H', mo:58, vc:0, sc:0, lv:0 },
-        { id:1101,name:'HRP-Base',    full:'HARP: 共通基盤システム',        budget:30,  tiles:1, vendor:'I', mo:20, vc:0, sc:0, lv:0 },
-        { id:1201,name:'HPP-Sec',     full:'北海道警察: 公安NW基盤',        budget:25,  tiles:1, vendor:'I', mo:32, vc:0, sc:0, lv:0 },
-    ]
+    customers: []
 };
+
+// 指示：リセット時にランダムに顧客環境を変更
+function initializeEnvironment(isRandom = false) {
+    const rivalVendors = ['I', 'A', 'S'];
+    state.customers = CUSTOMER_POOL.map(base => {
+        let vendor = isRandom ? rivalVendors[Math.floor(Math.random()*rivalVendors.length)] : (base.id % 3 === 0 ? 'A' : 'I');
+        if (base.budget > 100 && !isRandom) vendor = 'I'; // 初期値調整
+        return {
+            ...base,
+            vendor: (isRandom && Math.random() < 0.2) ? 'H' : vendor, // 20%で最初から自社
+            mo: Math.floor(Math.random() * 58) + 1,
+            vc: 0,
+            sc: 0,
+            lv: 0
+        };
+    });
+}
 
 function winRate(c) {
     if (!c) return 0;
@@ -686,16 +735,14 @@ function winRate(c) {
     else if (m >= 50) r -= 20;
     r += c.vc * 5 + c.sc * 10;
     const monthsSinceVisit = state.month - (c.lv || 0);
-    if (monthsSinceVisit > 1) {
-        r -= (monthsSinceVisit - 1) * 8;
-    }
+    if (monthsSinceVisit > 1) r -= (monthsSinceVisit - 1) * 8;
     const pending = state.tasks.filter(t => t.cid === c.id);
     pending.forEach(t => { if(t.type==='VISIT') r+=5; if(t.type==='STUDY') r+=10; });
     return Math.min(99, Math.max(5, Math.round(r)));
 }
 
 function calculateShare() {
-    const stats = {H:0,I:0,A:0,NONE:0};
+    const stats = {H:0,I:0,A:0,S:0,NONE:0};
     state.customers.forEach(c => { stats[c.vendor] = (stats[c.vendor]||0) + c.budget; });
     const total = Object.values(stats).reduce((a,b)=>a+b,0)||1;
     return { stats, total };
@@ -705,7 +752,7 @@ function renderBar(containerId, statsData) {
     const container = document.getElementById(containerId);
     container.innerHTML = '';
     const { stats, total } = statsData;
-    [['H','#00D68F'],['I','#38BDF8'],['A','#A855F7'],['NONE','#1e293b']].forEach(([v,col])=>{
+    [['H','#00D68F'],['I','#38BDF8'],['A','#A855F7'],['S','#F59E0B'],['NONE','#1e293b']].forEach(([v,col])=>{
         const pct = (stats[v]||0)/total*100;
         if (pct>0) {
             const d = document.createElement('div');
@@ -729,7 +776,7 @@ function render() {
 
     const grid = document.getElementById('grid');
     grid.innerHTML = '';
-    const tiles = [];
+    let tiles = [];
     state.customers.forEach(c => {
         const known = c.vc > 0 || c.vendor === 'H';
         const rfp  = known && c.mo >= 48 && c.mo < 50;
@@ -739,7 +786,10 @@ function render() {
     });
     while(tiles.length<36) tiles.push({id:null,vendor:'NONE',year:0,rfp:false,bld:false,known:false,inc:false});
 
-    tiles.slice(0,36).forEach(t => {
+    // 指示：大きい順ではなくランダムに配置
+    tiles = tiles.slice(0, 36).sort(() => Math.random() - 0.5);
+
+    tiles.forEach(t => {
         const el = document.createElement('div');
         el.className = 'tile';
         const vd = VENDORS[t.known ? t.vendor : 'UNK'];
@@ -796,17 +846,14 @@ function render() {
         state.tasks.forEach((t,i) => {
             const chip = document.createElement('div');
             chip.className = 'task-chip';
-            chip.innerHTML = `<span class="task-chip-name">${t.cname}</span><span>${t.label}</span><button class="task-chip-rm" onclick="removeTask(${i})">✕</button>`;
+            chip.innerHTML = `<span class="task-chip-name">${t.cname}</span><span>${t.label}</span><button class="task-chip-rm" onclick="removeTask(${idx})">✕</button>`;
             strip.appendChild(chip);
         });
     }
 
     const btn = document.getElementById('exec-btn');
-    if (state.tasks.length > 0) {
-        btn.disabled = false; btn.classList.add('active');
-    } else {
-        btn.disabled = true; btn.classList.remove('active');
-    }
+    if (state.tasks.length > 0) { btn.disabled = false; btn.classList.add('active'); }
+    else { btn.disabled = true; btn.classList.remove('active'); }
 
     const logEl = document.getElementById('log-area');
     logEl.innerHTML = '';
@@ -822,9 +869,6 @@ function addTask(type, cost, label) {
     if (!state.selectedId) return;
     if (state.mh < cost) { state.logs.unshift('! 工数不足。'); render(); return; }
     const c = state.customers.find(x=>x.id===state.selectedId);
-    if (type==='PROPOSAL' && !(c.mo>=48&&c.mo<50)) {
-        state.logs.unshift(`! ${c.name} は提案フェーズ未到達。`); render(); return;
-    }
     state.tasks.push({ cid:c.id, cname:c.name, type, cost, label });
     state.mh -= cost;
     render();
@@ -844,28 +888,25 @@ async function executeStrategy() {
     const interacted = [...new Set(state.tasks.map(t=>t.cid))];
     interacted.forEach(id=>{ monthResults[id]=[]; });
 
-    state.logs.unshift(`--- FY26M${state.month} ミッション始動 ---`);
-
     for (const task of state.tasks) {
         await new Promise(r=>setTimeout(r,400));
         const c = state.customers.find(x=>x.id===task.cid);
         if (task.type==='VISIT') {
             c.vc++; c.lv = state.month;
-            monthResults[c.id].push({ icon:'👁', text:`${c.name} への戦略訪問完了。インテリジェンス更新。`, self:true });
-            state.logs.unshift(`[SELF] ${c.name} 訪問完了`);
+            monthResults[c.id].push({ icon:'👁', text:`${c.name} への戦略訪問完了。`, self:true });
         } else if (task.type==='STUDY') {
             c.sc++;
-            monthResults[c.id].push({ icon:'📚', text:`${c.name} 勉強会実施。信頼関係強化。`, self:true });
-            state.logs.unshift(`[SELF] ${c.name} 勉強会完了`);
+            monthResults[c.id].push({ icon:'📚', text:`${c.name} 勉強会実施。`, self:true });
         } else if (task.type==='PROPOSAL') {
             const ok = Math.random()*100 < winRate(c);
+            playFeedbackSound(ok ? 'success' : 'failure'); // 指示：成否で音を変える
             if (ok) {
                 c.vendor='H'; c.mo=1; c.vc=1; c.sc=0; c.lv = state.month;
                 gained = c.budget; changed.push(c.id);
-                monthResults[c.id].push({ icon:'✅', text:`H社が ${c.name} に本提案。`, result:`受注確定。ターゲット制圧。`, success:true, self:true });
-                state.logs.unshift(`[SUCCESS] ${c.name} 制圧！`);
+                monthResults[c.id].push({ icon:'✅', text:`H社が受注確定。`, result:`ターゲット制圧。`, success:true, self:true });
+                state.logs.unshift(`[SUCCESS] ${c.name} 奪還！`);
             } else {
-                monthResults[c.id].push({ icon:'❌', text:`H社が ${c.name} に本提案。`, result:`敵の守備を崩せず失注。`, success:false, self:true });
+                monthResults[c.id].push({ icon:'❌', text:`H社が失注。`, result:`競合の防衛網を突破できず。`, success:false, self:true });
                 state.logs.unshift(`[FAILED] ${c.name} 失注`);
             }
         }
@@ -878,9 +919,9 @@ async function executeStrategy() {
             if (!interacted.includes(c.id)) { interacted.push(c.id); monthResults[c.id]=[]; }
             if (c.vendor==='H') {
                 state.mh = Math.max(0, state.mh-5);
-                monthResults[c.id].push({icon:'🚨', text:`緊急: ${c.name} でシステム障害。MH-5で復旧。`, self:true});
+                monthResults[c.id].push({icon:'🚨', text:`緊急障害。MH-5で復旧対応。`, self:true});
             } else {
-                monthResults[c.id].push({icon:'⚡', text:`${VENDORS[c.vendor].name} が ${c.name} のトラブル対応中。`, self:false});
+                monthResults[c.id].push({icon:'⚡', text:`他社トラブル発生中。`, self:false});
             }
         }
     });
@@ -888,33 +929,19 @@ async function executeStrategy() {
     state.sales += gained;
     state.tasks = [];
 
-    state.logs.unshift(`--- 競合ベンダー同期 ---`);
-    for (const rid of ['I','A']) {
+    // 競合同期（指示：S社を含む4社体制）
+    for (const rid of ['I','A','S']) {
         await new Promise(r=>setTimeout(r,300));
         interacted.forEach(cid => {
             const tgt = state.customers.find(x=>x.id===cid);
-            if (tgt.vendor === rid) {
-                monthResults[cid].push({ icon:'🛡', text:`${VENDORS[rid].name} が ${tgt.name} の防衛を強化中。`, rival:true });
-            } else {
-                const prob = Math.random();
-                if (prob < 0.2) {
-                    monthResults[cid].push({ icon:'🕵️', text:`${VENDORS[rid].name} の営業が ${tgt.name} に接触。`, rival:true });
-                }
-            }
+            if (tgt.vendor === rid) monthResults[cid].push({ icon:'🛡', text:`${VENDORS[rid].name}営業が防衛強化。`, rival:true });
+            else if (Math.random() < 0.2) monthResults[cid].push({ icon:'🕵️', text:`${VENDORS[rid].name}営業が接触。`, rival:true });
         });
-
         const rfpTargets = state.customers.filter(c=>c.vendor!==rid&&c.mo>=48&&c.mo<50);
         if (rfpTargets.length) {
             const tgt = rfpTargets[Math.floor(Math.random()*rfpTargets.length)];
             const ok = Math.random()*100 < 25;
-            if (!interacted.includes(tgt.id)) { interacted.push(tgt.id); monthResults[tgt.id]=[]; }
-            monthResults[tgt.id].push({
-                icon: ok?'💀':'🛡',
-                text:`${VENDORS[rid].name} が ${tgt.name} へ電撃提案を敢行。`,
-                result: ok?`${VENDORS[rid].name} が受注。`:`${VENDORS[rid].name} は失注。`,
-                success: ok, rival: true
-            });
-            if (ok) { tgt.vendor=rid; tgt.mo=1; tgt.vc=0; tgt.sc=0; tgt.lv = 0; changed.push(tgt.id); state.logs.unshift(`[${rid}] ${tgt.name} 被占領`); }
+            if (ok) { tgt.vendor=rid; tgt.mo=1; tgt.vc=0; tgt.sc=0; changed.push(tgt.id); state.logs.unshift(`[${rid}] ${tgt.name} 被占領`); }
         }
     }
 
@@ -927,14 +954,11 @@ async function executeStrategy() {
     let delay = 0;
     for (const cid of interacted) {
         const c = state.customers.find(x=>x.id===cid);
-        if (!monthResults[cid]||monthResults[cid].length===0) continue;
         const block = document.createElement('div');
         block.className = 'result-block';
-        block.style.animationDelay = `${delay * 0.6}s`; 
-        delay++;
+        block.style.animationDelay = `${delay * 0.6}s`; delay++;
         let html = `<div class="result-block-name">${c.name} Intel</div>`;
         monthResults[cid].forEach(r => {
-            // 指示：r.selfがtrueの場合にselfクラスを付与
             html += `<div class="result-row">
                 <span class="result-icon">${r.icon}</span>
                 <div class="result-text ${r.self ? 'self' : ''}">${r.text}
@@ -945,83 +969,52 @@ async function executeStrategy() {
         block.innerHTML = html;
         list.appendChild(block);
     }
-    if (interacted.length===0) {
-        list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);font-family:var(--font-mono);font-size:11px;letter-spacing:0.5em;">SILENCE SECTOR<br>NO DATA FEED</div>';
-    }
-
     document.getElementById('result-overlay').classList.remove('hidden');
-    localStorage.setItem('ent_state', JSON.stringify(state));
 }
 
 function showFinalSummary() {
     const m12Data = calculateShare();
     const m1Data  = state.initialShare;
-
     renderBar('share-m1', m1Data);
     renderBar('share-m12', m12Data);
-
     const rankingDiv = document.getElementById('final-ranking');
     rankingDiv.innerHTML = '';
-    
     const ranking = [
         { id:'H', name:'H社 (SELF)', val: m12Data.stats.H },
         { id:'I', name:'I社', val: m12Data.stats.I },
-        { id:'A', name:'A社', val: m12Data.stats.A }
+        { id:'A', name:'A社', val: m12Data.stats.A },
+        { id:'S', name:'S社', val: m12Data.stats.S }
     ].sort((a,b) => b.val - a.val);
-
     ranking.forEach((r, i) => {
         const row = document.createElement('div');
         row.className = 'rank-row' + (i===0 ? ' first' : '');
-        row.innerHTML = `
-            <div class="rank-info">
-                <div class="rank-num">${i+1}</div>
-                <div class="rank-name">${r.name}</div>
-            </div>
-            <div class="rank-val">¥${r.val}M</div>
-        `;
+        row.innerHTML = `<div class="rank-info"><div class="rank-num">${i+1}</div><div class="rank-name">${r.name}</div></div><div class="rank-val">¥${r.val}M</div>`;
         rankingDiv.appendChild(row);
     });
-
     document.getElementById('summary-modal').classList.remove('hidden');
 }
 
 function closeResult() {
     document.getElementById('result-overlay').classList.add('hidden');
-    if (state.month >= 12) {
-        showFinalSummary();
-    } else {
-        state.month++; state.mh = MAX_MH; state.changedIds = []; state.incidents = [];
-        render();
-    }
+    if (state.month >= 12) showFinalSummary();
+    else { state.month++; state.mh = MAX_MH; state.changedIds = []; state.incidents = []; render(); }
 }
 
-function resetGame() { localStorage.removeItem('ent_state'); location.reload(); }
-function saveToLocal() { localStorage.setItem('ent_state', JSON.stringify(state)); state.logs.unshift('ローカルセーブ完了。'); render(); }
-function exportHTML() {
-    const blob = new Blob([document.documentElement.outerHTML], {type:'text/html'});
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-    a.download = `TheEnterprise_FY26M${state.month}.html`; a.click();
+// 指示：M12終了リセット時にランダム環境構築
+function resetGame() {
+    state.month = 1; state.sales = 0; state.tasks = []; state.logs = ["環境をランダム再構築完了。ミッション開始。"];
+    initializeEnvironment(true); // ランダム化
+    state.initialShare = calculateShare();
+    document.getElementById('summary-modal').classList.add('hidden');
+    render();
 }
+
+function saveToLocal() { localStorage.setItem('ent_state_v4', JSON.stringify(state)); state.logs.unshift('セーブ完了。'); render(); }
 
 window.onload = () => {
-    const saved = localStorage.getItem('ent_state');
-    if (saved) {
-        try { 
-            state = JSON.parse(saved); 
-            state.tasks = []; state.mh = MAX_MH; state.incidents = state.incidents || []; 
-        } catch(e) {}
-    }
-    
-    if (!state.initialShare) {
-        state.initialShare = calculateShare();
-        localStorage.setItem('ent_state', JSON.stringify(state));
-    }
-
+    initializeEnvironment(false); // 最初は固定
+    state.initialShare = calculateShare();
     document.getElementById('close-panel').onclick = () => { state.selectedId = null; render(); };
-    document.addEventListener('click', e => {
-        const panel = document.getElementById('side-panel'); const grid = document.getElementById('grid');
-        if (!panel.contains(e.target) && !grid.contains(e.target)) { state.selectedId = null; panel.classList.remove('open'); }
-    });
     render();
 };
 </script>
