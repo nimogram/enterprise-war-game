@@ -362,18 +362,18 @@
             text-transform: uppercase; animation: pulse 0.8s infinite;
         }
 
-        /* ─── RESULT OVERLAY (指示：半透明・流動アニメーション) ─── */
+        /* ─── RESULT OVERLAY (指示：半透明化・アニメーション調整) ─── */
         .result-overlay {
-            background: rgba(8, 12, 20, 0.5); 
-            backdrop-filter: blur(8px);
+            background: rgba(8, 12, 20, 0.35); /* 指示：さらに透明度を上げる */
+            backdrop-filter: blur(6px);
             flex-direction: column;
         }
         .result-box {
             width: 94%; max-height: 90%;
             border: 1px solid rgba(255,255,255,0.08);
             border-radius: 28px;
-            background: rgba(13, 20, 32, 0.45); /* 指示：さらに半透明 */
-            backdrop-filter: blur(24px);
+            background: rgba(13, 20, 32, 0.3); /* 指示：さらに半透明 */
+            backdrop-filter: blur(20px);
             display: flex; flex-direction: column;
             overflow: hidden;
             box-shadow: 0 30px 60px rgba(0,0,0,0.6);
@@ -412,6 +412,8 @@
         }
         .result-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
         .result-text { font-size: 12px; line-height: 1.5; color: #aabbcc; }
+        /* 指示：H社のアクション（selfクラス）をエメラルドグリーンに */
+        .result-text.self { color: var(--emerald); font-weight: 500; }
         .result-text .success { color: var(--emerald); font-weight: 700; display: block; font-size: 11px; margin-top: 3px; }
         .result-text .fail { color: var(--rose); font-weight: 700; display: block; font-size: 11px; margin-top: 3px; }
         .result-next {
@@ -423,7 +425,7 @@
         }
         .result-next:hover { background: #d4fae9; }
 
-        /* ─── FINAL SUMMARY MODAL (指示：総括表示) ─── */
+        /* ─── FINAL SUMMARY MODAL ─── */
         #summary-modal {
             position: fixed; inset: 0;
             background: rgba(8,12,20,0.98);
@@ -611,7 +613,7 @@
     </div>
 </div>
 
-<!-- FINAL SUMMARY MODAL (指示：総括画面) -->
+<!-- FINAL SUMMARY MODAL -->
 <div id="summary-modal" class="hidden">
     <div class="summary-box">
         <div class="summary-title">FY26 REPORT</div>
@@ -656,7 +658,7 @@ let state = {
     logs: ["システム起動。グリッド同期完了。"],
     changedIds: [],
     incidents: [],
-    initialShare: null, // M1時のシェア保存用
+    initialShare: null, 
     customers: [
         { id:101, name:'NIT-Core',    full:'ニトリHD: 基幹システム',        budget:120, tiles:5, vendor:'I', mo:42, vc:0, sc:0, lv:0 },
         { id:102, name:'NIT-Logi',    full:'ニトリHD: 物流インフラ',        budget:80,  tiles:4, vendor:'I', mo:12, vc:0, sc:0, lv:0 },
@@ -860,10 +862,10 @@ async function executeStrategy() {
             if (ok) {
                 c.vendor='H'; c.mo=1; c.vc=1; c.sc=0; c.lv = state.month;
                 gained = c.budget; changed.push(c.id);
-                monthResults[c.id].push({ icon:'✅', text:`H社が ${c.name} に本提案。`, result:`受注確定。ターゲット制圧。`, success:true });
+                monthResults[c.id].push({ icon:'✅', text:`H社が ${c.name} に本提案。`, result:`受注確定。ターゲット制圧。`, success:true, self:true });
                 state.logs.unshift(`[SUCCESS] ${c.name} 制圧！`);
             } else {
-                monthResults[c.id].push({ icon:'❌', text:`H社が ${c.name} に本提案。`, result:`敵の守備を崩せず失注。`, success:false });
+                monthResults[c.id].push({ icon:'❌', text:`H社が ${c.name} に本提案。`, result:`敵の守備を崩せず失注。`, success:false, self:true });
                 state.logs.unshift(`[FAILED] ${c.name} 失注`);
             }
         }
@@ -932,9 +934,10 @@ async function executeStrategy() {
         delay++;
         let html = `<div class="result-block-name">${c.name} Intel</div>`;
         monthResults[cid].forEach(r => {
+            // 指示：r.selfがtrueの場合にselfクラスを付与
             html += `<div class="result-row">
                 <span class="result-icon">${r.icon}</span>
-                <div class="result-text">${r.text}
+                <div class="result-text ${r.self ? 'self' : ''}">${r.text}
                     ${r.result?`<span class="${r.success?'success':'fail'}">${r.result}</span>`:''}
                 </div>
             </div>`;
@@ -1009,7 +1012,6 @@ window.onload = () => {
         } catch(e) {}
     }
     
-    // M1の初期シェアを保存（初回プレイ時のみ）
     if (!state.initialShare) {
         state.initialShare = calculateShare();
         localStorage.setItem('ent_state', JSON.stringify(state));
