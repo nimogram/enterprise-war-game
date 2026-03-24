@@ -660,12 +660,11 @@ function playFeedbackSound(type) {
     try {
         const ctx = new (window.AudioContext || window.webkitAudioContext)();
         if (type === 'success') {
-            const notes = [523.25, 659.25, 783.99, 1046.50];
+            const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
             notes.forEach((freq, i) => {
                 const osc = ctx.createOscillator();
                 const gain = ctx.createGain();
-                osc.connect(gain);
-                gain.connect(ctx.destination);
+                osc.connect(gain); gain.connect(ctx.destination);
                 osc.type = 'triangle';
                 osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.1);
                 gain.gain.setValueAtTime(0, ctx.currentTime + i * 0.1);
@@ -677,15 +676,13 @@ function playFeedbackSound(type) {
         } else {
             const osc = ctx.createOscillator();
             const gain = ctx.createGain();
-            osc.connect(gain);
-            gain.connect(ctx.destination);
+            osc.connect(gain); gain.connect(ctx.destination);
             osc.type = 'sawtooth';
             osc.frequency.setValueAtTime(220, ctx.currentTime);
             osc.frequency.linearRampToValueAtTime(80, ctx.currentTime + 0.4);
             gain.gain.setValueAtTime(0.1, ctx.currentTime);
             gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.4);
-            osc.start();
-            osc.stop(ctx.currentTime + 0.5);
+            osc.start(); osc.stop(ctx.currentTime + 0.5);
         }
     } catch(e) { console.log("Audio blocked."); }
 }
@@ -708,32 +705,21 @@ const CUSTOMER_POOL = [
 ];
 
 let state = {
-    month: 1,
-    year: 1,
-    mh: MAX_MH,
+    month: 1, year: 1, mh: MAX_MH,
     nextMonthPenalty: 0, 
-    sales: 0,
-    selectedId: null,
-    tasks: [],
-    logs: ["システム起動。グリッド同期完了。"],
-    changedIds: [],
-    incidents: [],
-    initialShare: null, 
-    customers: [],
-    gridOrder: [] 
+    sales: 0, selectedId: null, tasks: [],
+    logs: ["システム起動。環境スキャン完了。"],
+    changedIds: [], incidents: [], initialShare: null, 
+    customers: [], gridOrder: [] 
 };
 
-// 指示：同じ顧客は近い位置に配置する（クラスター配置）
 function generateGridLayout() {
     let customerIds = state.customers.map(c => c.id);
-    // 顧客リストをシャッフル
     customerIds.sort(() => Math.random() - 0.5);
     let tiles = [];
     customerIds.forEach(cid => {
         const c = state.customers.find(x => x.id === cid);
-        for (let i = 0; i < c.tiles; i++) {
-            tiles.push({ customerId: c.id });
-        }
+        for (let i = 0; i < c.tiles; i++) tiles.push({ customerId: c.id });
     });
     while (tiles.length < 36) tiles.push({ customerId: null });
     state.gridOrder = tiles;
@@ -745,12 +731,8 @@ function initializeEnvironment(isRandom = false) {
         let vendor = isRandom ? rivalVendors[Math.floor(Math.random()*rivalVendors.length)] : (base.id % 3 === 0 ? 'A' : 'I');
         if (base.budget > 100 && !isRandom) vendor = 'I';
         return {
-            ...base,
-            vendor: (isRandom && Math.random() < 0.2) ? 'H' : vendor,
-            mo: Math.floor(Math.random() * 45) + 1,
-            vc: 0,
-            sc: 0,
-            lv: 0
+            ...base, vendor, mo: Math.floor(Math.random() * 45) + 1,
+            vc: 0, sc: 0, lv: 0
         };
     });
     generateGridLayout();
@@ -780,8 +762,7 @@ function calculateShare() {
 
 function renderBar(containerId, statsData) {
     const container = document.getElementById(containerId);
-    if(!container) return;
-    container.innerHTML = '';
+    if(!container) return; container.innerHTML = '';
     const { stats, total } = statsData;
     [['H','#00D68F'],['I','#38BDF8'],['A','#A855F7'],['S','#F59E0B'],['NONE','#1e293b']].forEach(([v,col])=>{
         const pct = (stats[v]||0)/total*100;
@@ -789,7 +770,7 @@ function renderBar(containerId, statsData) {
             const d = document.createElement('div');
             d.className='share-seg';
             d.style.cssText=`width:${pct}%;background:${col};opacity:${v==='H'?1:0.7}`;
-            if (pct > 5) { d.textContent = Math.round(pct) + '%'; }
+            if (pct > 5) d.textContent = Math.round(pct) + '%';
             container.appendChild(d);
         }
     });
@@ -809,30 +790,24 @@ function render() {
     grid.innerHTML = '';
 
     state.gridOrder.forEach(tileData => {
-        const el = document.createElement('div');
-        el.className = 'tile';
-        
+        const el = document.createElement('div'); el.className = 'tile';
         if (tileData.customerId) {
             const c = state.customers.find(x => x.id === tileData.customerId);
-            // 指示：訪問または勉強会をした場合にYXを表示（Y?のバグ修正）
+            // 修正：訪問または勉強会をした場合に情報公開
             const known = c.vc > 0 || c.sc > 0 || c.vendor === 'H';
             const rfp  = known && c.mo >= 48 && c.mo < 50;
             const bld  = known && c.mo >= 50;
             const inc  = state.incidents.some(i => i.cid === c.id);
             const vd = VENDORS[known ? c.vendor : 'UNK'];
-            
             el.style.background = vd.bg;
             if (rfp) el.classList.add('rfp-anim');
             else if (bld) el.classList.add('build-anim');
             if (inc) el.classList.add('incident-anim');
             if (state.changedIds.includes(c.id)) el.classList.add('changed-anim');
             if (state.selectedId === c.id) el.classList.add('selected');
-            
-            const span = document.createElement('span');
-            span.className = 't-label';
+            const span = document.createElement('span'); span.className = 't-label';
             span.textContent = known ? `Y${Math.ceil(c.mo/12)}` : 'Y?';
             el.appendChild(span);
-            
             el.onclick = e => { e.stopPropagation(); state.selectedId = c.id; render(); };
         } else {
             el.style.background = VENDORS.NONE.bg;
@@ -864,19 +839,17 @@ function render() {
             statusEl.textContent = `通常運用 (M${c.mo})`; statusEl.className = 'sp-status';
         }
         propBtn.disabled = !(known && isRFP);
-    } else { panel.classList.remove('open'); }
+    } else panel.classList.remove('open');
 
     const strip = document.getElementById('task-strip');
     strip.innerHTML = '';
     if (state.tasks.length === 0) {
-        const sp = document.createElement('span');
-        sp.className = 'task-standby';
+        const sp = document.createElement('span'); sp.className = 'task-standby';
         sp.textContent = '>>> MISSION ON STANDBY';
         strip.appendChild(sp);
     } else {
         state.tasks.forEach((t, i) => {
-            const chip = document.createElement('div');
-            chip.className = 'task-chip';
+            const chip = document.createElement('div'); chip.className = 'task-chip';
             chip.innerHTML = `<span class="task-chip-name">${t.cname}</span><span>${t.label}</span><button class="task-chip-rm" onclick="removeTask(${i})">✕</button>`;
             strip.appendChild(chip);
         });
@@ -886,11 +859,9 @@ function render() {
     if (state.tasks.length > 0) { btn.disabled = false; btn.classList.add('active'); }
     else { btn.disabled = true; btn.classList.remove('active'); }
 
-    const logEl = document.getElementById('log-area');
-    logEl.innerHTML = '';
+    const logEl = document.getElementById('log-area'); logEl.innerHTML = '';
     state.logs.slice(0,3).forEach((l,i) => {
-        const d = document.createElement('div');
-        d.className = 'log-line' + (i===0?' latest':'');
+        const d = document.createElement('div'); d.className = 'log-line' + (i===0?' latest':'');
         d.textContent = (i===0?'>>> ':'... ') + l;
         logEl.appendChild(d);
     });
@@ -901,20 +872,17 @@ function addTask(type, cost, label) {
     if (state.mh < cost) { state.logs.unshift('! 工数不足。'); render(); return; }
     const c = state.customers.find(x=>x.id===state.selectedId);
     state.tasks.push({ cid:c.id, cname:c.name, type, cost, label });
-    state.mh -= cost;
-    render();
+    state.mh -= cost; render();
 }
 
 function removeTask(i) {
     state.mh += state.tasks[i].cost;
-    state.tasks.splice(i,1);
-    render();
+    state.tasks.splice(i,1); render();
 }
 
 async function executeStrategy() {
     document.getElementById('exec-overlay').classList.remove('hidden');
-    let gained = 0;
-    let changed = [];
+    let gained = 0; let changed = [];
     const monthResults = {};
     const interacted = [...new Set(state.tasks.map(t=>t.cid))];
     interacted.forEach(id=>{ monthResults[id]=[]; });
@@ -926,16 +894,16 @@ async function executeStrategy() {
             c.vc++; c.lv = state.month;
             monthResults[c.id].push({ icon:'👁', text:`${c.name} への戦略訪問完了。`, self:true });
         } else if (task.type==='STUDY') {
-            c.sc++; c.lv = state.month; // 勉強会も最終接触として記録
+            c.sc++; c.lv = state.month;
             monthResults[c.id].push({ icon:'📚', text:`${c.name} 勉強会実施。インテリジェンスを深めた。`, self:true });
         } else if (task.type==='PROPOSAL') {
             const ok = Math.random()*100 < winRate(c);
             playFeedbackSound(ok ? 'success' : 'failure');
             if (ok) {
-                // 指示：受注後は構築期間を6month（M55〜M60）
+                // 受注後は構築6ヶ月（M55〜M60）
                 c.vendor='H'; c.mo=55; c.vc=1; c.sc=0; c.lv = state.month;
                 gained = c.budget; changed.push(c.id);
-                monthResults[c.id].push({ icon:'✅', text:`H社が受注確定。`, result:`デリバリー（構築）開始。`, success:true, self:true });
+                monthResults[c.id].push({ icon:'✅', text:`H社が受注確定。`, result:`デリバリー開始。`, success:true, self:true });
             } else {
                 monthResults[c.id].push({ icon:'❌', text:`H社が失注。`, result:`競合の防衛網を突破できず。`, success:false, self:true });
             }
@@ -943,35 +911,52 @@ async function executeStrategy() {
         render();
     }
 
+    // アイデア：人事異動イベント（3%のリセット）
+    state.customers.forEach(c => {
+        if (Math.random() < 0.03) {
+            c.vc = 0; c.sc = 0; c.lv = 0;
+            if (!monthResults[c.id]) { interacted.push(c.id); monthResults[c.id]=[]; }
+            monthResults[c.id].push({icon:'👤', text:`重要顧客先で人事異動。これまでの実績が白紙。`, self:false});
+            state.logs.unshift(`[EVENT] ${c.name} で人事異動。`);
+        }
+    });
+
     state.customers.forEach(c => {
         if (Math.random() < 1/30) {
             state.incidents.push({cid:c.id});
             if (!interacted.includes(c.id)) { interacted.push(c.id); monthResults[c.id]=[]; }
             if (c.vendor==='H') {
-                // 指示：翌月から引く
                 state.nextMonthPenalty += 5; 
-                monthResults[c.id].push({icon:'🚨', text:`緊急障害。復旧対応。次月MH-5。`, self:true});
-            } else {
-                monthResults[c.id].push({icon:'⚡', text:`他社トラブル発生中。`, self:false});
-            }
+                monthResults[c.id].push({icon:'🚨', text:`緊急障害。次月リソースから-5 MH。`, self:true});
+            } else monthResults[c.id].push({icon:'⚡', text:`他社トラブル発生中。`, self:false});
         }
     });
 
     state.sales += gained;
     state.tasks = [];
 
+    // アイデア：ライバル社の激化（H社がトップの場合）
+    const share = calculateShare();
+    const isHLeader = share.stats.H >= share.stats.I && share.stats.H >= share.stats.A && share.stats.H >= share.stats.S;
+
     for (const rid of ['I','A','S']) {
         await new Promise(r=>setTimeout(r,300));
         interacted.forEach(cid => {
             const tgt = state.customers.find(x=>x.id===cid);
-            if (tgt.vendor === rid) monthResults[cid].push({ icon:'🛡', text:`${VENDORS[rid].name}が防衛強化。`, rival:true });
+            if (tgt.vendor === rid) monthResults[cid].push({ icon:'🛡', text:`${VENDORS[rid].name}が防衛を強化。`, rival:true });
             else if (Math.random() < 0.2) monthResults[cid].push({ icon:'🕵️', text:`${VENDORS[rid].name}が接触。`, rival:true });
         });
-        const rfpTargets = state.customers.filter(c=>c.vendor!==rid&&c.mo>=48&&c.mo<50);
+        
+        // H社の顧客を優先攻撃
+        const hCustomers = state.customers.filter(c => c.vendor === 'H' && c.mo >= 48 && c.mo < 50);
+        const rfpTargets = hCustomers.length > 0 ? hCustomers : state.customers.filter(c=>c.vendor!==rid&&c.mo>=48&&c.mo<50);
+        
         if (rfpTargets.length) {
             const tgt = rfpTargets[Math.floor(Math.random()*rfpTargets.length)];
-            const ok = Math.random()*100 < 25;
-            if (ok) { tgt.vendor=rid; tgt.mo=1; tgt.vc=0; tgt.sc=0; changed.push(tgt.id); }
+            const attackPower = isHLeader ? 35 : 25; // リーダーにはより攻撃的に
+            if (Math.random()*100 < attackPower) {
+                tgt.vendor=rid; tgt.mo=1; tgt.vc=0; tgt.sc=0; changed.push(tgt.id);
+            }
         }
     }
 
@@ -996,8 +981,7 @@ async function executeStrategy() {
                 </div>
             </div>`;
         });
-        block.innerHTML = html;
-        list.appendChild(block);
+        block.innerHTML = html; list.appendChild(block);
     }
     document.getElementById('result-overlay').classList.remove('hidden');
 }
@@ -1026,42 +1010,41 @@ function showFinalSummary() {
 
 function closeResult() {
     document.getElementById('result-overlay').classList.add('hidden');
-    // 指示：月が変わるときは、顧客カードを隠す
     state.selectedId = null; 
-    
-    if (state.month >= 12) {
-        showFinalSummary();
-    } else {
+    if (state.month >= 12) showFinalSummary();
+    else {
         state.month++; 
-        // ペナルティを翌月から引く
-        state.mh = MAX_MH - state.nextMonthPenalty; 
+        // アイデア：保守・運用コスト（シェア拡大に伴うMH減少）
+        const hTiles = state.gridOrder.filter(t => t.customerId && state.customers.find(x=>x.id===t.customerId).vendor === 'H').length;
+        const maintenanceCost = Math.min(5, Math.floor(hTiles / 4));
+        state.mh = MAX_MH - state.nextMonthPenalty - maintenanceCost; 
+        if (maintenanceCost > 0) state.logs.unshift(`[INFO] 既存保守コスト MH -${maintenanceCost}`);
         state.nextMonthPenalty = 0; 
         state.changedIds = []; state.incidents = []; render(); 
     }
 }
 
 function continueGame() {
-    state.month = 1;
-    state.year++;
-    state.mh = MAX_MH - state.nextMonthPenalty;
-    state.nextMonthPenalty = 0;
-    state.tasks = [];
+    state.month = 1; state.year++;
     state.initialShare = calculateShare(); 
-    state.logs.unshift(`--- 第${state.year}期・経営方針策定完了。 ---`);
+    const hTiles = state.gridOrder.filter(t => t.customerId && state.customers.find(x=>x.id===t.customerId).vendor === 'H').length;
+    const maintenanceCost = Math.min(5, Math.floor(hTiles / 4));
+    state.mh = MAX_MH - state.nextMonthPenalty - maintenanceCost;
+    state.nextMonthPenalty = 0; state.tasks = [];
+    state.logs.unshift(`--- 第${state.year}期 経営開始。 ---`);
     document.getElementById('summary-modal').classList.add('hidden');
     render();
 }
 
 function resetGame() {
     state.month = 1; state.year = 1; state.sales = 0; state.tasks = []; state.nextMonthPenalty = 0;
-    state.logs = ["環境を完全リセット。新市場スキャン中..."];
+    state.logs = ["環境をリセット。再スキャン開始。"];
     initializeEnvironment(true); 
     state.initialShare = calculateShare();
-    document.getElementById('summary-modal').classList.add('hidden');
-    render();
+    document.getElementById('summary-modal').classList.add('hidden'); render();
 }
 
-function saveToLocal() { localStorage.setItem('ent_state_v9', JSON.stringify(state)); state.logs.unshift('セーブ完了。'); render(); }
+function saveToLocal() { localStorage.setItem('ent_state_v11', JSON.stringify(state)); state.logs.unshift('セーブ完了。'); render(); }
 function exportHTML() {
     const blob = new Blob([document.documentElement.outerHTML], {type:'text/html'});
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
