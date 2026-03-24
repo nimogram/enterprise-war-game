@@ -363,7 +363,7 @@
             text-transform: uppercase; animation: pulse 0.8s infinite;
         }
 
-        /* ─── RESULT OVERLAY (透明度UP) ─── */
+        /* ─── RESULT OVERLAY ─── */
         .result-overlay {
             background: rgba(8, 12, 20, 0.25); 
             backdrop-filter: blur(4px);
@@ -656,14 +656,11 @@ const VENDORS = {
     UNK:  { name: '情報未取得',  bg: '#141C28', bright: '#1e293b' },
 };
 
-// 指示：受注時の音をもう少し派手なもの（和音のアルペジオ）に変更
 function playFeedbackSound(type) {
     try {
         const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        
         if (type === 'success') {
-            // 指示：派手な和音（Cメジャーアルペジオ）
-            const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+            const notes = [523.25, 659.25, 783.99, 1046.50];
             notes.forEach((freq, i) => {
                 const osc = ctx.createOscillator();
                 const gain = ctx.createGain();
@@ -678,7 +675,6 @@ function playFeedbackSound(type) {
                 osc.stop(ctx.currentTime + i * 0.1 + 0.6);
             });
         } else {
-            // 失注音
             const osc = ctx.createOscillator();
             const gain = ctx.createGain();
             osc.connect(gain);
@@ -727,8 +723,10 @@ let state = {
     gridOrder: [] 
 };
 
+// 指示：同じ顧客は近い位置に配置する（クラスター配置）
 function generateGridLayout() {
     let customerIds = state.customers.map(c => c.id);
+    // 顧客リストをシャッフル
     customerIds.sort(() => Math.random() - 0.5);
     let tiles = [];
     customerIds.forEach(cid => {
@@ -749,7 +747,7 @@ function initializeEnvironment(isRandom = false) {
         return {
             ...base,
             vendor: (isRandom && Math.random() < 0.2) ? 'H' : vendor,
-            mo: Math.floor(Math.random() * 45) + 1, // RFP手前までのランダム
+            mo: Math.floor(Math.random() * 45) + 1,
             vc: 0,
             sc: 0,
             lv: 0
@@ -816,7 +814,8 @@ function render() {
         
         if (tileData.customerId) {
             const c = state.customers.find(x => x.id === tileData.customerId);
-            const known = c.vc > 0 || c.vendor === 'H';
+            // 指示：訪問または勉強会をした場合にYXを表示（Y?のバグ修正）
+            const known = c.vc > 0 || c.sc > 0 || c.vendor === 'H';
             const rfp  = known && c.mo >= 48 && c.mo < 50;
             const bld  = known && c.mo >= 50;
             const inc  = state.incidents.some(i => i.cid === c.id);
@@ -850,7 +849,7 @@ function render() {
         document.getElementById('sp-visit').textContent = c.vc;
         document.getElementById('sp-study').textContent = c.sc;
         document.getElementById('sp-win').textContent   = `${winRate(c)}%`;
-        const known = c.vc>0 || c.vendor==='H';
+        const known = c.vc>0 || c.sc > 0 || c.vendor==='H';
         document.getElementById('sp-vendor').textContent = known ? VENDORS[c.vendor].name : '？';
         const statusEl = document.getElementById('sp-status');
         const propBtn = document.getElementById('sp-proposal-btn');
@@ -927,16 +926,16 @@ async function executeStrategy() {
             c.vc++; c.lv = state.month;
             monthResults[c.id].push({ icon:'👁', text:`${c.name} への戦略訪問完了。`, self:true });
         } else if (task.type==='STUDY') {
-            c.sc++;
-            monthResults[c.id].push({ icon:'📚', text:`${c.name} 勉強会実施。`, self:true });
+            c.sc++; c.lv = state.month; // 勉強会も最終接触として記録
+            monthResults[c.id].push({ icon:'📚', text:`${c.name} 勉強会実施。インテリジェンスを深めた。`, self:true });
         } else if (task.type==='PROPOSAL') {
             const ok = Math.random()*100 < winRate(c);
             playFeedbackSound(ok ? 'success' : 'failure');
             if (ok) {
-                // 指示：受注後は構築期間を6monthとして（M55〜M60）
+                // 指示：受注後は構築期間を6month（M55〜M60）
                 c.vendor='H'; c.mo=55; c.vc=1; c.sc=0; c.lv = state.month;
                 gained = c.budget; changed.push(c.id);
-                monthResults[c.id].push({ icon:'✅', text:`H社が受注確定。`, result:`デリバリー開始。`, success:true, self:true });
+                monthResults[c.id].push({ icon:'✅', text:`H社が受注確定。`, result:`デリバリー（構築）開始。`, success:true, self:true });
             } else {
                 monthResults[c.id].push({ icon:'❌', text:`H社が失注。`, result:`競合の防衛網を突破できず。`, success:false, self:true });
             }
@@ -949,8 +948,9 @@ async function executeStrategy() {
             state.incidents.push({cid:c.id});
             if (!interacted.includes(c.id)) { interacted.push(c.id); monthResults[c.id]=[]; }
             if (c.vendor==='H') {
+                // 指示：翌月から引く
                 state.nextMonthPenalty += 5; 
-                monthResults[c.id].push({icon:'🚨', text:`緊急障害。次月のリソースから-5 MH。`, self:true});
+                monthResults[c.id].push({icon:'🚨', text:`緊急障害。復旧対応。次月MH-5。`, self:true});
             } else {
                 monthResults[c.id].push({icon:'⚡', text:`他社トラブル発生中。`, self:false});
             }
@@ -964,8 +964,8 @@ async function executeStrategy() {
         await new Promise(r=>setTimeout(r,300));
         interacted.forEach(cid => {
             const tgt = state.customers.find(x=>x.id===cid);
-            if (tgt.vendor === rid) monthResults[cid].push({ icon:'🛡', text:`${VENDORS[rid].name}営業が防衛強化。`, rival:true });
-            else if (Math.random() < 0.2) monthResults[cid].push({ icon:'🕵️', text:`${VENDORS[rid].name}営業が接触。`, rival:true });
+            if (tgt.vendor === rid) monthResults[cid].push({ icon:'🛡', text:`${VENDORS[rid].name}が防衛強化。`, rival:true });
+            else if (Math.random() < 0.2) monthResults[cid].push({ icon:'🕵️', text:`${VENDORS[rid].name}が接触。`, rival:true });
         });
         const rfpTargets = state.customers.filter(c=>c.vendor!==rid&&c.mo>=48&&c.mo<50);
         if (rfpTargets.length) {
@@ -1026,13 +1026,14 @@ function showFinalSummary() {
 
 function closeResult() {
     document.getElementById('result-overlay').classList.add('hidden');
-    // 指示：月が変わるときは、顧客カードを一度隠す
+    // 指示：月が変わるときは、顧客カードを隠す
     state.selectedId = null; 
     
     if (state.month >= 12) {
         showFinalSummary();
     } else {
         state.month++; 
+        // ペナルティを翌月から引く
         state.mh = MAX_MH - state.nextMonthPenalty; 
         state.nextMonthPenalty = 0; 
         state.changedIds = []; state.incidents = []; render(); 
@@ -1060,7 +1061,7 @@ function resetGame() {
     render();
 }
 
-function saveToLocal() { localStorage.setItem('ent_state_v8', JSON.stringify(state)); state.logs.unshift('セーブ完了。'); render(); }
+function saveToLocal() { localStorage.setItem('ent_state_v9', JSON.stringify(state)); state.logs.unshift('セーブ完了。'); render(); }
 function exportHTML() {
     const blob = new Blob([document.documentElement.outerHTML], {type:'text/html'});
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
