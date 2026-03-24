@@ -57,18 +57,19 @@
             display: flex; flex-direction: column;
             position: relative;
             overflow: hidden;
+            background: var(--bg);
         }
 
         /* ─── ANIMATIONS ─── */
-        /* GAME START Animation */
         #game-start-overlay {
             position: fixed; inset: 0; z-index: 9999;
             display: flex; align-items: center; justify-content: center;
-            pointer-events: none; background: rgba(0,0,0,0);
+            pointer-events: none; background: rgba(8, 12, 20, 0);
+            transition: background 0.5s;
         }
         .start-banner {
             font-family: var(--font-display);
-            font-size: 80px; color: #fff; letter-spacing: 0.2em;
+            font-size: 72px; color: #fff; letter-spacing: 0.2em;
             text-shadow: 0 0 30px var(--emerald);
             transform: translateX(-150%);
             opacity: 0;
@@ -84,7 +85,7 @@
         }
 
         /* ─── HEADER ─── */
-        .hdr { padding: 16px 20px 10px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+        .hdr { padding: 16px 20px 10px; border-bottom: 1px solid var(--border); flex-shrink: 0; background: rgba(8,12,20,0.8); z-index: 10; }
         .hdr-top { display: flex; justify-content: space-between; align-items: flex-start; }
         .hdr-label {
             font-family: var(--font-display); font-size: 9px; letter-spacing: 0.6em;
@@ -96,27 +97,27 @@
             background: var(--gold); border-radius: 50%; animation: pulse 2s infinite;
         }
         @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
-        .hdr-phase { font-family: var(--font-display); font-size: 52px; color: #fff; line-height: 1; letter-spacing: 0.04em; }
+        .hdr-phase { font-family: var(--font-display); font-size: 48px; color: #fff; line-height: 1; letter-spacing: 0.04em; }
         .hdr-mh { text-align: right; }
         .hdr-mh-label { font-size: 8px; font-weight: 700; letter-spacing: 0.4em; color: var(--text-muted); text-transform: uppercase; margin-bottom: 2px; }
-        .hdr-mh-val { font-family: var(--font-display); font-size: 42px; color: var(--emerald); line-height: 1; }
+        .hdr-mh-val { font-family: var(--font-display); font-size: 38px; color: var(--emerald); line-height: 1; }
         .hdr-mh-val.danger { color: var(--rose); }
 
         /* ─── SHARE BAR ─── */
         .share-bar {
-            height: 22px; display: flex; overflow: hidden; margin: 12px 20px 4px;
+            height: 20px; display: flex; overflow: hidden; margin: 12px 20px 4px;
             border-radius: 4px; border: 1px solid var(--border); background: rgba(255,255,255,0.02);
         }
         .share-seg { 
             height: 100%; transition: width 0.8s ease; 
             display: flex; align-items: center; justify-content: center;
-            font-family: var(--font-display); font-size: 10px; color: #fff;
+            font-family: var(--font-display); font-size: 9px; color: #fff;
             text-shadow: 0 1px 2px rgba(0,0,0,0.5); white-space: nowrap;
         }
 
         /* ─── GRID AREA ─── */
-        .grid-wrap { flex: 1; display: flex; align-items: center; justify-content: center; padding: 10px 16px; position: relative; }
-        #grid { display: grid; grid-template-columns: repeat(6, 1fr); grid-template-rows: repeat(6, 1fr); gap: 5px; width: 100%; aspect-ratio: 1; }
+        .grid-wrap { flex: 1; display: flex; align-items: center; justify-content: center; padding: 10px 16px; position: relative; overflow: hidden; }
+        #grid { display: grid; grid-template-columns: repeat(6, 1fr); grid-template-rows: repeat(6, 1fr); gap: 5px; width: 100%; max-width: 380px; aspect-ratio: 1; }
         .tile {
             aspect-ratio: 1; border-radius: 8px; border: 1.5px solid rgba(255,255,255,0.05);
             cursor: pointer; display: flex; align-items: center; justify-content: center;
@@ -151,23 +152,23 @@
         /* ─── SIDE PANEL ─── */
         .side-panel {
             position: absolute; top: 0; right: 0; bottom: 0; width: 80%;
-            background: rgba(10,16,28,0.15); backdrop-filter: blur(32px);
+            background: rgba(10,16,28,0.3); backdrop-filter: blur(40px);
             border-left: 1px solid var(--border); padding: 20px 18px;
             display: flex; flex-direction: column; gap: 12px; z-index: 120;
-            transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.16,1,0.3,1);
+            transform: translateX(100%); transition: transform 0.4s cubic-bezier(0.16,1,0.3,1);
         }
         .side-panel.open { transform: translateX(0); }
         .sp-header { display: flex; justify-content: space-between; align-items: center; }
         .sp-tag { font-size: 8px; font-weight: 700; letter-spacing: 0.5em; color: var(--emerald); text-transform: uppercase; }
-        .sp-close { background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 4px; font-size: 20px; line-height: 1; }
-        .sp-name { font-family: var(--font-display); font-size: 28px; color: #fff; letter-spacing: 0.03em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .sp-close { background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 4px; font-size: 20px; }
+        .sp-name { font-family: var(--font-display); font-size: 24px; color: #fff; letter-spacing: 0.03em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .sp-full { font-size: 11px; color: #556677; line-height: 1.5; border-left: 3px solid var(--gold); padding-left: 8px; }
         .sp-stat-row { display: flex; gap: 8px; }
         .sp-stat { flex: 1; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 10px; padding: 10px; }
         .sp-stat-label { font-size: 7px; font-weight: 700; letter-spacing: 0.4em; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; }
-        .sp-stat-val { font-family: var(--font-display); font-size: 26px; color: #fff; }
-        .sp-win { font-family: var(--font-display); font-size: 54px; color: var(--emerald); line-height: 1; }
-        .sp-vendor-val { font-family: var(--font-display); font-size: 18px; color: var(--gold); letter-spacing: 0.1em; }
+        .sp-stat-val { font-family: var(--font-display); font-size: 24px; color: #fff; }
+        .sp-win { font-family: var(--font-display); font-size: 48px; color: var(--emerald); line-height: 1; }
+        .sp-vendor-val { font-family: var(--font-display); font-size: 16px; color: var(--gold); letter-spacing: 0.1em; }
         .sp-status { font-size: 11px; font-weight: 600; color: #fff; }
         .sp-btns { display: flex; flex-direction: column; gap: 6px; margin-top: auto; }
         .sp-btn {
@@ -188,7 +189,7 @@
             flex-shrink: 0; display: flex; align-items: center; gap: 6px;
             background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
             border-radius: 20px; padding: 4px 10px 4px 12px; font-size: 10px; font-weight: 600; color: #cce;
-            white-space: nowrap; animation: chip-in 0.3s ease;
+            white-space: nowrap;
         }
         .task-chip-rm { background: none; border: none; color: #556677; cursor: pointer; font-size: 14px; }
         .task-standby { font-size: 10px; font-weight: 700; letter-spacing: 0.5em; color: var(--text-muted); text-transform: uppercase; font-family: var(--font-mono); }
@@ -206,27 +207,31 @@
         .log-line { font-family: var(--font-mono); font-size: 9px; color: var(--text-muted); line-height: 1.6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .log-line.latest { color: var(--emerald); }
 
-        /* ─── RESULT OVERLAY ─── */
-        .result-overlay { background: rgba(8, 12, 20, 0.25); backdrop-filter: blur(4px); flex-direction: column; }
+        /* ─── SCORE BAR ─── */
+        .score-bar { height: 52px; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; border-top: 1px solid var(--border); flex-shrink: 0; }
+        .score-val { font-family: var(--font-display); font-size: 32px; color: #fff; letter-spacing: 0.04em; }
+        .score-val span { font-size: 14px; color: var(--text-muted); margin-left: 2px; }
+
+        /* ─── OVERLAYS ─── */
+        .overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 150; }
+        .overlay.hidden { display: none; }
+        .exec-overlay { background: rgba(8,12,20,0.75); backdrop-filter: blur(8px); }
+        .result-overlay { background: rgba(8, 12, 20, 0.4); backdrop-filter: blur(12px); flex-direction: column; }
         .result-box {
             width: 94%; max-height: 90%; border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 28px; background: rgba(13, 20, 32, 0.25); 
-            backdrop-filter: blur(24px); display: flex; flex-direction: column; overflow: hidden;
+            border-radius: 28px; background: rgba(13, 20, 32, 0.6); 
+            backdrop-filter: blur(32px); display: flex; flex-direction: column; overflow: hidden;
         }
         .result-hdr { padding: 20px 20px 14px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
         .result-list { flex: 1; overflow-y: auto; padding: 12px 20px; }
-        .result-block { padding: 16px 0; border-bottom: 1px solid rgba(255,255,255,0.04); opacity: 0; transform: translateY(-20px); animation: slide-flow-down 1.2s forwards cubic-bezier(0.22, 1, 0.36, 1); }
+        .result-block { padding: 16px 0; border-bottom: 1px solid rgba(255,255,255,0.04); opacity: 0; transform: translateY(-20px); animation: slide-flow-down 0.8s forwards; }
+        @keyframes slide-flow-down { to { opacity: 1; transform: translateY(0); } }
         .result-next { flex-shrink: 0; height: 52px; border: none; border-top: 1px solid var(--border); background: #fff; color: #080C14; font-family: var(--font-display); font-size: 15px; letter-spacing: 0.5em; text-transform: uppercase; cursor: pointer; }
 
         /* ─── FINAL MODAL ─── */
         #summary-modal { position: fixed; inset: 0; background: rgba(8,12,20,0.98); z-index: 250; display: flex; align-items: center; justify-content: center; padding: 16px; }
         #summary-modal.hidden { display: none; }
         .summary-box { background: var(--surface); border: 1px solid rgba(255,255,255,0.08); border-radius: 32px; padding: 28px 24px; width: 100%; max-height: 94%; overflow-y: auto; text-align: center; }
-        .summary-btn { width: 100%; height: 56px; border: none; border-radius: 16px; font-family: var(--font-display); font-size: 16px; letter-spacing: 0.4em; text-transform: uppercase; cursor: pointer; }
-        .btn-continue { background: var(--emerald); color: #fff; margin-bottom: 10px; }
-        .btn-restart { background: #fff; color: #080C14; }
-
-        .comp-bar { height: 32px; display: flex; border-radius: 6px; overflow: hidden; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); }
     </style>
 </head>
 <body>
@@ -263,9 +268,9 @@
                 <div class="sp-stat"><div class="sp-stat-label">Visit</div><div class="sp-stat-val" id="sp-visit">0</div></div>
                 <div class="sp-stat"><div class="sp-stat-label">Study</div><div class="sp-stat-val" id="sp-study">0</div></div>
             </div>
-            <div><div class="sp-win" id="sp-win">—%</div><div style="font-size:7px;letter-spacing:0.4em;color:var(--text-muted);text-transform:uppercase;">Capture Prob</div></div>
-            <div><div style="font-size:7px;letter-spacing:0.3em;color:var(--text-muted);text-transform:uppercase;margin-bottom:2px;">Existing Provider</div><div class="sp-vendor-val" id="sp-vendor">—</div></div>
-            <div><div style="font-size:7px;letter-spacing:0.3em;color:var(--text-muted);text-transform:uppercase;margin-bottom:2px;">Phase Vector</div><div class="sp-status" id="sp-status">—</div></div>
+            <div style="margin:8px 0;"><div class="sp-win" id="sp-win">—%</div><div style="font-size:7px;letter-spacing:0.4em;color:var(--text-muted);text-transform:uppercase;">Capture Prob</div></div>
+            <div style="margin-bottom:8px;"><div style="font-size:7px;letter-spacing:0.3em;color:var(--text-muted);text-transform:uppercase;margin-bottom:2px;">Existing Provider</div><div class="sp-vendor-val" id="sp-vendor">—</div></div>
+            <div style="margin-bottom:8px;"><div style="font-size:7px;letter-spacing:0.3em;color:var(--text-muted);text-transform:uppercase;margin-bottom:2px;">Phase Vector</div><div class="sp-status" id="sp-status">—</div></div>
             <div class="sp-btns">
                 <button class="sp-btn" onclick="addTask('VISIT',5,'訪問')">Visit (-5 MH)</button>
                 <button class="sp-btn" onclick="addTask('STUDY',8,'勉強会')">Study (-8 MH)</button>
@@ -290,11 +295,9 @@
     <button class="exec-btn" id="exec-btn" disabled onclick="executeStrategy()">Launch Mission</button>
     <div class="log-area" id="log-area"></div>
     <div class="score-bar">
-        <div class="legend-row">
-            <div class="legend-item"><div class="legend-dot" style="background:var(--vendor-H)"></div>SELF</div>
-            <div class="legend-item"><div class="legend-dot" style="background:var(--vendor-I-bright)"></div>I社</div>
-            <div class="legend-item"><div class="legend-dot" style="background:var(--vendor-A-bright)"></div>A社</div>
-            <div class="legend-item"><div class="legend-dot" style="background:var(--vendor-S-bright)"></div>S社</div>
+        <div style="display:flex;gap:12px;align-items:center;">
+            <div style="display:flex;align-items:center;gap:4px;font-size:8px;"><div style="width:8px;height:8px;background:var(--vendor-H)"></div>SELF</div>
+            <div style="display:flex;align-items:center;gap:4px;font-size:8px;"><div style="width:8px;height:8px;background:var(--vendor-I-bright)"></div>I社</div>
         </div>
         <div class="score-val" id="score-val">¥0<span>M</span></div>
     </div>
@@ -302,29 +305,35 @@
 
 <div id="summary-modal" class="hidden">
     <div class="summary-box">
-        <div class="summary-title">STRATEGIC REPORT</div>
+        <h2 style="font-family:var(--font-display);font-size:32px;color:#fff;margin-bottom:20px;">ANNUAL STRATEGIC REPORT</h2>
         <div id="final-ranking" style="margin:20px 0;"></div>
-        <div class="summary-btns">
-            <button class="summary-btn btn-continue" onclick="continueGame()">⏩ Next Year</button>
-            <button class="summary-btn btn-restart" onclick="resetGame()">↩ Reset</button>
-        </div>
+        <button class="sp-btn primary" style="width:100%;" onclick="continueGame()">⏩ Next Year</button>
+        <button class="sp-btn" style="width:100%;margin-top:10px;" onclick="resetGame()">↩ Reset</button>
     </div>
 </div>
 
 <script>
 const MAX_MH = 20;
 const VENDORS = {
-    H: { name: 'H社', bg: '#00D68F', bright: '#00D68F' }, 
-    I: { name: 'I社', bg: '#0A1F3D', bright: '#38BDF8' },
-    A: { name: 'A社', bg: '#2D0A3D', bright: '#A855F7' },
-    S: { name: 'S社', bg: '#451A03', bright: '#F59E0B' },
+    H: { name: 'H社', bg: '#00D68F' }, 
+    I: { name: 'I社', bg: '#0A1F3D' },
+    A: { name: 'A社', bg: '#2D0A3D' },
+    S: { name: 'S社', bg: '#451A03' },
     NONE: { name: '未開拓', bg: '#080C14' },
     UNK: { name: '情報未取得', bg: '#141C28' }
 };
 
-// ─── SOUND ENGINE (Procedural Synthesis) ───
-const AudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+let AudioCtx;
+function initAudio() {
+    if (!AudioCtx) {
+        AudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+}
+
 function playSound(type) {
+    initAudio();
+    if (AudioCtx.state === 'suspended') AudioCtx.resume();
+    
     const osc = AudioCtx.createOscillator();
     const gain = AudioCtx.createGain();
     osc.connect(gain); gain.connect(AudioCtx.destination);
@@ -332,10 +341,10 @@ function playSound(type) {
 
     switch(type) {
         case 'start':
-            osc.type = 'sawtooth'; osc.frequency.setValueAtTime(40, now);
-            osc.frequency.exponentialRampToValueAtTime(440, now + 1);
-            gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now + 1.2);
-            osc.start(); osc.stop(now + 1.2);
+            osc.type = 'sawtooth'; osc.frequency.setValueAtTime(60, now);
+            osc.frequency.exponentialRampToValueAtTime(440, now + 0.8);
+            gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now + 0.8);
+            osc.start(); osc.stop(now + 0.8);
             break;
         case 'click':
             osc.type = 'sine'; osc.frequency.setValueAtTime(880, now);
@@ -343,30 +352,18 @@ function playSound(type) {
             osc.start(); osc.stop(now + 0.1);
             break;
         case 'add':
-            osc.type = 'square'; osc.frequency.setValueAtTime(500, now);
-            osc.frequency.setValueAtTime(1000, now + 0.05);
-            gain.gain.setValueAtTime(0.03, now); gain.gain.linearRampToValueAtTime(0, now + 0.1);
+            osc.type = 'square'; osc.frequency.setValueAtTime(440, now);
+            osc.frequency.setValueAtTime(880, now + 0.05);
+            gain.gain.setValueAtTime(0.02, now); gain.gain.linearRampToValueAtTime(0, now + 0.1);
             osc.start(); osc.stop(now + 0.1);
-            break;
-        case 'remove':
-            osc.type = 'square'; osc.frequency.setValueAtTime(1000, now);
-            osc.frequency.setValueAtTime(500, now + 0.05);
-            gain.gain.setValueAtTime(0.03, now); gain.gain.linearRampToValueAtTime(0, now + 0.1);
-            osc.start(); osc.stop(now + 0.1);
-            break;
-        case 'incident':
-            osc.type = 'triangle'; osc.frequency.setValueAtTime(220, now);
-            osc.frequency.linearRampToValueAtTime(110, now + 0.3);
-            gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now + 0.3);
-            osc.start(); osc.stop(now + 0.3);
             break;
         case 'success':
             [523.25, 659.25, 783.99, 1046.50].forEach((f, i) => {
                 const o = AudioCtx.createOscillator(); const g = AudioCtx.createGain();
                 o.connect(g); g.connect(AudioCtx.destination);
                 o.type = 'triangle'; o.frequency.setValueAtTime(f, now + i * 0.1);
-                g.gain.setValueAtTime(0.05, now + i * 0.1); g.gain.linearRampToValueAtTime(0, now + i * 0.1 + 0.5);
-                o.start(now + i * 0.1); o.stop(now + i * 0.1 + 0.5);
+                g.gain.setValueAtTime(0.05, now + i * 0.1); g.gain.linearRampToValueAtTime(0, now + i * 0.1 + 0.4);
+                o.start(now + i * 0.1); o.stop(now + i * 0.1 + 0.4);
             });
             break;
         case 'failure':
@@ -375,16 +372,9 @@ function playSound(type) {
             gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now + 0.4);
             osc.start(); osc.stop(now + 0.4);
             break;
-        case 'next':
-            osc.type = 'sine'; osc.frequency.setValueAtTime(440, now);
-            osc.frequency.exponentialRampToValueAtTime(880, now + 0.2);
-            gain.gain.setValueAtTime(0.05, now); gain.gain.linearRampToValueAtTime(0, now + 0.2);
-            osc.start(); osc.stop(now + 0.2);
-            break;
     }
 }
 
-// ─── GAME LOGIC ───
 const CUSTOMER_POOL = [
     { id:101, name:'NIT-Core', full:'ニトリHD: 基幹', budget:120, tiles:5 },
     { id:102, name:'NIT-Logi', full:'ニトリHD: 物流', budget:80,  tiles:4 },
@@ -440,19 +430,22 @@ function winRate(c) {
 }
 
 function calculateShare() {
-    const s = {H:0,I:0,A:0,S:0,NONE:0};
-    state.customers.forEach(c => s[c.vendor] += c.budget);
-    return { stats: s, total: Object.values(s).reduce((a,b)=>a+b,0)||1 };
+    // 全ベンダーキーを初期化してNaNを防ぐ
+    const s = { H:0, I:0, A:0, S:0, NONE:0, UNK:0 };
+    state.customers.forEach(c => {
+        if (s[c.vendor] !== undefined) s[c.vendor] += c.budget;
+    });
+    return { stats: s, total: Object.values(s).reduce((a, b) => a + b, 0) || 1 };
 }
 
 function renderBar(id, data) {
     const c = document.getElementById(id); if(!c) return; c.innerHTML = '';
     const { stats, total } = data;
-    [['H','#00D68F'],['I','#38BDF8'],['A','#A855F7'],['S','#F59E0B']].forEach(([v,col])=>{
+    ['H','I','A','S'].forEach(v => {
         const p = (stats[v]||0)/total*100;
         if (p>0) {
             const d = document.createElement('div'); d.className='share-seg';
-            d.style.cssText=`width:${p}%;background:${col};opacity:${v==='H'?1:0.7}`;
+            d.style.cssText=`width:${p}%;background:var(--vendor-${v})`;
             if (p > 5) d.textContent = Math.round(p) + '%';
             c.appendChild(d);
         }
@@ -471,9 +464,10 @@ function render() {
         const el = document.createElement('div'); el.className = 'tile';
         if (tData.customerId) {
             const c = state.customers.find(x => x.id === tData.customerId);
+            // 訪問・勉強会・自社のいずれかで情報開示
             const k = c.vc > 0 || c.sc > 0 || c.vendor === 'H';
             const vd = VENDORS[k ? c.vendor : 'UNK'];
-            el.style.background = vd.bg;
+            el.style.backgroundColor = vd.bg;
             if (k && c.mo >= 48 && c.mo < 50) el.classList.add('rfp-anim');
             else if (k && c.mo >= 50) el.classList.add('build-anim');
             if (state.incidents.some(i => i.cid === c.id)) el.classList.add('incident-anim');
@@ -483,7 +477,7 @@ function render() {
             span.textContent = k ? `Y${Math.ceil(c.mo/12)}` : 'Y?';
             el.appendChild(span);
             el.onclick = e => { e.stopPropagation(); state.selectedId = c.id; playSound('click'); render(); };
-        } else { el.style.background = VENDORS.NONE.bg; }
+        } else { el.style.backgroundColor = VENDORS.NONE.bg; }
         g.appendChild(el);
     });
 
@@ -534,52 +528,49 @@ function addTask(type, cost, label) {
 
 function removeTask(i) {
     state.mh += state.tasks[i].cost;
-    state.tasks.splice(i,1); playSound('remove'); render();
+    state.tasks.splice(i,1); render();
 }
 
 async function executeStrategy() {
     playSound('start'); document.getElementById('exec-overlay').classList.remove('hidden');
-    let gained = 0; let changed = []; const res = {}; const inter = [...new Set(state.tasks.map(t=>t.cid))];
-    inter.forEach(id => res[id]=[]);
+    let gained = 0; let changed = []; const resMap = {}; const inter = [...new Set(state.tasks.map(t=>t.cid))];
+    inter.forEach(id => resMap[id]=[]);
 
     for (const t of state.tasks) {
         await new Promise(r=>setTimeout(r,400));
         const c = state.customers.find(x=>x.id===t.cid);
-        if (t.type==='VISIT') { c.vc++; c.lv = state.month; res[c.id].push({ icon:'👁', text:'戦略訪問完了。情報を入手。', self:true }); }
-        else if (t.type==='STUDY') { c.sc++; c.lv = state.month; res[c.id].push({ icon:'📚', text:'勉強会実施。インテリジェンス深化。', self:true }); }
+        if (t.type==='VISIT') { c.vc++; c.lv = state.month; resMap[c.id].push({ icon:'👁', text:'訪問成功。フェーズ特定。' }); }
+        else if (t.type==='STUDY') { c.sc++; c.lv = state.month; resMap[c.id].push({ icon:'📚', text:'勉強会実施。受注率UP。' }); }
         else if (t.type==='PROPOSAL') {
-            const ok = Math.random()*100 < winRate(c); playSound(ok ? 'success' : 'failure');
-            if (ok) { c.vendor='H'; c.mo=55; c.vc=1; c.sc=0; c.lv = state.month; gained += c.budget; changed.push(c.id); res[c.id].push({ icon:'✅', text:'受注確定。構築へ。', success:true, self:true }); }
-            else res[c.id].push({ icon:'❌', text:'失注。競合に阻まれました。', success:false, self:true });
+            const ok = Math.random()*100 < winRate(c); 
+            if (ok) { 
+                playSound('success'); c.vendor='H'; c.mo=55; c.vc=1; c.sc=0; c.lv = state.month; 
+                gained += c.budget; changed.push(c.id); resMap[c.id].push({ icon:'✅', text:'受注確定。半年間の構築開始。' }); 
+            } else { playSound('failure'); resMap[c.id].push({ icon:'❌', text:'競合により失注。' }); }
         }
         render();
     }
 
+    // アイデア：人事異動・障害
     state.customers.forEach(c => {
-        if (Math.random() < 0.03) { c.vc = 0; c.sc = 0; c.lv = 0; if(!res[c.id]) { inter.push(c.id); res[c.id]=[]; } res[c.id].push({icon:'👤', text:'人事異動発生。関係値リセット。'}); }
+        if (Math.random() < 0.03) { c.vc = 0; c.sc = 0; if(!resMap[c.id]) { inter.push(c.id); resMap[c.id]=[]; } resMap[c.id].push({icon:'👤', text:'人事異動。リレーション消失。'}); }
         if (Math.random() < 1/30) {
-            playSound('incident'); state.incidents.push({cid:c.id}); if(!res[c.id]) { inter.push(c.id); res[c.id]=[]; }
-            if (c.vendor==='H') { state.nextMonthPenalty += 5; res[c.id].push({icon:'🚨', text:'障害発生。次月MH-5。', self:true}); }
-            else res[c.id].push({icon:'⚡', text:'他社トラブル中。', self:false});
+            state.incidents.push({cid:c.id}); if(!resMap[c.id]) { inter.push(c.id); resMap[c.id]=[]; }
+            if (c.vendor==='H') { state.nextMonthPenalty += 5; resMap[c.id].push({icon:'🚨', text:'障害対応。次月MH-5。'}); }
         }
     });
 
     state.sales += gained; state.tasks = [];
-    const sh = calculateShare();
-    const isHLeader = sh.stats.H >= Math.max(sh.stats.I, sh.stats.A, sh.stats.S);
+    const share = calculateShare();
+    const isHLeader = share.stats.H >= Math.max(share.stats.I, share.stats.A, share.stats.S);
 
     for (const rid of ['I','A','S']) {
-        await new Promise(r=>setTimeout(r,300));
-        inter.forEach(cid => {
-            const tgt = state.customers.find(x=>x.id===cid);
-            if (tgt.vendor === rid) res[cid].push({ icon:'🛡', text:`${VENDORS[rid].name}営業が防衛中。` });
-            else if (Math.random() < 0.15) res[cid].push({ icon:'🕵️', text:`${VENDORS[rid].name}営業の接触を検知。` });
-        });
-        const rfp = state.customers.filter(c => c.vendor !== rid && c.mo >= 48 && c.mo < 50);
-        if (rfp.length) {
-            const tgt = rfp[Math.floor(Math.random()*rfp.length)];
-            const power = (isHLeader && tgt.vendor==='H') ? 35 : 25;
-            if (Math.random()*100 < power) { tgt.vendor=rid; tgt.mo=1; tgt.vc=0; tgt.sc=0; changed.push(tgt.id); }
+        const hCusts = state.customers.filter(c => c.vendor === 'H' && c.mo >= 48 && c.mo < 50);
+        const targets = hCusts.length ? hCusts : state.customers.filter(c=>c.vendor!==rid && c.mo >= 48 && c.mo < 50);
+        if (targets.length) {
+            const t = targets[Math.floor(Math.random()*targets.length)];
+            const power = (isHLeader && t.vendor==='H') ? 35 : 25;
+            if (Math.random()*100 < power) { t.vendor=rid; t.mo=1; t.vc=0; t.sc=0; changed.push(t.id); }
         }
     }
 
@@ -587,65 +578,49 @@ async function executeStrategy() {
     document.getElementById('exec-overlay').classList.add('hidden');
 
     const l = document.getElementById('result-list'); l.innerHTML = '';
-    let dly = 0;
-    for (const cid of inter) {
+    inter.forEach(cid => {
         const c = state.customers.find(x=>x.id===cid);
-        const b = document.createElement('div'); b.className = 'result-block'; b.style.animationDelay = `${dly * 0.6}s`; dly++;
-        let html = `<div class="result-block-name">${c.name} Report</div>`;
-        res[cid].forEach(r => {
-            html += `<div class="result-row"><span class="result-icon">${r.icon}</span><div class="result-text ${r.self ? 'self' : ''}">${r.text}${r.result?`<span class="${r.success?'success':'fail'}">${r.result}</span>`:''}</div></div>`;
-        });
-        b.innerHTML = html; l.appendChild(b);
-    }
+        const b = document.createElement('div'); b.className = 'result-block';
+        let h = `<div style="font-family:var(--font-display);color:var(--gold);font-size:14px;margin-bottom:8px;border-bottom:1px solid var(--border)">${c.name} INTEL</div>`;
+        resMap[cid].forEach(r => h += `<div style="display:flex;gap:8px;font-size:10px;margin-bottom:4px;"><span>${r.icon}</span><span>${r.text}</span></div>`);
+        b.innerHTML = h; l.appendChild(b);
+    });
     document.getElementById('result-overlay').classList.remove('hidden');
 }
 
-function showFinalSummary() {
-    const m12 = calculateShare();
-    const rank = Object.keys(VENDORS).filter(v => ['H','I','A','S'].includes(v))
-        .map(v => ({ name: VENDORS[v].name, val: m12.stats[v] })).sort((a,b)=>b.val-a.val);
-    let html = ''; rank.forEach((r, i) => html += `<div style="display:flex;justify-content:space-between;padding:10px;border-bottom:1px solid var(--border);color:${i===0? 'var(--emerald)':'#fff'}"><span>${i+1}. ${r.name}</span><span>¥${r.val}M</span></div>`);
-    document.getElementById('final-ranking').innerHTML = html;
-    document.getElementById('summary-modal').classList.remove('hidden');
-}
-
 function closeResult() {
-    document.getElementById('result-overlay').classList.add('hidden'); state.selectedId = null;
+    document.getElementById('result-overlay').classList.add('hidden'); 
+    state.selectedId = null; // 月が変わるときはカードを隠す
     if (state.month >= 12) showFinalSummary();
     else {
-        playSound('next'); state.month++;
+        state.month++;
         const hTiles = state.gridOrder.filter(t => t.customerId && state.customers.find(x=>x.id===t.customerId).vendor === 'H').length;
         const maint = Math.min(5, Math.floor(hTiles / 4));
         state.mh = MAX_MH - state.nextMonthPenalty - maint; state.nextMonthPenalty = 0;
-        state.changedIds = []; render();
+        state.changedIds = []; state.incidents = []; render();
     }
-}
-
-function continueGame() {
-    state.month = 1; state.year++; state.initialShare = calculateShare();
-    state.logs.unshift(`--- 第${state.year}期・始動。 ---`);
-    document.getElementById('summary-modal').classList.add('hidden'); render();
-}
-
-function resetGame() {
-    state.month = 1; state.year = 1; state.sales = 0; state.nextMonthPenalty = 0;
-    initializeEnvironment(true); state.initialShare = calculateShare();
-    document.getElementById('summary-modal').classList.add('hidden'); triggerStartScreen();
 }
 
 function triggerStartScreen() {
     const b = document.getElementById('start-banner');
     b.classList.remove('animate'); void b.offsetWidth; b.classList.add('animate');
+    const o = document.getElementById('game-start-overlay');
+    o.style.background = 'rgba(8,12,20,0.9)';
+    setTimeout(() => { o.style.background = 'rgba(8,12,20,0)'; }, 500);
     playSound('start');
 }
 
-function saveToLocal() { localStorage.setItem('ent_v12', JSON.stringify(state)); state.logs.unshift('SAVE COMPLETED.'); render(); }
+function showFinalSummary() { document.getElementById('summary-modal').classList.remove('hidden'); }
+function continueGame() { state.month = 1; state.year++; document.getElementById('summary-modal').classList.add('hidden'); render(); }
+function resetGame() { state.month = 1; state.year = 1; state.sales = 0; initializeEnvironment(true); document.getElementById('summary-modal').classList.add('hidden'); triggerStartScreen(); render(); }
+function saveToLocal() { localStorage.setItem('ent_v13', JSON.stringify(state)); state.logs.unshift('SYSTEM SAVED.'); render(); }
 
 window.onload = () => {
-    initializeEnvironment(false); state.initialShare = calculateShare();
+    initializeEnvironment(false);
     document.getElementById('close-panel').onclick = () => { state.selectedId = null; render(); };
     triggerStartScreen(); render();
 };
+document.body.addEventListener('click', initAudio, { once: true });
 </script>
 </body>
 </html>
