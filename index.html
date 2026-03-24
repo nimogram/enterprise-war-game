@@ -131,7 +131,6 @@
             position: absolute; top: 0; right: 0; bottom: 0;
             width: 78%;
             background: rgba(6,10,17,0.1); 
-            /* 指示：ぼかしをさらに減らす (12px -> 4px) */
             backdrop-filter: blur(4px) saturate(1.4);
             border-left: 1px solid rgba(255,255,255,.1);
             display: flex; flex-direction: column; gap: 10px;
@@ -163,8 +162,7 @@
         .sp-status.unk-st { color: var(--muted); font-style: italic; }
         .sp-btns { margin-top: auto; display: flex; flex-direction: column; gap: 5px; flex-shrink: 0; }
         .sp-btn {
-            /* 指示：ボタンの透明度を下げる (0.025 -> 0.12) と境界線を強調 */
-            background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2);
+            background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2);
             color: #fff; border-radius: 10px; padding: 9px 8px;
             font-family: var(--D); font-size: 13px; letter-spacing: .12em;
             cursor: pointer; transition: all .18s; text-transform: uppercase;
@@ -199,7 +197,7 @@
             width: 93%; max-height: 88dvh;
             border: 1px solid rgba(255,255,255,.12);
             border-radius: 24px;
-            background: rgba(12,18,33,.9);
+            background: rgba(12,18,33,.45);
             backdrop-filter: blur(24px);
             display: flex; flex-direction: column;
             overflow: hidden;
@@ -218,11 +216,11 @@
         .res-block:last-child { border-bottom: none; }
         @keyframes sfdown { to { opacity: 1; transform: translateY(0); } }
         .res-bname { font-family: var(--D); color: var(--gold); font-size: 14px; letter-spacing: .2em; margin-bottom: 8px; padding-left: 8px; border-left: 3px solid var(--gold); }
-        .res-row { display: flex; gap: 9px; font-size: 11.5px; margin-bottom: 5px; line-height: 1.45; align-items: flex-start; }
+        .res-row { display: flex; gap: 9px; font-size: 14.5px; margin-bottom: 5px; line-height: 1.45; align-items: flex-start; }
         .res-ico { flex-shrink: 0; width: 18px; text-align: center; }
         .res-txt { color: #aabbcc; }
-        .res-txt .ok  { color: var(--emerald); font-weight: 700; display: block; font-size: 10.5px; margin-top: 2px; }
-        .res-txt .ng  { color: var(--rose);    font-weight: 700; display: block; font-size: 10.5px; margin-top: 2px; }
+        .res-txt .ok  { color: var(--emerald); font-weight: 700; display: block; font-size: 12px; margin-top: 2px; }
+        .res-txt .ng  { color: var(--rose);    font-weight: 700; display: block; font-size: 12px; margin-top: 2px; }
         .res-next {
             flex-shrink: 0; height: 52px; border: none; border-top: 1px solid var(--bdr);
             background: #fff; color: var(--bg);
@@ -535,6 +533,8 @@ function initEnv() {
         mo: Math.floor(Math.random()*45)+1,
         vc:0, sc:0, lv:0,
         reshuffleMonth: Math.floor(Math.random()*12)+1,
+        // 指示：初期確度をランダムにするため、個別の「潜在親和性」を付与
+        affinity: Math.floor(Math.random() * 21) // 0-20の追加加点
     }));
     buildGrid();
 }
@@ -552,7 +552,8 @@ function buildGrid() {
    ════════════════════════════════ */
 function wr(c) {
     if (!c) return 0;
-    let r = 10;
+    // 指示：基本確度(10)に個別の親和性を合算
+    let r = 5 + (c.affinity || 0); 
     if (c.vendor==='H') r += 40;
     if (c.mo>=48&&c.mo<50) r+=40; else if (c.mo>=50) r-=20;
     r += c.vc*5 + c.sc*10;
