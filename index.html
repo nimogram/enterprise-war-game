@@ -656,29 +656,41 @@ const VENDORS = {
     UNK:  { name: '情報未取得',  bg: '#141C28', bright: '#1e293b' },
 };
 
+// 指示：受注時の音をもう少し派手なもの（和音のアルペジオ）に変更
 function playFeedbackSound(type) {
     try {
         const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.connect(gain);
-        gain.connect(ctx.destination);
         
         if (type === 'success') {
-            osc.type = 'triangle';
-            osc.frequency.setValueAtTime(523.25, ctx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.3);
-            gain.gain.setValueAtTime(0.1, ctx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+            // 指示：派手な和音（Cメジャーアルペジオ）
+            const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+            notes.forEach((freq, i) => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.1);
+                gain.gain.setValueAtTime(0, ctx.currentTime + i * 0.1);
+                gain.gain.linearRampToValueAtTime(0.1, ctx.currentTime + i * 0.1 + 0.05);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + i * 0.1 + 0.5);
+                osc.start(ctx.currentTime + i * 0.1);
+                osc.stop(ctx.currentTime + i * 0.1 + 0.6);
+            });
         } else {
+            // 失注音
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
             osc.type = 'sawtooth';
             osc.frequency.setValueAtTime(220, ctx.currentTime);
             osc.frequency.linearRampToValueAtTime(80, ctx.currentTime + 0.4);
             gain.gain.setValueAtTime(0.1, ctx.currentTime);
             gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.5);
         }
-        osc.start();
-        osc.stop(ctx.currentTime + 0.5);
     } catch(e) { console.log("Audio blocked."); }
 }
 
@@ -703,7 +715,7 @@ let state = {
     month: 1,
     year: 1,
     mh: MAX_MH,
-    nextMonthPenalty: 0, // 指示：翌月のマイナス分
+    nextMonthPenalty: 0, 
     sales: 0,
     selectedId: null,
     tasks: [],
@@ -715,12 +727,9 @@ let state = {
     gridOrder: [] 
 };
 
-// 指示：同じ顧客は近い位置に配置する（シャッフルした顧客リスト順にタイルを生成）
 function generateGridLayout() {
     let customerIds = state.customers.map(c => c.id);
-    // 顧客リスト自体をシャッフルして配置場所をランダムに
     customerIds.sort(() => Math.random() - 0.5);
-    
     let tiles = [];
     customerIds.forEach(cid => {
         const c = state.customers.find(x => x.id === cid);
@@ -728,10 +737,7 @@ function generateGridLayout() {
             tiles.push({ customerId: c.id });
         }
     });
-    // 空きマス埋め
-    while (tiles.length < 36) {
-        tiles.push({ customerId: null });
-    }
+    while (tiles.length < 36) tiles.push({ customerId: null });
     state.gridOrder = tiles;
 }
 
@@ -743,7 +749,7 @@ function initializeEnvironment(isRandom = false) {
         return {
             ...base,
             vendor: (isRandom && Math.random() < 0.2) ? 'H' : vendor,
-            mo: Math.floor(Math.random() * 58) + 1,
+            mo: Math.floor(Math.random() * 45) + 1, // RFP手前までのランダム
             vc: 0,
             sc: 0,
             lv: 0
@@ -851,7 +857,7 @@ function render() {
         const isRFP = c.mo>=48&&c.mo<50;
         if (!known) {
             statusEl.textContent = '情報未取得'; statusEl.className = 'sp-status unknown';
-        } else if (c.mo>=50) {
+        } else if (c.mo >= 50) {
             statusEl.textContent = `構築フェーズ (M${c.mo})`; statusEl.className = 'sp-status build';
         } else if (isRFP) {
             statusEl.textContent = `📄 提案依頼中 (M${c.mo})`; statusEl.className = 'sp-status rfp';
@@ -927,9 +933,10 @@ async function executeStrategy() {
             const ok = Math.random()*100 < winRate(c);
             playFeedbackSound(ok ? 'success' : 'failure');
             if (ok) {
-                c.vendor='H'; c.mo=1; c.vc=1; c.sc=0; c.lv = state.month;
+                // 指示：受注後は構築期間を6monthとして（M55〜M60）
+                c.vendor='H'; c.mo=55; c.vc=1; c.sc=0; c.lv = state.month;
                 gained = c.budget; changed.push(c.id);
-                monthResults[c.id].push({ icon:'✅', text:`H社が受注確定。`, result:`ターゲット制圧。`, success:true, self:true });
+                monthResults[c.id].push({ icon:'✅', text:`H社が受注確定。`, result:`デリバリー開始。`, success:true, self:true });
             } else {
                 monthResults[c.id].push({ icon:'❌', text:`H社が失注。`, result:`競合の防衛網を突破できず。`, success:false, self:true });
             }
@@ -942,7 +949,6 @@ async function executeStrategy() {
             state.incidents.push({cid:c.id});
             if (!interacted.includes(c.id)) { interacted.push(c.id); monthResults[c.id]=[]; }
             if (c.vendor==='H') {
-                // 指示：翌月から引くように
                 state.nextMonthPenalty += 5; 
                 monthResults[c.id].push({icon:'🚨', text:`緊急障害。次月のリソースから-5 MH。`, self:true});
             } else {
@@ -1020,25 +1026,26 @@ function showFinalSummary() {
 
 function closeResult() {
     document.getElementById('result-overlay').classList.add('hidden');
+    // 指示：月が変わるときは、顧客カードを一度隠す
+    state.selectedId = null; 
+    
     if (state.month >= 12) {
         showFinalSummary();
     } else {
         state.month++; 
-        // 指示：ペナルティを翌月から引く
         state.mh = MAX_MH - state.nextMonthPenalty; 
-        state.nextMonthPenalty = 0; // 消費したのでリセット
+        state.nextMonthPenalty = 0; 
         state.changedIds = []; state.incidents = []; render(); 
     }
 }
 
-// 指示：リセットするか、継続するか選べるようにして
 function continueGame() {
     state.month = 1;
     state.year++;
     state.mh = MAX_MH - state.nextMonthPenalty;
     state.nextMonthPenalty = 0;
     state.tasks = [];
-    state.initialShare = calculateShare(); // 新年度開始時のシェアを保存
+    state.initialShare = calculateShare(); 
     state.logs.unshift(`--- 第${state.year}期・経営方針策定完了。 ---`);
     document.getElementById('summary-modal').classList.add('hidden');
     render();
@@ -1053,7 +1060,7 @@ function resetGame() {
     render();
 }
 
-function saveToLocal() { localStorage.setItem('ent_state_v7', JSON.stringify(state)); state.logs.unshift('セーブ完了。'); render(); }
+function saveToLocal() { localStorage.setItem('ent_state_v8', JSON.stringify(state)); state.logs.unshift('セーブ完了。'); render(); }
 function exportHTML() {
     const blob = new Blob([document.documentElement.outerHTML], {type:'text/html'});
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
