@@ -39,9 +39,7 @@
             color: #8899aa;
             min-height: 100dvh;
             overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            display: flex; align-items: center; justify-content: center;
         }
 
         body::before {
@@ -55,8 +53,7 @@
             width: 100%; max-width: 430px;
             height: 100dvh;
             display: flex; flex-direction: column;
-            position: relative;
-            overflow: hidden;
+            position: relative; overflow: hidden;
             background: var(--bg);
         }
 
@@ -219,14 +216,24 @@
         .result-overlay { background: rgba(8, 12, 20, 0.4); backdrop-filter: blur(12px); flex-direction: column; }
         .result-box {
             width: 94%; max-height: 90%; border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 28px; background: rgba(13, 20, 32, 0.6); 
+            border-radius: 28px; background: rgba(13, 20, 32, 0.7); 
             backdrop-filter: blur(32px); display: flex; flex-direction: column; overflow: hidden;
+            box-shadow: 0 0 40px rgba(0,0,0,0.8);
         }
-        .result-hdr { padding: 20px 20px 14px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-        .result-list { flex: 1; overflow-y: auto; padding: 12px 20px; }
+        .result-hdr { padding: 24px 20px 18px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        
+        .result-title {
+            font-family: var(--font-display);
+            font-size: 22px; letter-spacing: 0.4em; color: var(--gold);
+            text-transform: uppercase;
+        }
+
+        .result-list { flex: 1; overflow-y: auto; padding: 12px 20px; scrollbar-width: none; }
+        .result-list::-webkit-scrollbar { display: none; }
         .result-block { padding: 16px 0; border-bottom: 1px solid rgba(255,255,255,0.04); opacity: 0; transform: translateY(-20px); animation: slide-flow-down 0.8s forwards; }
         @keyframes slide-flow-down { to { opacity: 1; transform: translateY(0); } }
-        .result-next { flex-shrink: 0; height: 52px; border: none; border-top: 1px solid var(--border); background: #fff; color: #080C14; font-family: var(--font-display); font-size: 15px; letter-spacing: 0.5em; text-transform: uppercase; cursor: pointer; }
+        .result-next { flex-shrink: 0; height: 52px; border: none; border-top: 1px solid var(--border); background: #fff; color: #080C14; font-family: var(--font-display); font-size: 15px; letter-spacing: 0.5em; text-transform: uppercase; cursor: pointer; transition: background 0.2s; }
+        .result-next:hover { background: var(--emerald); color: #fff; }
 
         /* ─── FINAL MODAL ─── */
         #summary-modal { position: fixed; inset: 0; background: rgba(8,12,20,0.98); z-index: 250; display: flex; align-items: center; justify-content: center; padding: 16px; }
@@ -284,7 +291,7 @@
 
         <div class="overlay result-overlay hidden" id="result-overlay">
             <div class="result-box">
-                <div class="result-hdr"><span class="result-title">Intel Sequence Report</span><span>📡</span></div>
+                <div class="result-hdr"><span class="result-title">Intel Sequence Report</span><span style="font-size: 24px;">📡</span></div>
                 <div class="result-list" id="result-list"></div>
                 <button class="result-next" onclick="closeResult()">Next Cycle ›</button>
             </div>
@@ -412,8 +419,11 @@ function generateGridLayout() {
 function initializeEnvironment(isRandom = false) {
     const rivalVendors = ['I', 'A', 'S'];
     state.customers = CUSTOMER_POOL.map(base => ({
-        ...base, vendor: isRandom ? rivalVendors[Math.floor(Math.random()*3)] : (base.id % 2 === 0 ? 'I' : 'A'),
-        mo: Math.floor(Math.random() * 45) + 1, vc: 0, sc: 0, lv: 0
+        ...base, 
+        vendor: isRandom ? rivalVendors[Math.floor(Math.random()*3)] : (base.id % 2 === 0 ? 'I' : 'A'),
+        mo: Math.floor(Math.random() * 45) + 1, 
+        vc: 0, sc: 0, lv: 0,
+        reshuffleMonth: Math.floor(Math.random() * 12) + 1 // 指示：人事異動タイミングを分散（年に一度）
     }));
     generateGridLayout();
 }
@@ -430,7 +440,6 @@ function winRate(c) {
 }
 
 function calculateShare() {
-    // 全ベンダーキーを初期化してNaNを防ぐ
     const s = { H:0, I:0, A:0, S:0, NONE:0, UNK:0 };
     state.customers.forEach(c => {
         if (s[c.vendor] !== undefined) s[c.vendor] += c.budget;
@@ -464,7 +473,6 @@ function render() {
         const el = document.createElement('div'); el.className = 'tile';
         if (tData.customerId) {
             const c = state.customers.find(x => x.id === tData.customerId);
-            // 訪問・勉強会・自社のいずれかで情報開示
             const k = c.vc > 0 || c.sc > 0 || c.vendor === 'H';
             const vd = VENDORS[k ? c.vendor : 'UNK'];
             el.style.backgroundColor = vd.bg;
@@ -533,30 +541,53 @@ function removeTask(i) {
 
 async function executeStrategy() {
     playSound('start'); document.getElementById('exec-overlay').classList.remove('hidden');
-    let gained = 0; let changed = []; const resMap = {}; const inter = [...new Set(state.tasks.map(t=>t.cid))];
-    inter.forEach(id => resMap[id]=[]);
+    let gained = 0; let changed = []; 
+    const resMap = {}; 
+    
+    // アクション対象を記録
+    const interactedIds = [...new Set(state.tasks.map(t=>t.cid))];
+    interactedIds.forEach(id => resMap[id]=[]);
 
     for (const t of state.tasks) {
         await new Promise(r=>setTimeout(r,400));
         const c = state.customers.find(x=>x.id===t.cid);
-        if (t.type==='VISIT') { c.vc++; c.lv = state.month; resMap[c.id].push({ icon:'👁', text:'訪問成功。フェーズ特定。' }); }
-        else if (t.type==='STUDY') { c.sc++; c.lv = state.month; resMap[c.id].push({ icon:'📚', text:'勉強会実施。受注率UP。' }); }
+        if (t.type==='VISIT') { 
+            c.vc++; c.lv = state.month; 
+            resMap[c.id].push({ icon:'👁', text:'[H社] 戦略訪問完了。最新情報を入手。' }); 
+        }
+        else if (t.type==='STUDY') { 
+            c.sc++; c.lv = state.month; 
+            resMap[c.id].push({ icon:'📚', text:'[H社] 勉強会実施。受注確度を引き上げ。' }); 
+        }
         else if (t.type==='PROPOSAL') {
             const ok = Math.random()*100 < winRate(c); 
             if (ok) { 
                 playSound('success'); c.vendor='H'; c.mo=55; c.vc=1; c.sc=0; c.lv = state.month; 
-                gained += c.budget; changed.push(c.id); resMap[c.id].push({ icon:'✅', text:'受注確定。半年間の構築開始。' }); 
-            } else { playSound('failure'); resMap[c.id].push({ icon:'❌', text:'競合により失注。' }); }
+                gained += c.budget; changed.push(c.id); 
+                resMap[c.id].push({ icon:'✅', text:'[H社] 受注確定！構築フェーズ(6ヶ月)開始。' }); 
+            } else { 
+                playSound('failure'); 
+                resMap[c.id].push({ icon:'❌', text:'[H社] コンペ敗北。提案が通りませんでした。' }); 
+            }
         }
         render();
     }
 
-    // アイデア：人事異動・障害
+    // 指示：人事異動（分散・年一回）
     state.customers.forEach(c => {
-        if (Math.random() < 0.03) { c.vc = 0; c.sc = 0; if(!resMap[c.id]) { inter.push(c.id); resMap[c.id]=[]; } resMap[c.id].push({icon:'👤', text:'人事異動。リレーション消失。'}); }
+        if (c.reshuffleMonth === state.month) {
+            c.vc = 0; c.sc = 0; c.lv = 0;
+            if(!resMap[c.id]) { interactedIds.push(c.id); resMap[c.id]=[]; } 
+            resMap[c.id].push({icon:'👤', text:'[人事] キーマンが異動。リレーションが消失。'}); 
+        }
         if (Math.random() < 1/30) {
-            state.incidents.push({cid:c.id}); if(!resMap[c.id]) { inter.push(c.id); resMap[c.id]=[]; }
-            if (c.vendor==='H') { state.nextMonthPenalty += 5; resMap[c.id].push({icon:'🚨', text:'障害対応。次月MH-5。'}); }
+            state.incidents.push({cid:c.id}); 
+            if(!resMap[c.id]) { interactedIds.push(c.id); resMap[c.id]=[]; }
+            if (c.vendor==='H') { 
+                state.nextMonthPenalty += 5; 
+                resMap[c.id].push({icon:'🚨', text:'[障害] システムトラブル発生。次月MH-5。'}); 
+            }
+            else { resMap[c.id].push({icon:'⚡', text:'[競合] 競合他社でトラブルを検知。チャンス。'}); }
         }
     });
 
@@ -564,25 +595,42 @@ async function executeStrategy() {
     const share = calculateShare();
     const isHLeader = share.stats.H >= Math.max(share.stats.I, share.stats.A, share.stats.S);
 
+    // ライバルのアクション（既知の顧客に対する動きをレポートに含めるよう修正）
     for (const rid of ['I','A','S']) {
+        await new Promise(r=>setTimeout(r,100));
+        
+        // ライバルの攻撃ターゲット選定
         const hCusts = state.customers.filter(c => c.vendor === 'H' && c.mo >= 48 && c.mo < 50);
         const targets = hCusts.length ? hCusts : state.customers.filter(c=>c.vendor!==rid && c.mo >= 48 && c.mo < 50);
+        
         if (targets.length) {
             const t = targets[Math.floor(Math.random()*targets.length)];
             const power = (isHLeader && t.vendor==='H') ? 35 : 25;
-            if (Math.random()*100 < power) { t.vendor=rid; t.mo=1; t.vc=0; t.sc=0; changed.push(t.id); }
+            if (Math.random()*100 < power) { 
+                t.vendor=rid; t.mo=1; t.vc=0; t.sc=0; changed.push(t.id); 
+                if(!resMap[t.id]) { interactedIds.push(t.id); resMap[t.id]=[]; }
+                resMap[t.id].push({icon:'⚔️', text:`[${rid}社] 顧客を奪取されました。`});
+            } else {
+                // 攻撃失敗または通常接触
+                const known = t.vc > 0 || t.sc > 0 || t.vendor === 'H';
+                if (known) {
+                    if(!resMap[t.id]) { interactedIds.push(t.id); resMap[t.id]=[]; }
+                    resMap[t.id].push({icon:'🕵️', text:`[${rid}社] 競合営業の接触を捕捉。`});
+                }
+            }
         }
     }
 
-    state.customers.forEach(c => c.mo = c.mo>=60?1:c.mo+1); state.changedIds = changed;
+    state.customers.forEach(c => c.mo = c.mo>=60?1:c.mo+1); 
+    state.changedIds = changed;
     document.getElementById('exec-overlay').classList.add('hidden');
 
     const l = document.getElementById('result-list'); l.innerHTML = '';
-    inter.forEach(cid => {
+    interactedIds.forEach(cid => {
         const c = state.customers.find(x=>x.id===cid);
         const b = document.createElement('div'); b.className = 'result-block';
-        let h = `<div style="font-family:var(--font-display);color:var(--gold);font-size:14px;margin-bottom:8px;border-bottom:1px solid var(--border)">${c.name} INTEL</div>`;
-        resMap[cid].forEach(r => h += `<div style="display:flex;gap:8px;font-size:10px;margin-bottom:4px;"><span>${r.icon}</span><span>${r.text}</span></div>`);
+        let h = `<div style="font-family:var(--font-display);color:var(--gold);font-size:16px;margin-bottom:10px;border-bottom:1px solid var(--border); letter-spacing: 0.1em;">${c.name.toUpperCase()} INTEL REPORT</div>`;
+        resMap[cid].forEach(r => h += `<div style="display:flex;gap:10px;font-size:12px;margin-bottom:6px; line-height: 1.4;"><span>${r.icon}</span><span>${r.text}</span></div>`);
         b.innerHTML = h; l.appendChild(b);
     });
     document.getElementById('result-overlay').classList.remove('hidden');
@@ -590,7 +638,7 @@ async function executeStrategy() {
 
 function closeResult() {
     document.getElementById('result-overlay').classList.add('hidden'); 
-    state.selectedId = null; // 月が変わるときはカードを隠す
+    state.selectedId = null; 
     if (state.month >= 12) showFinalSummary();
     else {
         state.month++;
@@ -611,9 +659,20 @@ function triggerStartScreen() {
 }
 
 function showFinalSummary() { document.getElementById('summary-modal').classList.remove('hidden'); }
-function continueGame() { state.month = 1; state.year++; document.getElementById('summary-modal').classList.add('hidden'); render(); }
-function resetGame() { state.month = 1; state.year = 1; state.sales = 0; initializeEnvironment(true); document.getElementById('summary-modal').classList.add('hidden'); triggerStartScreen(); render(); }
-function saveToLocal() { localStorage.setItem('ent_v13', JSON.stringify(state)); state.logs.unshift('SYSTEM SAVED.'); render(); }
+function continueGame() { 
+    state.month = 1; state.year++; 
+    // 期初に人事異動月を再設定
+    state.customers.forEach(c => c.reshuffleMonth = Math.floor(Math.random() * 12) + 1);
+    document.getElementById('summary-modal').classList.add('hidden'); 
+    render(); 
+}
+function resetGame() { 
+    state.month = 1; state.year = 1; state.sales = 0; 
+    initializeEnvironment(true); 
+    document.getElementById('summary-modal').classList.add('hidden'); 
+    triggerStartScreen(); render(); 
+}
+function saveToLocal() { localStorage.setItem('ent_v15', JSON.stringify(state)); state.logs.unshift('SYSTEM SYNCHRONIZED.'); render(); }
 
 window.onload = () => {
     initializeEnvironment(false);
