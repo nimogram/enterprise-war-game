@@ -416,14 +416,14 @@ function generateGridLayout() {
     state.gridOrder = tiles;
 }
 
-function initializeEnvironment(isRandom = false) {
-    const rivalVendors = ['I', 'A', 'S'];
+function initializeEnvironment() {
+    const allVendors = ['H', 'I', 'A', 'S']; // 指示：自社を含む4社でランダムスタート
     state.customers = CUSTOMER_POOL.map(base => ({
         ...base, 
-        vendor: isRandom ? rivalVendors[Math.floor(Math.random()*3)] : (base.id % 2 === 0 ? 'I' : 'A'),
+        vendor: allVendors[Math.floor(Math.random() * 4)],
         mo: Math.floor(Math.random() * 45) + 1, 
         vc: 0, sc: 0, lv: 0,
-        reshuffleMonth: Math.floor(Math.random() * 12) + 1 // 指示：人事異動タイミングを分散（年に一度）
+        reshuffleMonth: Math.floor(Math.random() * 12) + 1 
     }));
     generateGridLayout();
 }
@@ -544,8 +544,11 @@ async function executeStrategy() {
     let gained = 0; let changed = []; 
     const resMap = {}; 
     
-    // アクション対象を記録
+    // アクション対象を記録（報告に含める顧客リスト）
     const interactedIds = [...new Set(state.tasks.map(t=>t.cid))];
+    // 指示：訪問・勉強会を実施した顧客を「情報収集完了」としてマーク
+    const infoGatheredIds = [...new Set(state.tasks.filter(t => t.type === 'VISIT' || t.type === 'STUDY').map(t => t.cid))];
+    
     interactedIds.forEach(id => resMap[id]=[]);
 
     for (const t of state.tasks) {
@@ -553,27 +556,27 @@ async function executeStrategy() {
         const c = state.customers.find(x=>x.id===t.cid);
         if (t.type==='VISIT') { 
             c.vc++; c.lv = state.month; 
-            resMap[c.id].push({ icon:'👁', text:'[H社] 戦略訪問完了。最新情報を入手。' }); 
+            resMap[c.id].push({ icon:'👁', text:'[H社] 戦略訪問完了。最新情報を入手。', isSelf: true }); 
         }
         else if (t.type==='STUDY') { 
             c.sc++; c.lv = state.month; 
-            resMap[c.id].push({ icon:'📚', text:'[H社] 勉強会実施。受注確度を引き上げ。' }); 
+            resMap[c.id].push({ icon:'📚', text:'[H社] 勉強会実施。受注確度を引き上げ。', isSelf: true }); 
         }
         else if (t.type==='PROPOSAL') {
             const ok = Math.random()*100 < winRate(c); 
             if (ok) { 
                 playSound('success'); c.vendor='H'; c.mo=55; c.vc=1; c.sc=0; c.lv = state.month; 
                 gained += c.budget; changed.push(c.id); 
-                resMap[c.id].push({ icon:'✅', text:'[H社] 受注確定！構築フェーズ(6ヶ月)開始。' }); 
+                resMap[c.id].push({ icon:'✅', text:'[H社] 受注確定！構築フェーズ(6ヶ月)開始。', isSelf: true }); 
             } else { 
                 playSound('failure'); 
-                resMap[c.id].push({ icon:'❌', text:'[H社] コンペ敗北。提案が通りませんでした。' }); 
+                resMap[c.id].push({ icon:'❌', text:'[H社] コンペ敗北。提案が通りませんでした。', isSelf: true }); 
             }
         }
         render();
     }
 
-    // 指示：人事異動（分散・年一回）
+    // 人事異動・障害
     state.customers.forEach(c => {
         if (c.reshuffleMonth === state.month) {
             c.vc = 0; c.sc = 0; c.lv = 0;
@@ -585,9 +588,9 @@ async function executeStrategy() {
             if(!resMap[c.id]) { interactedIds.push(c.id); resMap[c.id]=[]; }
             if (c.vendor==='H') { 
                 state.nextMonthPenalty += 5; 
-                resMap[c.id].push({icon:'🚨', text:'[障害] システムトラブル発生。次月MH-5。'}); 
+                resMap[c.id].push({icon:'🚨', text:'[障害] システムトラブル発生。次月MH-5。', isSelf: true}); 
             }
-            else { resMap[c.id].push({icon:'⚡', text:'[競合] 競合他社でトラブルを検知。チャンス。'}); }
+            else { resMap[c.id].push({icon:'⚡', text:'[競合] 競合他社でトラブルを検知。'}); }
         }
     });
 
@@ -595,25 +598,23 @@ async function executeStrategy() {
     const share = calculateShare();
     const isHLeader = share.stats.H >= Math.max(share.stats.I, share.stats.A, share.stats.S);
 
-    // ライバルのアクション（既知の顧客に対する動きをレポートに含めるよう修正）
+    // ライバルのアクション
     for (const rid of ['I','A','S']) {
         await new Promise(r=>setTimeout(r,100));
-        
-        // ライバルの攻撃ターゲット選定
-        const hCusts = state.customers.filter(c => c.vendor === 'H' && c.mo >= 48 && c.mo < 50);
-        const targets = hCusts.length ? hCusts : state.customers.filter(c=>c.vendor!==rid && c.mo >= 48 && c.mo < 50);
-        
+        const targets = state.customers.filter(c=>c.vendor!==rid && c.mo >= 48 && c.mo < 50);
         if (targets.length) {
             const t = targets[Math.floor(Math.random()*targets.length)];
             const power = (isHLeader && t.vendor==='H') ? 35 : 25;
             if (Math.random()*100 < power) { 
                 t.vendor=rid; t.mo=1; t.vc=0; t.sc=0; changed.push(t.id); 
-                if(!resMap[t.id]) { interactedIds.push(t.id); resMap[t.id]=[]; }
-                resMap[t.id].push({icon:'⚔️', text:`[${rid}社] 顧客を奪取されました。`});
+                // 指示：情報を収集した（訪問・勉強会した）顧客の結果のみ表示
+                if(infoGatheredIds.includes(t.id)) {
+                    if(!resMap[t.id]) { interactedIds.push(t.id); resMap[t.id]=[]; }
+                    resMap[t.id].push({icon:'⚔️', text:`[${rid}社] 顧客を奪取されました。`});
+                }
             } else {
-                // 攻撃失敗または通常接触
-                const known = t.vc > 0 || t.sc > 0 || t.vendor === 'H';
-                if (known) {
+                // 指示：情報を収集した（訪問・勉強会した）顧客の動きのみ表示
+                if(infoGatheredIds.includes(t.id)) {
                     if(!resMap[t.id]) { interactedIds.push(t.id); resMap[t.id]=[]; }
                     resMap[t.id].push({icon:'🕵️', text:`[${rid}社] 競合営業の接触を捕捉。`});
                 }
@@ -630,7 +631,11 @@ async function executeStrategy() {
         const c = state.customers.find(x=>x.id===cid);
         const b = document.createElement('div'); b.className = 'result-block';
         let h = `<div style="font-family:var(--font-display);color:var(--gold);font-size:16px;margin-bottom:10px;border-bottom:1px solid var(--border); letter-spacing: 0.1em;">${c.name.toUpperCase()} INTEL REPORT</div>`;
-        resMap[cid].forEach(r => h += `<div style="display:flex;gap:10px;font-size:12px;margin-bottom:6px; line-height: 1.4;"><span>${r.icon}</span><span>${r.text}</span></div>`);
+        resMap[cid].forEach(r => {
+            // 指示：自社のアクションをエメラルドグリーンに
+            const color = r.isSelf ? 'var(--emerald)' : 'inherit';
+            h += `<div style="display:flex;gap:10px;font-size:12px;margin-bottom:6px; line-height: 1.4; color: ${color};"><span>${r.icon}</span><span>${r.text}</span></div>`;
+        });
         b.innerHTML = h; l.appendChild(b);
     });
     document.getElementById('result-overlay').classList.remove('hidden');
@@ -661,21 +666,20 @@ function triggerStartScreen() {
 function showFinalSummary() { document.getElementById('summary-modal').classList.remove('hidden'); }
 function continueGame() { 
     state.month = 1; state.year++; 
-    // 期初に人事異動月を再設定
     state.customers.forEach(c => c.reshuffleMonth = Math.floor(Math.random() * 12) + 1);
     document.getElementById('summary-modal').classList.add('hidden'); 
     render(); 
 }
 function resetGame() { 
     state.month = 1; state.year = 1; state.sales = 0; 
-    initializeEnvironment(true); 
+    initializeEnvironment(); 
     document.getElementById('summary-modal').classList.add('hidden'); 
     triggerStartScreen(); render(); 
 }
-function saveToLocal() { localStorage.setItem('ent_v15', JSON.stringify(state)); state.logs.unshift('SYSTEM SYNCHRONIZED.'); render(); }
+function saveToLocal() { localStorage.setItem('ent_v16', JSON.stringify(state)); state.logs.unshift('SYSTEM SYNCHRONIZED.'); render(); }
 
 window.onload = () => {
-    initializeEnvironment(false);
+    initializeEnvironment();
     document.getElementById('close-panel').onclick = () => { state.selectedId = null; render(); };
     triggerStartScreen(); render();
 };
