@@ -4,51 +4,40 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>THE ENTERPRISE: 覇権奪還</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Outfit:wght@300;400;600;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --gold: #C9A84C;
+            --gold:    #C9A84C;
             --emerald: #00D68F;
-            --rose: #FF4D6D;
-            --sky: #38BDF8;
-            --amber: #F59E0B;
-            --bg: #080C14;
-            --surface: #0D1420;
-            --border: rgba(255,255,255,0.06);
-            --text-muted: #3a4a60;
-            --font-display: 'Bebas Neue', sans-serif;
-            --font-mono: 'DM Mono', monospace;
-            --font-body: 'Outfit', sans-serif;
-            /* Vendor colors */
-            --vendor-H: #00D68F; 
-            --vendor-I: #0A1F3D;
-            --vendor-I-bright: #38BDF8;
-            --vendor-A: #2D0A3D;
-            --vendor-A-bright: #A855F7;
-            --vendor-S: #451A03;
-            --vendor-S-bright: #F59E0B;
-            --vendor-UNKNOWN: #141C28;
+            --rose:    #FF4D6D;
+            --sky:     #38BDF8;
+            --amber:   #F59E0B;
+            --bg:      #060A11;
+            --surf:    #0C1221;
+            --bdr:     rgba(255,255,255,0.07);
+            --muted:   #2a3a50;
+            --D: 'Bebas Neue', cursive;
+            --M: 'DM Mono', monospace;
+            --B: 'Outfit', sans-serif;
         }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-
+        html, body { height: 100%; overflow: hidden; }
         body {
-            font-family: var(--font-body);
+            font-family: var(--B);
             background: var(--bg);
-            color: #8899aa;
-            min-height: 100dvh;
-            overflow: hidden;
+            color: #7a8fa8;
             display: flex; align-items: center; justify-content: center;
         }
-
-        body::before {
-            content: '';
-            position: fixed; inset: 0;
-            background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px);
-            pointer-events: none; z-index: 9999;
+        /* Scanline */
+        body::after {
+            content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 9998;
+            background: repeating-linear-gradient(180deg, transparent 0px, transparent 3px, rgba(0,0,0,0.06) 3px, rgba(0,0,0,0.06) 4px);
         }
 
+        /* ══════════════════════════════
+           APP SHELL — strict flex column
+           ══════════════════════════════ */
         #app {
             width: 100%; max-width: 430px;
             height: 100dvh;
@@ -57,646 +46,807 @@
             background: var(--bg);
         }
 
-        /* ─── ANIMATIONS ─── */
-        #game-start-overlay {
-            position: fixed; inset: 0; z-index: 9999;
-            display: flex; align-items: center; justify-content: center;
-            pointer-events: none; background: rgba(8, 12, 20, 0);
-            transition: background 0.5s;
+        /* ── HEADER (flex-shrink:0) ── */
+        .hdr {
+            flex: 0 0 auto;
+            padding: 14px 18px 0;
+            background: var(--bg);
+            border-bottom: 1px solid var(--bdr);
+            z-index: 10;
         }
-        .start-banner {
-            font-family: var(--font-display);
-            font-size: 72px; color: #fff; letter-spacing: 0.2em;
-            text-shadow: 0 0 30px var(--emerald);
-            transform: translateX(-150%);
-            opacity: 0;
+        .hdr-row { display: flex; justify-content: space-between; align-items: flex-end; }
+        .hdr-tag {
+            font-family: var(--D); font-size: 8px; letter-spacing: .65em;
+            color: var(--gold); line-height: 1; margin-bottom: 3px;
+            display: flex; align-items: center; gap: 5px;
         }
-        .start-banner.animate {
-            animation: slide-in-out 2.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        .hdr-tag::before {
+            content: ''; width: 5px; height: 5px; border-radius: 50%;
+            background: var(--gold); flex-shrink: 0;
+            animation: blink 2s infinite;
         }
-        @keyframes slide-in-out {
-            0% { transform: translateX(-120%); opacity: 0; }
-            20% { transform: translateX(0); opacity: 1; }
-            80% { transform: translateX(0); opacity: 1; }
-            100% { transform: translateX(120%); opacity: 0; }
-        }
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
+        .hdr-phase { font-family: var(--D); font-size: 44px; color: #fff; line-height: 1; letter-spacing: .04em; }
+        .hdr-mh { text-align: right; padding-bottom: 3px; }
+        .hdr-mh-lbl { font-size: 7px; font-weight: 700; letter-spacing: .4em; color: var(--muted); text-transform: uppercase; margin-bottom: 1px; }
+        .hdr-mh-val { font-family: var(--D); font-size: 36px; color: var(--emerald); line-height: 1; }
+        .hdr-mh-val.lo { color: var(--rose); }
 
-        /* ─── HEADER ─── */
-        .hdr { padding: 16px 20px 10px; border-bottom: 1px solid var(--border); flex-shrink: 0; background: rgba(8,12,20,0.8); z-index: 10; }
-        .hdr-top { display: flex; justify-content: space-between; align-items: flex-start; }
-        .hdr-label {
-            font-family: var(--font-display); font-size: 9px; letter-spacing: 0.6em;
-            color: var(--gold); line-height: 1; margin-bottom: 4px;
-            display: flex; align-items: center; gap: 6px;
-        }
-        .hdr-label::before {
-            content: ''; display: inline-block; width: 5px; height: 5px;
-            background: var(--gold); border-radius: 50%; animation: pulse 2s infinite;
-        }
-        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
-        .hdr-phase { font-family: var(--font-display); font-size: 48px; color: #fff; line-height: 1; letter-spacing: 0.04em; }
-        .hdr-mh { text-align: right; }
-        .hdr-mh-label { font-size: 8px; font-weight: 700; letter-spacing: 0.4em; color: var(--text-muted); text-transform: uppercase; margin-bottom: 2px; }
-        .hdr-mh-val { font-family: var(--font-display); font-size: 38px; color: var(--emerald); line-height: 1; }
-        .hdr-mh-val.danger { color: var(--rose); }
-
-        /* ─── SHARE BAR ─── */
+        /* Share bar */
         .share-bar {
-            height: 20px; display: flex; overflow: hidden; margin: 12px 20px 4px;
-            border-radius: 4px; border: 1px solid var(--border); background: rgba(255,255,255,0.02);
+            margin: 8px 0 0; height: 18px; display: flex; border-radius: 3px;
+            overflow: hidden; border: 1px solid var(--bdr);
         }
-        .share-seg { 
-            height: 100%; transition: width 0.8s ease; 
+        .share-seg {
+            height: 100%; transition: width .7s ease;
             display: flex; align-items: center; justify-content: center;
-            font-family: var(--font-display); font-size: 9px; color: #fff;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.5); white-space: nowrap;
+            font-family: var(--D); font-size: 8px; color: rgba(255,255,255,.7);
+            white-space: nowrap; overflow: hidden;
         }
 
-        /* ─── GRID AREA ─── */
-        .grid-wrap { flex: 1; display: flex; align-items: center; justify-content: center; padding: 10px 16px; position: relative; overflow: hidden; }
-        #grid { display: grid; grid-template-columns: repeat(6, 1fr); grid-template-rows: repeat(6, 1fr); gap: 5px; width: 100%; max-width: 380px; aspect-ratio: 1; }
+        /* ── GRID AREA (flex: 1, overflow hidden) ── */
+        .grid-wrap {
+            flex: 1 1 0;
+            min-height: 0;           /* ← critical: lets flex item shrink */
+            display: flex; align-items: center; justify-content: center;
+            padding: 8px 14px;
+            position: relative;
+            overflow: hidden;
+        }
+        #grid {
+            display: grid;
+            grid-template-columns: repeat(6,1fr);
+            grid-template-rows: repeat(6,1fr);
+            gap: 5px;
+            width: 100%; max-width: 360px;
+            aspect-ratio: 1;
+        }
         .tile {
-            aspect-ratio: 1; border-radius: 8px; border: 1.5px solid rgba(255,255,255,0.05);
+            aspect-ratio: 1; border-radius: 7px;
+            border: 1.5px solid rgba(255,255,255,.05);
             cursor: pointer; display: flex; align-items: center; justify-content: center;
-            position: relative; transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
-            user-select: none;
+            position: relative; user-select: none;
+            transition: transform .12s, box-shadow .12s, border-color .12s;
         }
-        .tile:active { transform: scale(0.9); }
-        .tile.selected {
-            border-color: #fff !important; box-shadow: 0 0 16px rgba(255,255,255,0.4), inset 0 0 8px rgba(255,255,255,0.05);
-            transform: scale(1.08); z-index: 10;
+        .tile:active { transform: scale(.88); }
+        .tile.sel {
+            border-color: #fff !important;
+            box-shadow: 0 0 14px rgba(255,255,255,.35), inset 0 0 6px rgba(255,255,255,.05);
+            transform: scale(1.07); z-index: 5;
         }
-        .tile .t-label { font-family: var(--font-mono); font-size: 11px; color: rgba(255,255,255,0.6); pointer-events: none; font-weight: 500; }
-        
-        @keyframes rfp-glow {
-            0%,100% { box-shadow: 0 0 10px var(--gold), inset 0 0 6px rgba(201,168,76,0.15); border-color: var(--gold); }
-            50%      { box-shadow: 0 0 20px var(--gold), inset 0 0 12px rgba(201,168,76,0.25); border-color: #ffe68a; }
-        }
-        @keyframes build-glow {
-            0%,100% { box-shadow: 0 0 8px rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.4); }
-            50%      { box-shadow: 0 0 16px rgba(255,255,255,0.5); border-color: #fff; }
-        }
-        @keyframes changed-glow {
-            0%,100% { box-shadow: 0 0 14px #f472b6; border-color: #f472b6; }
-            50%      { box-shadow: 0 0 28px #f472b6, inset 0 0 10px rgba(244,114,182,0.2); border-color: #fce7f3; }
-        }
-        @keyframes incident-flash { 0%,100%{background-color:#5c0a0a} 50%{background-color:#b91c1c} }
-        .tile.rfp-anim    { animation: rfp-glow 1.2s infinite ease-in-out; }
-        .tile.build-anim  { animation: build-glow 1.6s infinite ease-in-out; }
-        .tile.changed-anim{ animation: changed-glow 1.0s infinite ease-in-out; }
-        .tile.incident-anim{ animation: incident-flash 0.6s infinite ease-in-out; }
+        .t-lbl { font-family: var(--M); font-size: 10px; color: rgba(255,255,255,.55); pointer-events: none; }
 
-        /* ─── SIDE PANEL ─── */
-        .side-panel {
-            position: absolute; top: 0; right: 0; bottom: 0; width: 80%;
-            background: rgba(10,16,28,0.3); backdrop-filter: blur(40px);
-            border-left: 1px solid var(--border); padding: 20px 18px;
-            display: flex; flex-direction: column; gap: 12px; z-index: 120;
-            transform: translateX(100%); transition: transform 0.4s cubic-bezier(0.16,1,0.3,1);
+        @keyframes rfp  { 0%,100%{box-shadow:0 0 8px var(--gold);border-color:var(--gold)} 50%{box-shadow:0 0 18px var(--gold);border-color:#ffe88a} }
+        @keyframes bld  { 0%,100%{box-shadow:0 0 6px rgba(255,255,255,.2);border-color:rgba(255,255,255,.35)} 50%{box-shadow:0 0 14px rgba(255,255,255,.5);border-color:#fff} }
+        @keyframes chg  { 0%,100%{box-shadow:0 0 12px #f472b6;border-color:#f472b6} 50%{box-shadow:0 0 24px #f472b6;border-color:#fce7f3} }
+        @keyframes inc  { 0%,100%{background-color:#5c0a0a} 50%{background-color:#b91c1c} }
+        .rfp-a  { animation: rfp  1.3s infinite ease-in-out; }
+        .bld-a  { animation: bld  1.7s infinite ease-in-out; }
+        .chg-a  { animation: chg  1.0s infinite ease-in-out; }
+        .inc-a  { animation: inc  .65s infinite ease-in-out; }
+
+        /* ── SIDE PANEL — absolute inside grid-wrap ── */
+        .sp {
+            position: absolute; top: 0; right: 0; bottom: 0;
+            width: 78%;
+            background: rgba(6,10,17,.88);
+            backdrop-filter: blur(36px) saturate(1.4);
+            border-left: 1px solid rgba(255,255,255,.1);
+            display: flex; flex-direction: column; gap: 10px;
+            padding: 16px 15px 14px;
+            z-index: 50;    /* inside grid-wrap only */
+            transform: translateX(100%);
+            transition: transform .35s cubic-bezier(.16,1,.3,1);
+            overflow-y: auto; overflow-x: hidden;
         }
-        .side-panel.open { transform: translateX(0); }
-        .sp-header { display: flex; justify-content: space-between; align-items: center; }
-        .sp-tag { font-size: 8px; font-weight: 700; letter-spacing: 0.5em; color: var(--emerald); text-transform: uppercase; }
-        .sp-close { background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 4px; font-size: 20px; }
-        .sp-name { font-family: var(--font-display); font-size: 24px; color: #fff; letter-spacing: 0.03em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .sp-full { font-size: 11px; color: #556677; line-height: 1.5; border-left: 3px solid var(--gold); padding-left: 8px; }
-        .sp-stat-row { display: flex; gap: 8px; }
-        .sp-stat { flex: 1; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 10px; padding: 10px; }
-        .sp-stat-label { font-size: 7px; font-weight: 700; letter-spacing: 0.4em; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; }
-        .sp-stat-val { font-family: var(--font-display); font-size: 24px; color: #fff; }
-        .sp-win { font-family: var(--font-display); font-size: 48px; color: var(--emerald); line-height: 1; }
-        .sp-vendor-val { font-family: var(--font-display); font-size: 16px; color: var(--gold); letter-spacing: 0.1em; }
+        .sp::-webkit-scrollbar { display: none; }
+        .sp.open { transform: translateX(0); }
+        .sp-hdr { display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+        .sp-tag { font-size: 7px; font-weight: 700; letter-spacing: .5em; color: var(--emerald); text-transform: uppercase; }
+        .sp-close { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 18px; line-height: 1; padding: 2px 4px; transition: color .15s; }
+        .sp-close:hover { color: #fff; }
+        .sp-name { font-family: var(--D); font-size: 22px; color: #fff; letter-spacing: .04em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex-shrink: 0; }
+        .sp-full { font-size: 10px; color: #4a5f78; line-height: 1.45; border-left: 3px solid var(--gold); padding-left: 7px; flex-shrink: 0; }
+        .sp-stats { display: flex; gap: 6px; flex-shrink: 0; }
+        .sp-stat { flex: 1; background: rgba(255,255,255,.02); border: 1px solid var(--bdr); border-radius: 9px; padding: 8px; }
+        .sp-sl { font-size: 6px; font-weight: 700; letter-spacing: .4em; color: var(--muted); text-transform: uppercase; margin-bottom: 3px; }
+        .sp-sv { font-family: var(--D); font-size: 22px; color: #fff; }
+        .sp-win { font-family: var(--D); font-size: 44px; color: var(--emerald); line-height: 1; flex-shrink: 0; }
+        .sp-row { flex-shrink: 0; }
+        .sp-rl { font-size: 6px; font-weight: 700; letter-spacing: .35em; color: var(--muted); text-transform: uppercase; margin-bottom: 2px; }
+        .sp-rv { font-family: var(--D); font-size: 14px; color: var(--gold); letter-spacing: .1em; }
         .sp-status { font-size: 11px; font-weight: 600; color: #fff; }
-        .sp-btns { display: flex; flex-direction: column; gap: 6px; margin-top: auto; }
+        .sp-status.rfp-st { color: var(--amber); }
+        .sp-status.bld-st { color: var(--muted); }
+        .sp-status.unk-st { color: var(--muted); font-style: italic; }
+        .sp-btns { margin-top: auto; display: flex; flex-direction: column; gap: 5px; flex-shrink: 0; }
         .sp-btn {
-            background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08);
-            color: #667788; border-radius: 12px; padding: 10px;
-            font-family: var(--font-display); font-size: 14px; letter-spacing: 0.12em;
-            cursor: pointer; transition: all 0.2s; text-transform: uppercase;
+            background: rgba(255,255,255,.025); border: 1px solid rgba(255,255,255,.09);
+            color: #556070; border-radius: 10px; padding: 9px 8px;
+            font-family: var(--D); font-size: 13px; letter-spacing: .12em;
+            cursor: pointer; transition: all .18s; text-transform: uppercase;
         }
-        .sp-btn.primary { background: rgba(0,214,143,0.1); border-color: var(--emerald); color: var(--emerald); }
-        .sp-btn:disabled { opacity: 0.2; cursor: not-allowed; }
+        .sp-btn:hover:not(:disabled) { border-color: rgba(255,255,255,.2); color: #fff; }
+        .sp-btn.pri { background: rgba(0,214,143,.08); border-color: var(--emerald); color: var(--emerald); }
+        .sp-btn.pri:hover:not(:disabled) { background: rgba(0,214,143,.18); }
+        .sp-btn:disabled { opacity: .2; cursor: not-allowed; }
 
-        /* ─── TASK STRIP ─── */
+        /* EXEC & RIVAL overlay — inside grid-wrap */
+        .ov {
+            position: absolute; inset: 0;
+            display: flex; align-items: center; justify-content: center;
+            z-index: 80;
+        }
+        .ov.hidden { display: none; }
+        .exec-ov { background: rgba(6,10,17,.75); backdrop-filter: blur(10px); }
+        .exec-spin {
+            font-family: var(--M); color: #fff; font-size: 11px;
+            letter-spacing: .22em; animation: blink .85s infinite;
+        }
+
+        /* Result overlay — FULL FIXED over everything */
+        #result-ov {
+            position: fixed; inset: 0;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(6,10,17,.82); backdrop-filter: blur(18px);
+            z-index: 800;
+        }
+        #result-ov.hidden { display: none; }
+        .res-box {
+            width: 93%; max-height: 88dvh;
+            border: 1px solid rgba(255,255,255,.12);
+            border-radius: 24px;
+            background: rgba(12,18,33,.9);
+            backdrop-filter: blur(24px);
+            display: flex; flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 0 80px rgba(0,0,0,.9);
+        }
+        .res-hdr {
+            padding: 20px 20px 14px;
+            border-bottom: 1px solid var(--bdr);
+            display: flex; justify-content: space-between; align-items: center;
+            flex-shrink: 0;
+        }
+        .res-title { font-family: var(--D); font-size: 20px; letter-spacing: .45em; color: var(--gold); }
+        .res-list { flex: 1; overflow-y: auto; padding: 10px 18px; scrollbar-width: none; }
+        .res-list::-webkit-scrollbar { display: none; }
+        .res-block { padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,.04); opacity: 0; transform: translateY(-16px); animation: sfdown .6s forwards; }
+        .res-block:last-child { border-bottom: none; }
+        @keyframes sfdown { to { opacity: 1; transform: translateY(0); } }
+        .res-bname { font-family: var(--D); color: var(--gold); font-size: 14px; letter-spacing: .2em; margin-bottom: 8px; padding-left: 8px; border-left: 3px solid var(--gold); }
+        .res-row { display: flex; gap: 9px; font-size: 11.5px; margin-bottom: 5px; line-height: 1.45; align-items: flex-start; }
+        .res-ico { flex-shrink: 0; width: 18px; text-align: center; }
+        .res-txt { color: #aabbcc; }
+        .res-txt .ok  { color: var(--emerald); font-weight: 700; display: block; font-size: 10.5px; margin-top: 2px; }
+        .res-txt .ng  { color: var(--rose);    font-weight: 700; display: block; font-size: 10.5px; margin-top: 2px; }
+        .res-next {
+            flex-shrink: 0; height: 52px; border: none; border-top: 1px solid var(--bdr);
+            background: #fff; color: var(--bg);
+            font-family: var(--D); font-size: 15px; letter-spacing: .5em; text-transform: uppercase;
+            cursor: pointer; transition: background .2s;
+        }
+        .res-next:hover { background: var(--emerald); }
+
+        /* ── TASK STRIP (flex-shrink:0) ── */
         .task-strip {
-            height: 56px; overflow-x: auto; overflow-y: hidden; display: flex; align-items: center; gap: 6px;
-            padding: 0 16px; border-top: 1px solid var(--border); scrollbar-width: none; flex-shrink: 0;
+            flex: 0 0 50px; min-height: 50px; max-height: 50px;
+            display: flex; align-items: center; gap: 6px;
+            padding: 0 14px; overflow-x: auto; overflow-y: hidden;
+            border-top: 1px solid var(--bdr);
+            scrollbar-width: none; background: var(--bg);
+            z-index: 10;
         }
-        .task-chip {
-            flex-shrink: 0; display: flex; align-items: center; gap: 6px;
-            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 20px; padding: 4px 10px 4px 12px; font-size: 10px; font-weight: 600; color: #cce;
-            white-space: nowrap;
+        .task-strip::-webkit-scrollbar { display: none; }
+        .t-chip {
+            flex-shrink: 0; display: flex; align-items: center; gap: 5px;
+            background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.1);
+            border-radius: 18px; padding: 3px 9px 3px 11px;
+            font-size: 9.5px; font-weight: 600; color: #c0cee0; white-space: nowrap;
+            animation: chipin .25s ease;
         }
-        .task-chip-rm { background: none; border: none; color: #556677; cursor: pointer; font-size: 14px; }
-        .task-standby { font-size: 10px; font-weight: 700; letter-spacing: 0.5em; color: var(--text-muted); text-transform: uppercase; font-family: var(--font-mono); }
+        @keyframes chipin { from{opacity:0;transform:scale(.7)} to{opacity:1;transform:scale(1)} }
+        .t-chip-name { color: var(--emerald); font-family: var(--M); font-size: 8.5px; }
+        .t-chip-rm { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 13px; line-height: 1; padding: 0; transition: color .15s; }
+        .t-chip-rm:hover { color: var(--rose); }
+        .t-standby { font-size: 9px; font-weight: 700; letter-spacing: .5em; color: var(--muted); text-transform: uppercase; font-family: var(--M); white-space: nowrap; }
 
-        /* ─── EXECUTE BUTTON ─── */
+        /* ── EXEC BUTTON (flex-shrink:0, always visible) ── */
         .exec-btn {
-            flex-shrink: 0; height: 52px; background: #0a0f18; border: none; border-top: 1px solid var(--border);
-            color: var(--text-muted); font-family: var(--font-display); font-size: 16px; letter-spacing: 0.5em;
-            text-transform: uppercase; cursor: not-allowed; opacity: 0.4; transition: all 0.3s;
+            flex: 0 0 50px; min-height: 50px;
+            border: none; border-top: 1px solid var(--bdr);
+            background: rgba(255,255,255,.03);
+            color: var(--muted);
+            font-family: var(--D); font-size: 17px; letter-spacing: .55em;
+            text-transform: uppercase; cursor: not-allowed; opacity: .4;
+            transition: all .25s; z-index: 10;
         }
-        .exec-btn.active { background: #fff; color: #080C14; cursor: pointer; opacity: 1; }
-
-        /* ─── LOG ─── */
-        .log-area { height: 48px; overflow: hidden; padding: 6px 16px; border-top: 1px solid var(--border); flex-shrink: 0; }
-        .log-line { font-family: var(--font-mono); font-size: 9px; color: var(--text-muted); line-height: 1.6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .log-line.latest { color: var(--emerald); }
-
-        /* ─── SCORE BAR ─── */
-        .score-bar { height: 52px; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; border-top: 1px solid var(--border); flex-shrink: 0; }
-        .score-val { font-family: var(--font-display); font-size: 32px; color: #fff; letter-spacing: 0.04em; }
-        .score-val span { font-size: 14px; color: var(--text-muted); margin-left: 2px; }
-
-        /* ─── OVERLAYS ─── */
-        .overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 150; }
-        .overlay.hidden { display: none; }
-        .exec-overlay { background: rgba(8,12,20,0.75); backdrop-filter: blur(8px); }
-        .result-overlay { background: rgba(8, 12, 20, 0.4); backdrop-filter: blur(12px); flex-direction: column; }
-        .result-box {
-            width: 94%; max-height: 90%; border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 28px; background: rgba(13, 20, 32, 0.7); 
-            backdrop-filter: blur(32px); display: flex; flex-direction: column; overflow: hidden;
-            box-shadow: 0 0 40px rgba(0,0,0,0.8);
+        .exec-btn.on {
+            background: #fff; color: var(--bg);
+            cursor: pointer; opacity: 1;
+            box-shadow: 0 -8px 24px rgba(255,255,255,.12);
         }
-        .result-hdr { padding: 24px 20px 18px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-        
-        .result-title {
-            font-family: var(--font-display);
-            font-size: 22px; letter-spacing: 0.4em; color: var(--gold);
-            text-transform: uppercase;
+        .exec-btn.on:active { transform: scale(.98); }
+
+        /* ── LOG (flex-shrink:0) ── */
+        .log-area {
+            flex: 0 0 40px; min-height: 40px;
+            overflow: hidden; padding: 5px 15px;
+            border-top: 1px solid var(--bdr);
+            background: var(--bg); z-index: 10;
+        }
+        .log-ln { font-family: var(--M); font-size: 8.5px; color: var(--muted); line-height: 1.55; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .log-ln.lt { color: var(--emerald); }
+
+        /* ── SCORE BAR (flex-shrink:0) ── */
+        .score-bar {
+            flex: 0 0 48px; min-height: 48px;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 18px; border-top: 1px solid var(--bdr);
+            background: var(--bg); z-index: 10;
+        }
+        .legend { display: flex; gap: 10px; align-items: center; }
+        .leg-i { display: flex; align-items: center; gap: 4px; font-size: 7.5px; font-weight: 700; letter-spacing: .3em; color: var(--muted); text-transform: uppercase; }
+        .leg-d { width: 7px; height: 7px; border-radius: 2px; }
+        .score-v { font-family: var(--D); font-size: 30px; color: #fff; letter-spacing: .04em; }
+        .score-v span { font-size: 13px; color: var(--muted); margin-left: 2px; }
+
+        /* ── GAME START BANNER (fixed, pointer-events:none) ── */
+        #start-ov {
+            position: fixed; inset: 0; z-index: 9000;
+            display: flex; align-items: center; justify-content: center;
+            pointer-events: none;
+            background: rgba(6,10,17,0);
+            transition: background .4s;
+        }
+        .start-txt {
+            font-family: var(--D); font-size: 68px; color: #fff; letter-spacing: .25em;
+            text-shadow: 0 0 28px var(--emerald);
+            opacity: 0; transform: translateX(-110%);
+        }
+        .start-txt.go { animation: swipe 2.4s cubic-bezier(.16,1,.3,1) forwards; }
+        @keyframes swipe {
+            0%   { opacity:0; transform:translateX(-110%); }
+            18%  { opacity:1; transform:translateX(0); }
+            80%  { opacity:1; transform:translateX(0); }
+            100% { opacity:0; transform:translateX(110%); }
         }
 
-        .result-list { flex: 1; overflow-y: auto; padding: 12px 20px; scrollbar-width: none; }
-        .result-list::-webkit-scrollbar { display: none; }
-        .result-block { padding: 16px 0; border-bottom: 1px solid rgba(255,255,255,0.04); opacity: 0; transform: translateY(-20px); animation: slide-flow-down 0.8s forwards; }
-        @keyframes slide-flow-down { to { opacity: 1; transform: translateY(0); } }
-        .result-next { flex-shrink: 0; height: 52px; border: none; border-top: 1px solid var(--border); background: #fff; color: #080C14; font-family: var(--font-display); font-size: 15px; letter-spacing: 0.5em; text-transform: uppercase; cursor: pointer; transition: background 0.2s; }
-        .result-next:hover { background: var(--emerald); color: #fff; }
-
-        /* ─── FINAL MODAL ─── */
-        #summary-modal { position: fixed; inset: 0; background: rgba(8,12,20,0.98); z-index: 250; display: flex; align-items: center; justify-content: center; padding: 16px; }
-        #summary-modal.hidden { display: none; }
-        .summary-box { background: var(--surface); border: 1px solid rgba(255,255,255,0.08); border-radius: 32px; padding: 28px 24px; width: 100%; max-height: 94%; overflow-y: auto; text-align: center; }
+        /* ── FINAL MODAL (fixed) ── */
+        #final-modal {
+            position: fixed; inset: 0; z-index: 9500;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(6,10,17,.97); padding: 16px;
+        }
+        #final-modal.hidden { display: none; }
+        .final-box {
+            background: var(--surf); border: 1px solid rgba(255,255,255,.08);
+            border-radius: 28px; padding: 28px 22px; width: 100%;
+            max-height: 92dvh; overflow-y: auto; text-align: center;
+        }
+        .final-box::-webkit-scrollbar { display: none; }
+        .final-ttl { font-family: var(--D); font-size: 30px; color: #fff; letter-spacing: .06em; margin-bottom: 18px; }
+        .final-score { font-family: var(--D); font-size: 64px; color: var(--emerald); line-height: 1; margin: 8px 0 20px; }
+        .final-lbl { font-size: 9px; font-weight: 700; letter-spacing: .5em; color: var(--muted); text-transform: uppercase; }
+        .final-btn {
+            width: 100%; height: 48px; border-radius: 12px; border: none;
+            font-family: var(--D); font-size: 15px; letter-spacing: .4em;
+            text-transform: uppercase; cursor: pointer; margin-top: 10px;
+            transition: opacity .2s;
+        }
+        .final-btn:active { opacity: .8; }
+        .final-btn.pri { background: #fff; color: var(--bg); }
+        .final-btn.sec { background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1); color: var(--muted); }
     </style>
 </head>
 <body>
 
-<div id="game-start-overlay">
-    <div class="start-banner" id="start-banner">GAME START</div>
+<!-- GAME START BANNER -->
+<div id="start-ov">
+    <div class="start-txt" id="start-txt">GAME START</div>
 </div>
 
+<!-- MAIN APP -->
 <div id="app">
-    <div class="hdr">
-        <div class="hdr-top">
+
+    <!-- HEADER -->
+    <header class="hdr">
+        <div class="hdr-row">
             <div>
-                <div class="hdr-label">The Enterprise Command</div>
-                <div class="hdr-phase" id="phase-display">FY26M1</div>
+                <div class="hdr-tag">The Enterprise Command</div>
+                <div class="hdr-phase" id="phase-disp">FY26M1</div>
             </div>
             <div class="hdr-mh">
-                <div class="hdr-mh-label">Resource MH</div>
-                <div id="mh-display" class="hdr-mh-val">20</div>
+                <div class="hdr-mh-lbl">Resource MH</div>
+                <div class="hdr-mh-val" id="mh-disp">20</div>
             </div>
         </div>
         <div class="share-bar" id="share-bar"></div>
-    </div>
+    </header>
 
-    <div class="grid-wrap">
+    <!-- GRID AREA -->
+    <section class="grid-wrap">
         <div id="grid"></div>
-        <div class="side-panel" id="side-panel">
-            <div class="sp-header">
+
+        <!-- Side Panel (inside grid-wrap) -->
+        <aside class="sp" id="sp">
+            <div class="sp-hdr">
                 <span class="sp-tag">Target Intel</span>
-                <button class="sp-close" id="close-panel">✕</button>
+                <button class="sp-close" id="sp-close">✕</button>
             </div>
             <div class="sp-name" id="sp-name">—</div>
             <div class="sp-full" id="sp-full">—</div>
-            <div class="sp-stat-row">
-                <div class="sp-stat"><div class="sp-stat-label">Visit</div><div class="sp-stat-val" id="sp-visit">0</div></div>
-                <div class="sp-stat"><div class="sp-stat-label">Study</div><div class="sp-stat-val" id="sp-study">0</div></div>
+            <div class="sp-stats">
+                <div class="sp-stat"><div class="sp-sl">Visit</div><div class="sp-sv" id="sp-vc">0</div></div>
+                <div class="sp-stat"><div class="sp-sl">Study</div><div class="sp-sv" id="sp-sc">0</div></div>
             </div>
-            <div style="margin:8px 0;"><div class="sp-win" id="sp-win">—%</div><div style="font-size:7px;letter-spacing:0.4em;color:var(--text-muted);text-transform:uppercase;">Capture Prob</div></div>
-            <div style="margin-bottom:8px;"><div style="font-size:7px;letter-spacing:0.3em;color:var(--text-muted);text-transform:uppercase;margin-bottom:2px;">Existing Provider</div><div class="sp-vendor-val" id="sp-vendor">—</div></div>
-            <div style="margin-bottom:8px;"><div style="font-size:7px;letter-spacing:0.3em;color:var(--text-muted);text-transform:uppercase;margin-bottom:2px;">Phase Vector</div><div class="sp-status" id="sp-status">—</div></div>
+            <div>
+                <div class="sp-win" id="sp-win">—%</div>
+                <div class="sp-sl" style="margin-top:2px;">Capture Prob</div>
+            </div>
+            <div class="sp-row">
+                <div class="sp-rl">Provider</div>
+                <div class="sp-rv" id="sp-vendor">—</div>
+            </div>
+            <div class="sp-row">
+                <div class="sp-rl">Phase Vector</div>
+                <div class="sp-status" id="sp-status">—</div>
+            </div>
             <div class="sp-btns">
-                <button class="sp-btn" onclick="addTask('VISIT',5,'訪問')">Visit (-5 MH)</button>
+                <button class="sp-btn" onclick="addTask('VISIT',5,'訪問')">Visit &nbsp;(-5 MH)</button>
                 <button class="sp-btn" onclick="addTask('STUDY',8,'勉強会')">Study (-8 MH)</button>
-                <button class="sp-btn primary" id="sp-proposal-btn" onclick="addTask('PROPOSAL',10,'提案')" disabled>Proposal (-10 MH)</button>
+                <button class="sp-btn pri" id="sp-prop-btn" onclick="addTask('PROPOSAL',10,'提案')" disabled>Proposal (-10 MH)</button>
             </div>
-        </div>
+        </aside>
 
-        <div class="overlay exec-overlay hidden" id="exec-overlay">
-            <div class="exec-spinner">Analyzing Strategic Output…</div>
+        <!-- Exec spinner overlay (inside grid-wrap) -->
+        <div class="ov exec-ov hidden" id="exec-ov">
+            <span class="exec-spin">Analyzing Strategic Output…</span>
         </div>
+    </section>
 
-        <div class="overlay result-overlay hidden" id="result-overlay">
-            <div class="result-box">
-                <div class="result-hdr"><span class="result-title">Intel Sequence Report</span><span style="font-size: 24px;">📡</span></div>
-                <div class="result-list" id="result-list"></div>
-                <button class="result-next" onclick="closeResult()">Next Cycle ›</button>
-            </div>
-        </div>
+    <!-- TASK STRIP -->
+    <div class="task-strip" id="task-strip">
+        <span class="t-standby">>>> MISSION ON STANDBY</span>
     </div>
 
-    <div class="task-strip" id="task-strip"></div>
+    <!-- EXECUTE BUTTON -->
     <button class="exec-btn" id="exec-btn" disabled onclick="executeStrategy()">Launch Mission</button>
+
+    <!-- LOG -->
     <div class="log-area" id="log-area"></div>
-    <div class="score-bar">
-        <div style="display:flex;gap:12px;align-items:center;">
-            <div style="display:flex;align-items:center;gap:4px;font-size:8px;"><div style="width:8px;height:8px;background:var(--vendor-H)"></div>SELF</div>
-            <div style="display:flex;align-items:center;gap:4px;font-size:8px;"><div style="width:8px;height:8px;background:var(--vendor-I-bright)"></div>I社</div>
+
+    <!-- SCORE BAR -->
+    <footer class="score-bar">
+        <div class="legend">
+            <div class="leg-i"><div class="leg-d" style="background:#00D68F"></div>SELF</div>
+            <div class="leg-i"><div class="leg-d" style="background:#38BDF8"></div>I社</div>
+            <div class="leg-i"><div class="leg-d" style="background:#A855F7"></div>A社</div>
+            <div class="leg-i"><div class="leg-d" style="background:#F59E0B"></div>S社</div>
         </div>
-        <div class="score-val" id="score-val">¥0<span>M</span></div>
+        <div class="score-v" id="score-v">¥0<span>M</span></div>
+    </footer>
+</div>
+
+<!-- RESULT OVERLAY (fixed, above everything except final modal) -->
+<div id="result-ov" class="hidden">
+    <div class="res-box">
+        <div class="res-hdr">
+            <span class="res-title">Intel Sequence Report</span>
+            <span style="font-size:22px;">📡</span>
+        </div>
+        <div class="res-list" id="res-list"></div>
+        <button class="res-next" onclick="closeResult()">Next Cycle ›</button>
     </div>
 </div>
 
-<div id="summary-modal" class="hidden">
-    <div class="summary-box">
-        <h2 style="font-family:var(--font-display);font-size:32px;color:#fff;margin-bottom:20px;">ANNUAL STRATEGIC REPORT</h2>
-        <div id="final-ranking" style="margin:20px 0;"></div>
-        <button class="sp-btn primary" style="width:100%;" onclick="continueGame()">⏩ Next Year</button>
-        <button class="sp-btn" style="width:100%;margin-top:10px;" onclick="resetGame()">↩ Reset</button>
+<!-- FINAL MODAL (fixed) -->
+<div id="final-modal" class="hidden">
+    <div class="final-box">
+        <div class="final-ttl">Annual Strategic Report</div>
+        <div class="final-lbl">Aggregated Revenue</div>
+        <div class="final-score" id="final-score">¥0<span style="font-size:28px;color:var(--muted);margin-left:6px;">M</span></div>
+        <div id="final-ranking" style="margin:0 0 16px;text-align:left;"></div>
+        <button class="final-btn pri" onclick="continueGame()">⏩ Next Year</button>
+        <button class="final-btn sec" onclick="resetGame()">↩ Reset</button>
     </div>
 </div>
 
 <script>
+/* ════════════════════════════════
+   CONSTANTS & STATE
+   ════════════════════════════════ */
 const MAX_MH = 20;
 const VENDORS = {
-    H: { name: 'H社', bg: '#00D68F' }, 
-    I: { name: 'I社', bg: '#0A1F3D' },
-    A: { name: 'A社', bg: '#2D0A3D' },
-    S: { name: 'S社', bg: '#451A03' },
-    NONE: { name: '未開拓', bg: '#080C14' },
-    UNK: { name: '情報未取得', bg: '#141C28' }
+    H: { name:'H社(SELF)', bg:'#0A3D2B', bright:'#00D68F' },
+    I: { name:'I社',       bg:'#0A1F3D', bright:'#38BDF8' },
+    A: { name:'A社',       bg:'#2D0A3D', bright:'#A855F7' },
+    S: { name:'S社',       bg:'#451A03', bright:'#F59E0B' },
+    NONE:{ name:'未開拓', bg:'#060A11', bright:'#1a2535' },
+    UNK: { name:'情報未取得', bg:'#111926', bright:'#1a2535' },
 };
-
-let AudioCtx;
-function initAudio() {
-    if (!AudioCtx) {
-        AudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    }
-}
-
-function playSound(type) {
-    initAudio();
-    if (AudioCtx.state === 'suspended') AudioCtx.resume();
-    
-    const osc = AudioCtx.createOscillator();
-    const gain = AudioCtx.createGain();
-    osc.connect(gain); gain.connect(AudioCtx.destination);
-    const now = AudioCtx.currentTime;
-
-    switch(type) {
-        case 'start':
-            osc.type = 'sawtooth'; osc.frequency.setValueAtTime(60, now);
-            osc.frequency.exponentialRampToValueAtTime(440, now + 0.8);
-            gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now + 0.8);
-            osc.start(); osc.stop(now + 0.8);
-            break;
-        case 'click':
-            osc.type = 'sine'; osc.frequency.setValueAtTime(880, now);
-            gain.gain.setValueAtTime(0.05, now); gain.gain.linearRampToValueAtTime(0, now + 0.1);
-            osc.start(); osc.stop(now + 0.1);
-            break;
-        case 'add':
-            osc.type = 'square'; osc.frequency.setValueAtTime(440, now);
-            osc.frequency.setValueAtTime(880, now + 0.05);
-            gain.gain.setValueAtTime(0.02, now); gain.gain.linearRampToValueAtTime(0, now + 0.1);
-            osc.start(); osc.stop(now + 0.1);
-            break;
-        case 'success':
-            [523.25, 659.25, 783.99, 1046.50].forEach((f, i) => {
-                const o = AudioCtx.createOscillator(); const g = AudioCtx.createGain();
-                o.connect(g); g.connect(AudioCtx.destination);
-                o.type = 'triangle'; o.frequency.setValueAtTime(f, now + i * 0.1);
-                g.gain.setValueAtTime(0.05, now + i * 0.1); g.gain.linearRampToValueAtTime(0, now + i * 0.1 + 0.4);
-                o.start(now + i * 0.1); o.stop(now + i * 0.1 + 0.4);
-            });
-            break;
-        case 'failure':
-            osc.type = 'sawtooth'; osc.frequency.setValueAtTime(220, now);
-            osc.frequency.linearRampToValueAtTime(80, now + 0.4);
-            gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now + 0.4);
-            osc.start(); osc.stop(now + 0.4);
-            break;
-    }
-}
-
 const CUSTOMER_POOL = [
     { id:101, name:'NIT-Core', full:'ニトリHD: 基幹', budget:120, tiles:5 },
     { id:102, name:'NIT-Logi', full:'ニトリHD: 物流', budget:80,  tiles:4 },
-    { id:201, name:'SAP-Net',  full:'札幌市: NW', budget:70,  tiles:4 },
-    { id:202, name:'SAP-Win',  full:'札幌市: 窓口', budget:65,  tiles:3 },
-    { id:301, name:'HDC-Fin',  full:'道庁: 財務', budget:60,  tiles:3 },
-    { id:401, name:'HOU-Edu',  full:'北大: 教育', budget:110, tiles:4 },
-    { id:501, name:'TSU-EC',   full:'ツルハ: EC', budget:80,  tiles:3 },
-    { id:601, name:'JRH-Tick', full:'JR北: 発券', budget:70,  tiles:4 },
+    { id:201, name:'SAP-Net',  full:'札幌市: NW',     budget:70,  tiles:4 },
+    { id:202, name:'SAP-Win',  full:'札幌市: 窓口',   budget:65,  tiles:3 },
+    { id:301, name:'HDC-Fin',  full:'道庁: 財務',     budget:60,  tiles:3 },
+    { id:401, name:'HOU-Edu',  full:'北大: 教育',     budget:110, tiles:4 },
+    { id:501, name:'TSU-EC',   full:'ツルハ: EC',     budget:80,  tiles:3 },
+    { id:601, name:'JRH-Tick', full:'JR北: 発券',     budget:70,  tiles:4 },
     { id:701, name:'HKL-Agri', full:'ホクレン: 農業', budget:60,  tiles:3 },
-    { id:801, name:'AIN-Ph',   full:'アイン: 調剤', budget:50,  tiles:2 },
-    { id:901, name:'HBA-Sec',  full:'HBA: セキュ', budget:50,  tiles:2 },
-    { id:1001,name:'SAT-POS',  full:'サツドラ: POS', budget:40,  tiles:2 },
-    { id:1101,name:'HRP-Base', full:'HARP: 基盤', budget:30,  tiles:1 },
-    { id:1201,name:'HPP-Sec',  full:'道警: 公安NW', budget:25,  tiles:1 },
+    { id:801, name:'AIN-Ph',   full:'アイン: 調剤',   budget:50,  tiles:2 },
+    { id:901, name:'HBA-Sec',  full:'HBA: セキュ',    budget:50,  tiles:2 },
+    { id:1001,name:'SAT-POS',  full:'サツドラ: POS',  budget:40,  tiles:2 },
+    { id:1101,name:'HRP-Base', full:'HARP: 基盤',     budget:30,  tiles:1 },
+    { id:1201,name:'HPP-Sec',  full:'道警: 公安NW',   budget:25,  tiles:1 },
 ];
 
 let state = {
-    month: 1, year: 1, mh: MAX_MH, nextMonthPenalty: 0,
-    sales: 0, selectedId: null, tasks: [], logs: ["システム同期完了。"],
-    changedIds: [], incidents: [], initialShare: null, customers: [], gridOrder: []
+    month:1, year:1, mh:MAX_MH, nextPenalty:0,
+    sales:0, selId:null, tasks:[], logs:['システム同期完了。'],
+    changed:[], incidents:[], customers:[], grid:[],
 };
 
-function generateGridLayout() {
-    let ids = state.customers.map(c => c.id).sort(() => Math.random() - 0.5);
-    let tiles = [];
-    ids.forEach(cid => {
-        const c = state.customers.find(x => x.id === cid);
-        for (let i = 0; i < c.tiles; i++) tiles.push({ customerId: c.id });
-    });
-    while (tiles.length < 36) tiles.push({ customerId: null });
-    state.gridOrder = tiles;
-}
-
-function initializeEnvironment() {
-    const allVendors = ['H', 'I', 'A', 'S'];
-    state.customers = CUSTOMER_POOL.map(base => ({
-        ...base, 
-        vendor: allVendors[Math.floor(Math.random() * 4)],
-        mo: Math.floor(Math.random() * 45) + 1, 
-        vc: 0, sc: 0, lv: 0,
-        reshuffleMonth: Math.floor(Math.random() * 12) + 1 
-    }));
-    generateGridLayout();
-}
-
-function winRate(c) {
-    if (!c) return 0;
-    let r = 10; if (c.vendor === 'H') r += 40;
-    if (c.mo >= 48 && c.mo < 50) r += 40; else if (c.mo >= 50) r -= 20;
-    r += c.vc * 5 + c.sc * 10;
-    const since = state.month - (c.lv || 0);
-    if (since > 1) r -= (since - 1) * 8;
-    state.tasks.filter(t => t.cid === c.id).forEach(t => r += (t.type==='VISIT'?5:10));
-    return Math.min(99, Math.max(5, Math.round(r)));
-}
-
-function calculateShare() {
-    const s = { H:0, I:0, A:0, S:0, NONE:0, UNK:0 };
-    state.customers.forEach(c => {
-        if (s[c.vendor] !== undefined) s[c.vendor] += c.budget;
-    });
-    return { stats: s, total: Object.values(s).reduce((a, b) => a + b, 0) || 1 };
-}
-
-function renderBar(id, data) {
-    const c = document.getElementById(id); if(!c) return; c.innerHTML = '';
-    const { stats, total } = data;
-    ['H','I','A','S'].forEach(v => {
-        const p = (stats[v]||0)/total*100;
-        if (p>0) {
-            const d = document.createElement('div'); d.className='share-seg';
-            d.style.cssText=`width:${p}%;background:var(--vendor-${v})`;
-            if (p > 5) d.textContent = Math.round(p) + '%';
-            c.appendChild(d);
+/* ════════════════════════════════
+   AUDIO
+   ════════════════════════════════ */
+let AC;
+function initAC() { if (!AC) AC = new (window.AudioContext||window.webkitAudioContext)(); }
+function snd(type) {
+    try {
+        initAC();
+        if (AC.state === 'suspended') AC.resume();
+        const o = AC.createOscillator(), g = AC.createGain();
+        o.connect(g); g.connect(AC.destination);
+        const t = AC.currentTime;
+        const beep = (freq, dur, vol=0.06, wave='sine') => {
+            o.type=wave; o.frequency.setValueAtTime(freq,t);
+            g.gain.setValueAtTime(vol,t); g.gain.linearRampToValueAtTime(0,t+dur);
+            o.start(t); o.stop(t+dur);
+        };
+        if (type==='click')   beep(880,.09,.04);
+        else if (type==='add')    beep(660,.12,.03,'square');
+        else if (type==='fail')   { o.type='sawtooth'; o.frequency.setValueAtTime(220,t); o.frequency.linearRampToValueAtTime(80,t+.4); g.gain.setValueAtTime(.08,t); g.gain.linearRampToValueAtTime(0,t+.4); o.start(t); o.stop(t+.4); }
+        else if (type==='win') {
+            [523,659,784,1047].forEach((f,i)=>{
+                const oi=AC.createOscillator(),gi=AC.createGain();
+                oi.connect(gi);gi.connect(AC.destination);
+                oi.type='triangle'; oi.frequency.setValueAtTime(f,t+i*.1);
+                gi.gain.setValueAtTime(.04,t+i*.1); gi.gain.linearRampToValueAtTime(0,t+i*.1+.4);
+                oi.start(t+i*.1); oi.stop(t+i*.1+.4);
+            });
         }
-    });
+        else if (type==='start') { o.type='sawtooth'; o.frequency.setValueAtTime(55,t); o.frequency.exponentialRampToValueAtTime(440,t+.9); g.gain.setValueAtTime(.07,t); g.gain.linearRampToValueAtTime(0,t+.9); o.start(t); o.stop(t+.9); }
+    } catch(e) {}
 }
 
+/* ════════════════════════════════
+   INIT
+   ════════════════════════════════ */
+function initEnv() {
+    const vd = ['H','I','A','S'];
+    state.customers = CUSTOMER_POOL.map(b => ({
+        ...b,
+        vendor: vd[Math.floor(Math.random()*4)],
+        mo: Math.floor(Math.random()*45)+1,
+        vc:0, sc:0, lv:0,
+        reshuffleMonth: Math.floor(Math.random()*12)+1,
+    }));
+    buildGrid();
+}
+function buildGrid() {
+    let tiles = [];
+    [...state.customers].sort(()=>Math.random()-.5).forEach(c => {
+        for (let i=0;i<c.tiles;i++) tiles.push({cid:c.id});
+    });
+    while (tiles.length<36) tiles.push({cid:null});
+    state.grid = tiles;
+}
+
+/* ════════════════════════════════
+   WIN RATE
+   ════════════════════════════════ */
+function wr(c) {
+    if (!c) return 0;
+    let r = 10;
+    if (c.vendor==='H') r += 40;
+    if (c.mo>=48&&c.mo<50) r+=40; else if (c.mo>=50) r-=20;
+    r += c.vc*5 + c.sc*10;
+    const idle = state.month - (c.lv||0);
+    if (idle>1) r -= (idle-1)*8;
+    state.tasks.filter(t=>t.cid===c.id).forEach(t=>r+=(t.type==='VISIT'?5:10));
+    return Math.min(99,Math.max(5,Math.round(r)));
+}
+
+/* ════════════════════════════════
+   SHARE
+   ════════════════════════════════ */
+function share() {
+    const s={H:0,I:0,A:0,S:0};
+    state.customers.forEach(c=>{if(s[c.vendor]!==undefined)s[c.vendor]+=c.budget;});
+    const total = Object.values(s).reduce((a,b)=>a+b,0)||1;
+    return {s,total};
+}
+
+/* ════════════════════════════════
+   RENDER
+   ════════════════════════════════ */
 function render() {
-    document.getElementById('phase-display').textContent = `FY2${state.year+5}M${state.month}`;
-    const mhEl = document.getElementById('mh-display');
-    mhEl.textContent = state.mh; mhEl.className = 'hdr-mh-val' + (state.mh < 5 ? ' danger' : '');
-    document.getElementById('score-val').innerHTML = `¥${state.sales}<span>M</span>`;
-    renderBar('share-bar', calculateShare());
+    // Header
+    document.getElementById('phase-disp').textContent = `FY2${state.year+5}M${state.month}`;
+    const me = document.getElementById('mh-disp');
+    me.textContent = state.mh;
+    me.className = 'hdr-mh-val'+(state.mh<5?' lo':'');
+    document.getElementById('score-v').innerHTML = `¥${state.sales}<span>M</span>`;
 
-    const g = document.getElementById('grid'); g.innerHTML = '';
-    state.gridOrder.forEach(tData => {
-        const el = document.createElement('div'); el.className = 'tile';
-        if (tData.customerId) {
-            const c = state.customers.find(x => x.id === tData.customerId);
-            const k = c.vc > 0 || c.sc > 0 || c.vendor === 'H';
-            const vd = VENDORS[k ? c.vendor : 'UNK'];
-            el.style.backgroundColor = vd.bg;
-            if (k && c.mo >= 48 && c.mo < 50) el.classList.add('rfp-anim');
-            else if (k && c.mo >= 50) el.classList.add('build-anim');
-            if (state.incidents.some(i => i.cid === c.id)) el.classList.add('incident-anim');
-            if (state.changedIds.includes(c.id)) el.classList.add('changed-anim');
-            if (state.selectedId === c.id) el.classList.add('selected');
-            const span = document.createElement('span'); span.className = 't-label';
-            span.textContent = k ? `Y${Math.ceil(c.mo/12)}` : 'Y?';
-            el.appendChild(span);
-            el.onclick = e => { e.stopPropagation(); state.selectedId = c.id; playSound('click'); render(); };
-        } else { el.style.backgroundColor = VENDORS.NONE.bg; }
-        g.appendChild(el);
+    // Share bar
+    const {s,total} = share();
+    const bar = document.getElementById('share-bar'); bar.innerHTML='';
+    [['H','#00D68F'],['I','#38BDF8'],['A','#A855F7'],['S','#F59E0B']].forEach(([v,c])=>{
+        const p=(s[v]||0)/total*100;
+        if(p>0){const d=document.createElement('div');d.className='share-seg';d.style.cssText=`width:${p}%;background:${c}`;if(p>6)d.textContent=Math.round(p)+'%';bar.appendChild(d);}
     });
 
-    const p = document.getElementById('side-panel');
-    if (state.selectedId) {
-        const c = state.customers.find(x=>x.id===state.selectedId);
-        p.classList.add('open');
-        document.getElementById('sp-name').textContent = c.name;
-        document.getElementById('sp-full').textContent = c.full;
-        document.getElementById('sp-visit').textContent = c.vc;
-        document.getElementById('sp-study').textContent = c.sc;
-        document.getElementById('sp-win').textContent = `${winRate(c)}%`;
-        const k = c.vc>0 || c.sc > 0 || c.vendor==='H';
-        document.getElementById('sp-vendor').textContent = k ? VENDORS[c.vendor].name : '？';
-        const st = document.getElementById('sp-status');
-        const isRFP = c.mo>=48 && c.mo<50;
-        if (!k) st.textContent = '情報未取得';
-        else if (c.mo >= 50) st.textContent = `構築中 (M${c.mo})`;
-        else if (isRFP) st.textContent = `📄 RFP放出中 (M${c.mo})`;
-        else st.textContent = `通常運用 (M${c.mo})`;
-        document.getElementById('sp-proposal-btn').disabled = !(k && isRFP);
-    } else p.classList.remove('open');
-
-    const ts = document.getElementById('task-strip'); ts.innerHTML = '';
-    if (state.tasks.length === 0) ts.innerHTML = '<span class="task-standby">>>> MISSION ON STANDBY</span>';
-    else state.tasks.forEach((t, i) => {
-        const c = document.createElement('div'); c.className = 'task-chip';
-        c.innerHTML = `<span>${t.cname}</span><span>${t.label}</span><button class="task-chip-rm" onclick="removeTask(${i})">✕</button>`;
-        ts.appendChild(c);
+    // Grid
+    const gEl = document.getElementById('grid'); gEl.innerHTML='';
+    state.grid.forEach(t=>{
+        const el=document.createElement('div'); el.className='tile';
+        if (t.cid) {
+            const c=state.customers.find(x=>x.id===t.cid);
+            const known=c.vc>0||c.sc>0||c.vendor==='H';
+            el.style.backgroundColor=VENDORS[known?c.vendor:'UNK'].bg;
+            if(known){
+                if(c.mo>=48&&c.mo<50) el.classList.add('rfp-a');
+                else if(c.mo>=50)     el.classList.add('bld-a');
+            }
+            if(state.incidents.some(i=>i.cid===c.id)) el.classList.add('inc-a');
+            if(state.changed.includes(c.id))           el.classList.add('chg-a');
+            if(state.selId===c.id)                     el.classList.add('sel');
+            const sp=document.createElement('span');sp.className='t-lbl';
+            sp.textContent=known?`Y${Math.ceil(c.mo/12)}`:'Y?';
+            el.appendChild(sp);
+            el.onclick=e=>{e.stopPropagation();state.selId=c.id;snd('click');render();};
+        } else {
+            el.style.backgroundColor=VENDORS.NONE.bg;
+        }
+        gEl.appendChild(el);
     });
-    const eb = document.getElementById('exec-btn');
-    eb.disabled = state.tasks.length === 0; eb.className = 'exec-btn' + (eb.disabled?'':' active');
 
-    const la = document.getElementById('log-area'); la.innerHTML = '';
-    state.logs.slice(0,3).forEach((l,i) => {
-        const d = document.createElement('div'); d.className = 'log-line' + (i===0?' latest':'');
-        d.textContent = (i===0?'>>> ':'... ') + l; la.appendChild(d);
+    // Side panel
+    const sp=document.getElementById('sp');
+    if (state.selId) {
+        const c=state.customers.find(x=>x.id===state.selId);
+        sp.classList.add('open');
+        document.getElementById('sp-name').textContent=c.name;
+        document.getElementById('sp-full').textContent=c.full;
+        document.getElementById('sp-vc').textContent=c.vc;
+        document.getElementById('sp-sc').textContent=c.sc;
+        document.getElementById('sp-win').textContent=`${wr(c)}%`;
+        const known=c.vc>0||c.sc>0||c.vendor==='H';
+        document.getElementById('sp-vendor').textContent=known?VENDORS[c.vendor].name:'？';
+        const stEl=document.getElementById('sp-status');
+        const isRFP=c.mo>=48&&c.mo<50;
+        if(!known){stEl.textContent='情報未取得';stEl.className='sp-status unk-st';}
+        else if(c.mo>=50){stEl.textContent=`構築中 (M${c.mo})`;stEl.className='sp-status bld-st';}
+        else if(isRFP){stEl.textContent=`📄 RFP放出中 (M${c.mo})`;stEl.className='sp-status rfp-st';}
+        else{stEl.textContent=`通常運用 (M${c.mo})`;stEl.className='sp-status';}
+        document.getElementById('sp-prop-btn').disabled=!(known&&isRFP);
+    } else {
+        sp.classList.remove('open');
+    }
+
+    // Task strip
+    const ts=document.getElementById('task-strip'); ts.innerHTML='';
+    if(state.tasks.length===0){
+        const s=document.createElement('span');s.className='t-standby';s.textContent='>>> MISSION ON STANDBY';ts.appendChild(s);
+    } else {
+        state.tasks.forEach((t,i)=>{
+            const c=document.createElement('div');c.className='t-chip';
+            c.innerHTML=`<span class="t-chip-name">${t.cname}</span><span>${t.label}</span><button class="t-chip-rm" onclick="removeTask(${i})">✕</button>`;
+            ts.appendChild(c);
+        });
+    }
+
+    // Exec btn
+    const eb=document.getElementById('exec-btn');
+    eb.disabled=state.tasks.length===0;
+    eb.className='exec-btn'+(eb.disabled?'':' on');
+
+    // Log
+    const la=document.getElementById('log-area'); la.innerHTML='';
+    state.logs.slice(0,3).forEach((l,i)=>{
+        const d=document.createElement('div');d.className='log-ln'+(i===0?' lt':'');
+        d.textContent=(i===0?'>>> ':'... ')+l;la.appendChild(d);
     });
 }
 
-function addTask(type, cost, label) {
-    if (!state.selectedId) return;
-    if (state.mh < cost) { state.logs.unshift('! 工数不足'); render(); return; }
-    const c = state.customers.find(x=>x.id===state.selectedId);
-    state.tasks.push({ cid:c.id, cname:c.name, type, cost, label });
-    state.mh -= cost; playSound('add'); render();
+/* ════════════════════════════════
+   TASK MANAGEMENT
+   ════════════════════════════════ */
+function addTask(type,cost,label) {
+    if(!state.selId) return;
+    if(state.mh<cost){state.logs.unshift('! 工数不足');render();return;}
+    const c=state.customers.find(x=>x.id===state.selId);
+    state.tasks.push({cid:c.id,cname:c.name,type,cost,label});
+    state.mh-=cost; snd('add'); render();
 }
-
 function removeTask(i) {
-    state.mh += state.tasks[i].cost;
+    state.mh+=state.tasks[i].cost;
     state.tasks.splice(i,1); render();
 }
 
+/* ════════════════════════════════
+   EXECUTE
+   ════════════════════════════════ */
 async function executeStrategy() {
-    playSound('start'); document.getElementById('exec-overlay').classList.remove('hidden');
-    let gained = 0; let changed = []; 
-    const resMap = {}; 
-    
-    // 今月アクションを起こした顧客リスト
-    const interactedIds = [...new Set(state.tasks.map(t=>t.cid))];
-    // 情報を収集した（訪問・勉強会した）顧客リスト
-    const infoGatheredIds = [...new Set(state.tasks.filter(t => t.type === 'VISIT' || t.type === 'STUDY').map(t => t.cid))];
-    
-    interactedIds.forEach(id => resMap[id]=[]);
+    snd('start');
+    document.getElementById('exec-ov').classList.remove('hidden');
+    let gained=0, changed=[];
+    const resMap={};
+    const interacted=[...new Set(state.tasks.map(t=>t.cid))];
+    const infoIds=[...new Set(state.tasks.filter(t=>t.type==='VISIT'||t.type==='STUDY').map(t=>t.cid))];
+    interacted.forEach(id=>resMap[id]=[]);
 
-    for (const t of state.tasks) {
-        await new Promise(r=>setTimeout(r,400));
-        const c = state.customers.find(x=>x.id===t.cid);
-        if (t.type==='VISIT') { 
-            c.vc++; c.lv = state.month; 
-            resMap[c.id].push({ icon:'👁', text:'[H社] 戦略訪問完了。最新情報を入手。', isSelf: true }); 
-        }
-        else if (t.type==='STUDY') { 
-            c.sc++; c.lv = state.month; 
-            resMap[c.id].push({ icon:'📚', text:'[H社] 勉強会実施。受注確度を引き上げ。', isSelf: true }); 
-        }
-        else if (t.type==='PROPOSAL') {
-            const ok = Math.random()*100 < winRate(c); 
-            if (ok) { 
-                playSound('success'); c.vendor='H'; c.mo=55; c.vc=1; c.sc=0; c.lv = state.month; 
-                gained += c.budget; changed.push(c.id); 
-                resMap[c.id].push({ icon:'✅', text:'[H社] 受注確定！構築フェーズ(6ヶ月)開始。', isSelf: true }); 
-            } else { 
-                playSound('failure'); 
-                resMap[c.id].push({ icon:'❌', text:'[H社] コンペ敗北。提案が通りませんでした。', isSelf: true }); 
-            }
+    for(const t of state.tasks){
+        await new Promise(r=>setTimeout(r,350));
+        const c=state.customers.find(x=>x.id===t.cid);
+        if(t.type==='VISIT'){c.vc++;c.lv=state.month;resMap[c.id].push({i:'👁',tx:'[H社] 戦略訪問完了。最新情報を入手。',self:true});}
+        else if(t.type==='STUDY'){c.sc++;c.lv=state.month;resMap[c.id].push({i:'📚',tx:'[H社] 勉強会実施。受注確度を引き上げ。',self:true});}
+        else if(t.type==='PROPOSAL'){
+            const ok=Math.random()*100<wr(c);
+            if(ok){snd('win');c.vendor='H';c.mo=55;c.vc=1;c.sc=0;c.lv=state.month;gained+=c.budget;changed.push(c.id);resMap[c.id].push({i:'✅',tx:'[H社] 本提案を投入。',res:'受注確定！構築フェーズ(6ヶ月)開始。',ok:true,self:true});}
+            else{snd('fail');resMap[c.id].push({i:'❌',tx:'[H社] 本提案を投入。',res:'コンペ敗北。提案が通りませんでした。',ok:false,self:true});}
         }
         render();
     }
 
-    // 人事異動・障害
-    state.customers.forEach(c => {
-        if (c.reshuffleMonth === state.month) {
-            c.vc = 0; c.sc = 0; c.lv = 0;
-            if(!resMap[c.id]) { interactedIds.push(c.id); resMap[c.id]=[]; } 
-            resMap[c.id].push({icon:'👤', text:'[人事] キーマンが異動。リレーションが消失。'}); 
+    // Events
+    state.customers.forEach(c=>{
+        if(c.reshuffleMonth===state.month){
+            c.vc=0;c.sc=0;c.lv=0;
+            if(!resMap[c.id]){interacted.push(c.id);resMap[c.id]=[];}
+            resMap[c.id].push({i:'👤',tx:'[人事] キーマン異動。リレーション消失。'});
         }
-        if (Math.random() < 1/30) {
-            state.incidents.push({cid:c.id}); 
-            if(!resMap[c.id]) { interactedIds.push(c.id); resMap[c.id]=[]; }
-            if (c.vendor==='H') { 
-                state.nextMonthPenalty += 5; 
-                resMap[c.id].push({icon:'🚨', text:'[障害] システムトラブル発生。次月MH-5。', isSelf: true}); 
-            }
-            else { resMap[c.id].push({icon:'⚡', text:'[競合] 競合他社でトラブルを検知。'}); }
+        if(Math.random()<1/30){
+            state.incidents.push({cid:c.id});
+            if(!resMap[c.id]){interacted.push(c.id);resMap[c.id]=[];}
+            if(c.vendor==='H'){state.nextPenalty+=5;resMap[c.id].push({i:'🚨',tx:'[障害] システムトラブル発生。次月MH-5。',self:true});}
+            else resMap[c.id].push({i:'⚡',tx:`[競合] ${VENDORS[c.vendor].name}でトラブルを検知。`});
         }
     });
 
-    state.sales += gained; state.tasks = [];
-    const shareData = calculateShare();
-    const isHLeader = shareData.stats.H >= Math.max(shareData.stats.I, shareData.stats.A, shareData.stats.S);
+    state.sales+=gained; state.tasks=[];
+    const {s:shareS,total:shareT}=share();
+    const hLeading=shareS.H>=Math.max(shareS.I,shareS.A,shareS.S);
 
-    // ライバルのアクション（インテリジェンス報告の修正）
-    for (const rid of ['I','A','S']) {
-        await new Promise(r=>setTimeout(r,100));
-
-        // 1. 市場全体の動き（ランダムな奪取試行）
-        const allPotentialTargets = state.customers.filter(c => c.vendor !== rid);
-        if (allPotentialTargets.length > 0) {
-            const t = allPotentialTargets[Math.floor(Math.random() * allPotentialTargets.length)];
-            const isRFP = t.mo >= 48 && t.mo < 50;
-            const power = (isHLeader && t.vendor === 'H') ? (isRFP ? 40 : 20) : (isRFP ? 30 : 10);
-            
-            if (Math.random() * 100 < power) {
-                t.vendor = rid; t.mo = 1; t.vc = 0; t.sc = 0; changed.push(t.id);
-                // 奪取されたのが訪問中の顧客なら報告
-                if (infoGatheredIds.includes(t.id)) {
-                    if (!resMap[t.id]) { interactedIds.push(t.id); resMap[t.id] = []; }
-                    resMap[t.id].push({ icon: '⚔️', text: `[${rid}社] 強力な提案により顧客を奪取されました。` });
+    // Rival moves
+    for(const rid of ['I','A','S']){
+        await new Promise(r=>setTimeout(r,80));
+        const targets=state.customers.filter(c=>c.vendor!==rid);
+        if(targets.length){
+            const tgt=targets[Math.floor(Math.random()*targets.length)];
+            const rfp=tgt.mo>=48&&tgt.mo<50;
+            const pow=(hLeading&&tgt.vendor==='H')?(rfp?40:20):(rfp?30:10);
+            if(Math.random()*100<pow){
+                tgt.vendor=rid;tgt.mo=1;tgt.vc=0;tgt.sc=0;changed.push(tgt.id);
+                if(infoIds.includes(tgt.id)){
+                    if(!resMap[tgt.id]){interacted.push(tgt.id);resMap[tgt.id]=[];}
+                    resMap[tgt.id].push({i:'⚔️',tx:`[${rid}社] 強力な提案で顧客を奪取されました。`});
                 }
             }
         }
-
-        // 2. 訪問した顧客に対する詳細スキャン（確実に報告を表示）
-        infoGatheredIds.forEach(cid => {
-            const t = state.customers.find(x => x.id === cid);
-            if (!resMap[cid]) { interactedIds.push(cid); resMap[cid] = []; }
-            
-            if (t.vendor === rid) {
-                // 訪問先がそのライバルの顧客だった場合
-                resMap[cid].push({ icon: '🛡', text: `[${rid}社] ベンダー防衛行動を確認。接触を警戒されています。` });
-            } else {
-                // 訪問先が第三者の顧客だった場合、一定確率で競合の接触を報告
-                if (Math.random() < 0.6) {
-                    resMap[cid].push({ icon: '🕵️', text: `[${rid}社] 競合営業の接触形跡を捕捉しました。` });
-                }
-            }
+        infoIds.forEach(cid=>{
+            const tgt=state.customers.find(x=>x.id===cid);
+            if(!resMap[cid]){interacted.push(cid);resMap[cid]=[];}
+            if(tgt.vendor===rid) resMap[cid].push({i:'🛡',tx:`[${rid}社] ベンダー防衛行動を確認。`});
+            else if(Math.random()<.5) resMap[cid].push({i:'🕵️',tx:`[${rid}社] 競合営業の接触形跡を捕捉。`});
         });
     }
 
-    state.customers.forEach(c => c.mo = c.mo>=60?1:c.mo+1); 
-    state.changedIds = changed;
-    document.getElementById('exec-overlay').classList.add('hidden');
+    state.customers.forEach(c=>c.mo=c.mo>=60?1:c.mo+1);
+    state.changed=changed;
+    document.getElementById('exec-ov').classList.remove('hidden');
+    document.getElementById('exec-ov').classList.add('hidden');
 
-    const listEl = document.getElementById('result-list'); listEl.innerHTML = '';
-    interactedIds.forEach(cid => {
-        const c = state.customers.find(x=>x.id===cid);
-        const b = document.createElement('div'); b.className = 'result-block';
-        let h = `<div style="font-family:var(--font-display);color:var(--gold);font-size:16px;margin-bottom:10px;border-bottom:1px solid var(--border); letter-spacing: 0.1em;">${c.name.toUpperCase()} INTEL REPORT</div>`;
-        resMap[cid].forEach(r => {
-            const color = r.isSelf ? 'var(--emerald)' : 'inherit';
-            h += `<div style="display:flex;gap:10px;font-size:12px;margin-bottom:6px; line-height: 1.4; color: ${color};"><span>${r.icon}</span><span>${r.text}</span></div>`;
+    // Build result
+    const rl=document.getElementById('res-list'); rl.innerHTML='';
+    let delay=0;
+    const seen=new Set();
+    interacted.forEach(cid=>{
+        if(seen.has(cid)||!resMap[cid]||resMap[cid].length===0){return;}
+        seen.add(cid);
+        const c=state.customers.find(x=>x.id===cid); if(!c)return;
+        const blk=document.createElement('div'); blk.className='res-block';
+        blk.style.animationDelay=`${delay*.35}s`; delay++;
+        let h=`<div class="res-bname">${c.name.toUpperCase()}</div>`;
+        resMap[cid].forEach(r=>{
+            h+=`<div class="res-row"><span class="res-ico">${r.i}</span><div class="res-txt" style="${r.self?'color:#aabbcc':'color:#6a7a90'}">${r.tx}${r.res?`<span class="${r.ok?'ok':'ng'}">${r.res}</span>`:''}</div></div>`;
         });
-        b.innerHTML = h; listEl.appendChild(b);
+        blk.innerHTML=h; rl.appendChild(blk);
     });
-    document.getElementById('result-overlay').classList.remove('hidden');
+    if(seen.size===0) rl.innerHTML='<div style="text-align:center;padding:40px 0;font-family:var(--M);font-size:10px;letter-spacing:.5em;color:var(--muted);">SILENCE SECTOR — NO DATA</div>';
+
+    document.getElementById('result-ov').classList.remove('hidden');
 }
 
+/* ════════════════════════════════
+   CLOSE RESULT / NEXT
+   ════════════════════════════════ */
 function closeResult() {
-    document.getElementById('result-overlay').classList.add('hidden'); 
-    state.selectedId = null; 
-    if (state.month >= 12) showFinalSummary();
+    document.getElementById('result-ov').classList.add('hidden');
+    state.selId=null;
+    if(state.month>=12) showFinal();
     else {
         state.month++;
-        const hTiles = state.gridOrder.filter(t => t.customerId && state.customers.find(x=>x.id===t.customerId).vendor === 'H').length;
-        const maint = Math.min(5, Math.floor(hTiles / 4));
-        state.mh = MAX_MH - state.nextMonthPenalty - maint; state.nextMonthPenalty = 0;
-        state.changedIds = []; state.incidents = []; render();
+        const hTiles=state.grid.filter(t=>t.cid&&state.customers.find(x=>x.id===t.cid).vendor==='H').length;
+        const maint=Math.min(4,Math.floor(hTiles/4));
+        state.mh=Math.max(5,MAX_MH-state.nextPenalty-maint);
+        state.nextPenalty=0; state.changed=[]; state.incidents=[];
+        render();
     }
 }
 
-function triggerStartScreen() {
-    const b = document.getElementById('start-banner');
-    b.classList.remove('animate'); void b.offsetWidth; b.classList.add('animate');
-    const o = document.getElementById('game-start-overlay');
-    o.style.background = 'rgba(8,12,20,0.9)';
-    setTimeout(() => { o.style.background = 'rgba(8,12,20,0)'; }, 500);
-    playSound('start');
+/* ════════════════════════════════
+   FINAL / RESET
+   ════════════════════════════════ */
+function showFinal() {
+    const{s,total}=share();
+    document.getElementById('final-score').innerHTML=`¥${state.sales}<span style="font-size:26px;color:var(--muted);margin-left:6px;">M</span>`;
+    const rk=document.getElementById('final-ranking'); rk.innerHTML='';
+    [['H','SELF','#00D68F'],['I','I社','#38BDF8'],['A','A社','#A855F7'],['S','S社','#F59E0B']].forEach(([v,label,col])=>{
+        const p=Math.round((s[v]||0)/total*100);
+        const d=document.createElement('div');
+        d.style.cssText='display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:12px;';
+        d.innerHTML=`<span style="color:${col};font-family:var(--D);letter-spacing:.1em;">${label}</span><span style="font-family:var(--D);color:#fff;">${p}%</span>`;
+        rk.appendChild(d);
+    });
+    document.getElementById('final-modal').classList.remove('hidden');
+}
+function continueGame(){
+    state.month=1;state.year++;
+    state.customers.forEach(c=>c.reshuffleMonth=Math.floor(Math.random()*12)+1);
+    document.getElementById('final-modal').classList.add('hidden');
+    render();
+}
+function resetGame(){
+    state={month:1,year:1,mh:MAX_MH,nextPenalty:0,sales:0,selId:null,tasks:[],logs:['システム同期完了。'],changed:[],incidents:[],customers:[],grid:[]};
+    initEnv();
+    document.getElementById('final-modal').classList.add('hidden');
+    triggerStart(); render();
+}
+function saveGame(){localStorage.setItem('ent_v3',JSON.stringify(state));state.logs.unshift('SYSTEM SYNCHRONIZED.');render();}
+
+/* ════════════════════════════════
+   GAME START BANNER
+   ════════════════════════════════ */
+function triggerStart(){
+    const b=document.getElementById('start-txt');
+    b.classList.remove('go'); void b.offsetWidth; b.classList.add('go');
+    const o=document.getElementById('start-ov');
+    o.style.background='rgba(6,10,17,.85)';
+    setTimeout(()=>o.style.background='rgba(6,10,17,0)',400);
+    snd('start');
 }
 
-function showFinalSummary() { document.getElementById('summary-modal').classList.remove('hidden'); }
-function continueGame() { 
-    state.month = 1; state.year++; 
-    state.customers.forEach(c => c.reshuffleMonth = Math.floor(Math.random() * 12) + 1);
-    document.getElementById('summary-modal').classList.add('hidden'); 
-    render(); 
-}
-function resetGame() { 
-    state.month = 1; state.year = 1; state.sales = 0; 
-    initializeEnvironment(); 
-    document.getElementById('summary-modal').classList.add('hidden'); 
-    triggerStartScreen(); render(); 
-}
-function saveToLocal() { localStorage.setItem('ent_v17', JSON.stringify(state)); state.logs.unshift('SYSTEM SYNCHRONIZED.'); render(); }
-
-window.onload = () => {
-    initializeEnvironment();
-    document.getElementById('close-panel').onclick = () => { state.selectedId = null; render(); };
-    triggerStartScreen(); render();
+/* ════════════════════════════════
+   BOOT
+   ════════════════════════════════ */
+window.onload=()=>{
+    const saved=localStorage.getItem('ent_v3');
+    if(saved){try{const p=JSON.parse(saved);state={...p,tasks:[],mh:MAX_MH,incidents:p.incidents||[]};} catch(e){}}
+    if(!state.customers.length) initEnv();
+    document.getElementById('sp-close').onclick=()=>{state.selId=null;render();};
+    document.addEventListener('click',e=>{
+        const sp=document.getElementById('sp');
+        const grid=document.getElementById('grid');
+        if(sp.classList.contains('open')&&!sp.contains(e.target)&&!grid.contains(e.target)){
+            state.selId=null;sp.classList.remove('open');
+        }
+    });
+    document.body.addEventListener('click',initAC,{once:true});
+    triggerStart(); render();
 };
-document.body.addEventListener('click', initAudio, { once: true });
 </script>
 </body>
 </html>
