@@ -704,8 +704,25 @@ let state = {
     changedIds: [],
     incidents: [],
     initialShare: null, 
-    customers: []
+    customers: [],
+    gridOrder: [] // 指示：マスの並び順を固定するための配列
 };
+
+// 指示：グリッドの初期配置を生成（シャッフルして固定）
+function generateGridLayout() {
+    let tiles = [];
+    state.customers.forEach(c => {
+        for (let i = 0; i < c.tiles; i++) {
+            tiles.push({ customerId: c.id });
+        }
+    });
+    // 空きマス
+    while (tiles.length < 36) {
+        tiles.push({ customerId: null });
+    }
+    // 指示：ランダムにシャッフルして、この配列を1年間固定する
+    state.gridOrder = tiles.sort(() => Math.random() - 0.5);
+}
 
 function initializeEnvironment(isRandom = false) {
     const rivalVendors = ['I', 'A', 'S'];
@@ -721,6 +738,7 @@ function initializeEnvironment(isRandom = false) {
             lv: 0
         };
     });
+    generateGridLayout(); // 指示：初期化時に配置を決定
 }
 
 function winRate(c) {
@@ -774,36 +792,36 @@ function render() {
 
     const grid = document.getElementById('grid');
     grid.innerHTML = '';
-    let tiles = [];
-    state.customers.forEach(c => {
-        const known = c.vc > 0 || c.vendor === 'H';
-        const rfp  = known && c.mo >= 48 && c.mo < 50;
-        const bld  = known && c.mo >= 50;
-        const inc  = state.incidents.some(i=>i.cid===c.id);
-        for (let i=0;i<c.tiles;i++) tiles.push({id:c.id,vendor:c.vendor,year:Math.ceil(c.mo/12),rfp,bld,known,inc});
-    });
-    while(tiles.length<36) tiles.push({id:null,vendor:'NONE',year:0,rfp:false,bld:false,known:false,inc:false});
 
-    // 盤面のランダム配置
-    tiles = tiles.slice(0, 36).sort(() => Math.random() - 0.5);
-
-    tiles.forEach(t => {
+    // 指示：保存された gridOrder に基づいて描画（render内でシャッフルしない）
+    state.gridOrder.forEach(tileData => {
         const el = document.createElement('div');
         el.className = 'tile';
-        const vd = VENDORS[t.known ? t.vendor : 'UNK'];
-        el.style.background = vd.bg;
-        if (t.rfp) el.classList.add('rfp-anim');
-        else if (t.bld) el.classList.add('build-anim');
-        if (t.inc) el.classList.add('incident-anim');
-        if (state.changedIds.includes(t.id)) el.classList.add('changed-anim');
-        if (state.selectedId === t.id) el.classList.add('selected');
-        if (t.year > 0) {
+        
+        if (tileData.customerId) {
+            const c = state.customers.find(x => x.id === tileData.customerId);
+            const known = c.vc > 0 || c.vendor === 'H';
+            const rfp  = known && c.mo >= 48 && c.mo < 50;
+            const bld  = known && c.mo >= 50;
+            const inc  = state.incidents.some(i => i.cid === c.id);
+            const vd = VENDORS[known ? c.vendor : 'UNK'];
+            
+            el.style.background = vd.bg;
+            if (rfp) el.classList.add('rfp-anim');
+            else if (bld) el.classList.add('build-anim');
+            if (inc) el.classList.add('incident-anim');
+            if (state.changedIds.includes(c.id)) el.classList.add('changed-anim');
+            if (state.selectedId === c.id) el.classList.add('selected');
+            
             const span = document.createElement('span');
             span.className = 't-label';
-            span.textContent = t.known ? `Y${t.year}` : 'Y?';
+            span.textContent = known ? `Y${Math.ceil(c.mo/12)}` : 'Y?';
             el.appendChild(span);
+            
+            el.onclick = e => { e.stopPropagation(); state.selectedId = c.id; render(); };
+        } else {
+            el.style.background = VENDORS.NONE.bg;
         }
-        if (t.id) el.onclick = e => { e.stopPropagation(); state.selectedId = t.id; render(); };
         grid.appendChild(el);
     });
 
@@ -844,7 +862,6 @@ function render() {
         state.tasks.forEach((t, i) => {
             const chip = document.createElement('div');
             chip.className = 'task-chip';
-            // iを正しく渡すように修正 (バグ修正箇所)
             chip.innerHTML = `<span class="task-chip-name">${t.cname}</span><span>${t.label}</span><button class="task-chip-rm" onclick="removeTask(${i})">✕</button>`;
             strip.appendChild(chip);
         });
@@ -1006,7 +1023,7 @@ function resetGame() {
     render();
 }
 
-function saveToLocal() { localStorage.setItem('ent_state_v5', JSON.stringify(state)); state.logs.unshift('セーブ完了。'); render(); }
+function saveToLocal() { localStorage.setItem('ent_state_v6', JSON.stringify(state)); state.logs.unshift('セーブ完了。'); render(); }
 function exportHTML() {
     const blob = new Blob([document.documentElement.outerHTML], {type:'text/html'});
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
