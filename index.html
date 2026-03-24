@@ -66,7 +66,7 @@
             animation: blink 2s infinite;
         }
         @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
-        .hdr-phase { font-family: var(--D); font-size: 44px; color: #fff; line-height: 1; letter-spacing: .04em; }
+        .hdr-phase { font-family: var(--D); font-size: 32px; color: #fff; line-height: 1; letter-spacing: .04em; }
         .hdr-mh { text-align: right; padding-bottom: 3px; }
         .hdr-mh-lbl { font-size: 7px; font-weight: 700; letter-spacing: .4em; color: var(--muted); text-transform: uppercase; margin-bottom: 1px; }
         .hdr-mh-val { font-family: var(--D); font-size: 36px; color: var(--emerald); line-height: 1; }
@@ -80,8 +80,9 @@
         .share-seg {
             height: 100%; transition: width .7s ease;
             display: flex; align-items: center; justify-content: center;
-            font-family: var(--D); font-size: 8px; color: rgba(255,255,255,.7);
+            font-family: var(--D); font-size: 11px; color: rgba(255,255,255,.9); 
             white-space: nowrap; overflow: hidden;
+            font-weight: 600;
         }
 
         /* ── GRID AREA (flex: 1, overflow hidden) ── */
@@ -114,7 +115,8 @@
             box-shadow: 0 0 14px rgba(255,255,255,.35), inset 0 0 6px rgba(255,255,255,.05);
             transform: scale(1.07); z-index: 5;
         }
-        .t-lbl { font-family: var(--M); font-size: 10px; color: rgba(255,255,255,.55); pointer-events: none; }
+        /* 指示：数字のフォントサイズを大きく (13px -> 16px) */
+        .t-lbl { font-family: var(--M); font-size: 16px; color: rgba(255,255,255,.8); pointer-events: none; font-weight: 600; } 
 
         @keyframes rfp  { 0%,100%{box-shadow:0 0 8px var(--gold);border-color:var(--gold)} 50%{box-shadow:0 0 18px var(--gold);border-color:#ffe88a} }
         @keyframes bld  { 0%,100%{box-shadow:0 0 6px rgba(255,255,255,.2);border-color:rgba(255,255,255,.35)} 50%{box-shadow:0 0 14px rgba(255,255,255,.5);border-color:#fff} }
@@ -129,8 +131,9 @@
         .sp {
             position: absolute; top: 0; right: 0; bottom: 0;
             width: 78%;
-            background: rgba(6,10,17,.88);
-            backdrop-filter: blur(36px) saturate(1.4);
+            /* 指示：透明度を上げ (0.2 -> 0.1)、ぼかしを薄く (36px -> 12px) */
+            background: rgba(6,10,17,0.1); 
+            backdrop-filter: blur(12px) saturate(1.4);
             border-left: 1px solid rgba(255,255,255,.1);
             display: flex; flex-direction: column; gap: 10px;
             padding: 16px 15px 14px;
@@ -458,10 +461,10 @@
    ════════════════════════════════ */
 const MAX_MH = 20;
 const VENDORS = {
-    H: { name:'H社(SELF)', bg:'#0A3D2B', bright:'#00D68F' },
-    I: { name:'I社',       bg:'#0A1F3D', bright:'#38BDF8' },
-    A: { name:'A社',       bg:'#2D0A3D', bright:'#A855F7' },
-    S: { name:'S社',       bg:'#451A03', bright:'#F59E0B' },
+    H: { name:'H社(SELF)', bg:'#00D68F', bright:'#00D68F' }, 
+    I: { name:'I社',        bg:'#0A1F3D', bright:'#38BDF8' },
+    A: { name:'A社',        bg:'#2D0A3D', bright:'#A855F7' },
+    S: { name:'S社',        bg:'#451A03', bright:'#F59E0B' },
     NONE:{ name:'未開拓', bg:'#060A11', bright:'#1a2535' },
     UNK: { name:'情報未取得', bg:'#111926', bright:'#1a2535' },
 };
@@ -475,11 +478,11 @@ const CUSTOMER_POOL = [
     { id:501, name:'TSU-EC',   full:'ツルハ: EC',     budget:80,  tiles:3 },
     { id:601, name:'JRH-Tick', full:'JR北: 発券',     budget:70,  tiles:4 },
     { id:701, name:'HKL-Agri', full:'ホクレン: 農業', budget:60,  tiles:3 },
-    { id:801, name:'AIN-Ph',   full:'アイン: 調剤',   budget:50,  tiles:2 },
-    { id:901, name:'HBA-Sec',  full:'HBA: セキュ',    budget:50,  tiles:2 },
+    { id:801, name:'AIN-Ph',   full:'アイン: 調剤',    budget:50,  tiles:2 },
+    { id:901, name:'HBA-Sec',  full:'HBA: セキュ',     budget:50,  tiles:2 },
     { id:1001,name:'SAT-POS',  full:'サツドラ: POS',  budget:40,  tiles:2 },
     { id:1101,name:'HRP-Base', full:'HARP: 基盤',     budget:30,  tiles:1 },
-    { id:1201,name:'HPP-Sec',  full:'道警: 公安NW',   budget:25,  tiles:1 },
+    { id:1201,name:'HPP-Sec',  full:'道警: 公安NW',    budget:25,  tiles:1 },
 ];
 
 let state = {
@@ -604,7 +607,7 @@ function render() {
             if(state.changed.includes(c.id))           el.classList.add('chg-a');
             if(state.selId===c.id)                     el.classList.add('sel');
             const sp=document.createElement('span');sp.className='t-lbl';
-            sp.textContent=known?`Y${Math.ceil(c.mo/12)}`:'Y?';
+            sp.textContent=known?`${Math.ceil(c.mo/12)}`:'?';
             el.appendChild(sp);
             el.onclick=e=>{e.stopPropagation();state.selId=c.id;snd('click');render();};
         } else {
@@ -722,7 +725,7 @@ async function executeStrategy() {
 
     // Rival moves
     for(const rid of ['I','A','S']){
-        await new Promise(r=>setTimeout(r,80));
+        await new Promise(r=>setTimeout(r,100));
         const targets=state.customers.filter(c=>c.vendor!==rid);
         if(targets.length){
             const tgt=targets[Math.floor(Math.random()*targets.length)];
