@@ -417,7 +417,7 @@ function generateGridLayout() {
 }
 
 function initializeEnvironment() {
-    const allVendors = ['H', 'I', 'A', 'S']; // 指示：自社を含む4社でランダムスタート
+    const allVendors = ['H', 'I', 'A', 'S'];
     state.customers = CUSTOMER_POOL.map(base => ({
         ...base, 
         vendor: allVendors[Math.floor(Math.random() * 4)],
@@ -544,9 +544,9 @@ async function executeStrategy() {
     let gained = 0; let changed = []; 
     const resMap = {}; 
     
-    // アクション対象を記録（報告に含める顧客リスト）
+    // 今月アクションを起こした顧客リスト
     const interactedIds = [...new Set(state.tasks.map(t=>t.cid))];
-    // 指示：訪問・勉強会を実施した顧客を「情報収集完了」としてマーク
+    // 情報を収集した（訪問・勉強会した）顧客リスト
     const infoGatheredIds = [...new Set(state.tasks.filter(t => t.type === 'VISIT' || t.type === 'STUDY').map(t => t.cid))];
     
     interactedIds.forEach(id => resMap[id]=[]);
@@ -595,48 +595,61 @@ async function executeStrategy() {
     });
 
     state.sales += gained; state.tasks = [];
-    const share = calculateShare();
-    const isHLeader = share.stats.H >= Math.max(share.stats.I, share.stats.A, share.stats.S);
+    const shareData = calculateShare();
+    const isHLeader = shareData.stats.H >= Math.max(shareData.stats.I, shareData.stats.A, shareData.stats.S);
 
-    // ライバルのアクション
+    // ライバルのアクション（インテリジェンス報告の修正）
     for (const rid of ['I','A','S']) {
         await new Promise(r=>setTimeout(r,100));
-        const targets = state.customers.filter(c=>c.vendor!==rid && c.mo >= 48 && c.mo < 50);
-        if (targets.length) {
-            const t = targets[Math.floor(Math.random()*targets.length)];
-            const power = (isHLeader && t.vendor==='H') ? 35 : 25;
-            if (Math.random()*100 < power) { 
-                t.vendor=rid; t.mo=1; t.vc=0; t.sc=0; changed.push(t.id); 
-                // 指示：情報を収集した（訪問・勉強会した）顧客の結果のみ表示
-                if(infoGatheredIds.includes(t.id)) {
-                    if(!resMap[t.id]) { interactedIds.push(t.id); resMap[t.id]=[]; }
-                    resMap[t.id].push({icon:'⚔️', text:`[${rid}社] 顧客を奪取されました。`});
-                }
-            } else {
-                // 指示：情報を収集した（訪問・勉強会した）顧客の動きのみ表示
-                if(infoGatheredIds.includes(t.id)) {
-                    if(!resMap[t.id]) { interactedIds.push(t.id); resMap[t.id]=[]; }
-                    resMap[t.id].push({icon:'🕵️', text:`[${rid}社] 競合営業の接触を捕捉。`});
+
+        // 1. 市場全体の動き（ランダムな奪取試行）
+        const allPotentialTargets = state.customers.filter(c => c.vendor !== rid);
+        if (allPotentialTargets.length > 0) {
+            const t = allPotentialTargets[Math.floor(Math.random() * allPotentialTargets.length)];
+            const isRFP = t.mo >= 48 && t.mo < 50;
+            const power = (isHLeader && t.vendor === 'H') ? (isRFP ? 40 : 20) : (isRFP ? 30 : 10);
+            
+            if (Math.random() * 100 < power) {
+                t.vendor = rid; t.mo = 1; t.vc = 0; t.sc = 0; changed.push(t.id);
+                // 奪取されたのが訪問中の顧客なら報告
+                if (infoGatheredIds.includes(t.id)) {
+                    if (!resMap[t.id]) { interactedIds.push(t.id); resMap[t.id] = []; }
+                    resMap[t.id].push({ icon: '⚔️', text: `[${rid}社] 強力な提案により顧客を奪取されました。` });
                 }
             }
         }
+
+        // 2. 訪問した顧客に対する詳細スキャン（確実に報告を表示）
+        infoGatheredIds.forEach(cid => {
+            const t = state.customers.find(x => x.id === cid);
+            if (!resMap[cid]) { interactedIds.push(cid); resMap[cid] = []; }
+            
+            if (t.vendor === rid) {
+                // 訪問先がそのライバルの顧客だった場合
+                resMap[cid].push({ icon: '🛡', text: `[${rid}社] ベンダー防衛行動を確認。接触を警戒されています。` });
+            } else {
+                // 訪問先が第三者の顧客だった場合、一定確率で競合の接触を報告
+                if (Math.random() < 0.6) {
+                    resMap[cid].push({ icon: '🕵️', text: `[${rid}社] 競合営業の接触形跡を捕捉しました。` });
+                }
+            }
+        });
     }
 
     state.customers.forEach(c => c.mo = c.mo>=60?1:c.mo+1); 
     state.changedIds = changed;
     document.getElementById('exec-overlay').classList.add('hidden');
 
-    const l = document.getElementById('result-list'); l.innerHTML = '';
+    const listEl = document.getElementById('result-list'); listEl.innerHTML = '';
     interactedIds.forEach(cid => {
         const c = state.customers.find(x=>x.id===cid);
         const b = document.createElement('div'); b.className = 'result-block';
         let h = `<div style="font-family:var(--font-display);color:var(--gold);font-size:16px;margin-bottom:10px;border-bottom:1px solid var(--border); letter-spacing: 0.1em;">${c.name.toUpperCase()} INTEL REPORT</div>`;
         resMap[cid].forEach(r => {
-            // 指示：自社のアクションをエメラルドグリーンに
             const color = r.isSelf ? 'var(--emerald)' : 'inherit';
             h += `<div style="display:flex;gap:10px;font-size:12px;margin-bottom:6px; line-height: 1.4; color: ${color};"><span>${r.icon}</span><span>${r.text}</span></div>`;
         });
-        b.innerHTML = h; l.appendChild(b);
+        b.innerHTML = h; listEl.appendChild(b);
     });
     document.getElementById('result-overlay').classList.remove('hidden');
 }
@@ -676,7 +689,7 @@ function resetGame() {
     document.getElementById('summary-modal').classList.add('hidden'); 
     triggerStartScreen(); render(); 
 }
-function saveToLocal() { localStorage.setItem('ent_v16', JSON.stringify(state)); state.logs.unshift('SYSTEM SYNCHRONIZED.'); render(); }
+function saveToLocal() { localStorage.setItem('ent_v17', JSON.stringify(state)); state.logs.unshift('SYSTEM SYNCHRONIZED.'); render(); }
 
 window.onload = () => {
     initializeEnvironment();
