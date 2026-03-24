@@ -115,7 +115,6 @@
             box-shadow: 0 0 14px rgba(255,255,255,.35), inset 0 0 6px rgba(255,255,255,.05);
             transform: scale(1.07); z-index: 5;
         }
-        /* 指示：数字のフォントサイズを大きく (13px -> 16px) */
         .t-lbl { font-family: var(--M); font-size: 16px; color: rgba(255,255,255,.8); pointer-events: none; font-weight: 600; } 
 
         @keyframes rfp  { 0%,100%{box-shadow:0 0 8px var(--gold);border-color:var(--gold)} 50%{box-shadow:0 0 18px var(--gold);border-color:#ffe88a} }
@@ -131,9 +130,9 @@
         .sp {
             position: absolute; top: 0; right: 0; bottom: 0;
             width: 78%;
-            /* 指示：透明度を上げ (0.2 -> 0.1)、ぼかしを薄く (36px -> 12px) */
             background: rgba(6,10,17,0.1); 
-            backdrop-filter: blur(12px) saturate(1.4);
+            /* 指示：ぼかしをさらに減らす (12px -> 4px) */
+            backdrop-filter: blur(4px) saturate(1.4);
             border-left: 1px solid rgba(255,255,255,.1);
             display: flex; flex-direction: column; gap: 10px;
             padding: 16px 15px 14px;
@@ -164,14 +163,15 @@
         .sp-status.unk-st { color: var(--muted); font-style: italic; }
         .sp-btns { margin-top: auto; display: flex; flex-direction: column; gap: 5px; flex-shrink: 0; }
         .sp-btn {
-            background: rgba(255,255,255,.025); border: 1px solid rgba(255,255,255,.09);
-            color: #556070; border-radius: 10px; padding: 9px 8px;
+            /* 指示：ボタンの透明度を下げる (0.025 -> 0.12) と境界線を強調 */
+            background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2);
+            color: #fff; border-radius: 10px; padding: 9px 8px;
             font-family: var(--D); font-size: 13px; letter-spacing: .12em;
             cursor: pointer; transition: all .18s; text-transform: uppercase;
         }
-        .sp-btn:hover:not(:disabled) { border-color: rgba(255,255,255,.2); color: #fff; }
-        .sp-btn.pri { background: rgba(0,214,143,.08); border-color: var(--emerald); color: var(--emerald); }
-        .sp-btn.pri:hover:not(:disabled) { background: rgba(0,214,143,.18); }
+        .sp-btn:hover:not(:disabled) { background: rgba(255,255,255,.25); border-color: rgba(255,255,255,.4); }
+        .sp-btn.pri { background: rgba(0,214,143,.18); border-color: var(--emerald); color: var(--emerald); }
+        .sp-btn.pri:hover:not(:disabled) { background: rgba(0,214,143,.28); }
         .sp-btn:disabled { opacity: .2; cursor: not-allowed; }
 
         /* EXEC & RIVAL overlay — inside grid-wrap */
