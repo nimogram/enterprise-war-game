@@ -465,7 +465,6 @@ function removeTask(i) {
 
 async function executeStrategy() {
     let turnResults = [];
-    // 指示：他社の動きをレポートに出すために、インテルや干渉した顧客IDを保持
     const interacted = [...new Set(state.tasks.map(t=>t.cid))];
 
     for(const t of state.tasks){
@@ -488,16 +487,13 @@ async function executeStrategy() {
         }
     }
 
-    // Rival moves (指示：CALL REPORTに他社の動きを出すロジック)
+    // Rival moves
     for (const rid of ['I', 'A', 'S']) {
         const targets = state.customers.filter(c => c.vendor !== rid && c.cxoProtect <= 0);
-        // 1つの他社につき1つ程度の動きを試行
         if (targets.length && Math.random() < 0.4) {
             const tgt = targets[Math.floor(Math.random() * targets.length)];
-            // RFP期間中なら高い奪取率、そうでなければ低い確率
             if (Math.random() * 100 < (tgt.mo >= 48 ? 40 : 15)) {
                 tgt.vendor = rid; tgt.mo = 1; tgt.vc = 0; tgt.specIn = false;
-                // インテル取得済み、または今回干渉した顧客の場合のみレポートに掲載
                 if (tgt.intelRevealed || interacted.includes(tgt.id)) {
                     turnResults.push({ n: tgt.name, tx: `【急報】${VENDORS[rid].name}による強襲を確認。ベンダーが切り替わりました。`, self:false });
                 }
@@ -508,13 +504,14 @@ async function executeStrategy() {
     state.month++; 
     state.tasks = [];
     state.mh = MAX_MH; 
+    // 指示：月が替わるタイミング（ミッション実行時）でカードを閉じる
+    state.selId = null; 
     state.customers.forEach(c=>{
         c.mo=c.mo>=60?1:c.mo+1;
         if(c.cxoProtect > 0) c.cxoProtect--;
     });
 
     const rl=document.getElementById('res-list'); rl.innerHTML='';
-    // 顧客ごとに結果をグルーピングして表示
     const grouped = {};
     turnResults.forEach(r => {
         if(!grouped[r.n]) grouped[r.n] = [];
@@ -531,7 +528,6 @@ async function executeStrategy() {
         rl.appendChild(blk);
     });
 
-    // CALL REPORTの表示
     document.getElementById('result-ov').classList.remove('hidden');
     render();
 }
