@@ -105,12 +105,22 @@
             position: relative; user-select: none;
             transition: transform .12s, box-shadow .12s, border-color .12s;
         }
+        .tile:active { transform: scale(.88); }
         .tile.sel {
             border-color: #fff !important;
             box-shadow: 0 0 14px rgba(255,255,255,.35), inset 0 0 6px rgba(255,255,255,.05);
             transform: scale(1.07); z-index: 5;
         }
         .t-lbl { font-family: var(--M); font-size: 16px; color: rgba(255,255,255,.8); pointer-events: none; font-weight: 600; } 
+
+        /* ── ANIMATIONS ── */
+        @keyframes rfp  { 0%,100%{box-shadow:0 0 8px var(--gold);border-color:var(--gold)} 50%{box-shadow:0 0-18px var(--gold);border-color:#ffe88a} }
+        @keyframes bld  { 0%,100%{box-shadow:0 0 6px rgba(255,255,255,.2);border-color:rgba(255,255,255,.35)} 50%{box-shadow:0 0 14px rgba(255,255,255,.5);border-color:#fff} }
+        /* 指示：CXO防衛時の水色枠アニメーション */
+        @keyframes cxo  { 0%,100%{box-shadow:0 0 10px var(--sky);border-color:var(--sky)} 50%{box-shadow:0 0 20px var(--sky);border-color:#93e2ff} }
+        .rfp-a  { animation: rfp  1.3s infinite ease-in-out; }
+        .bld-a  { animation: bld  1.7s infinite ease-in-out; }
+        .cxo-a  { animation: cxo  1.5s infinite ease-in-out; border-width: 2.2px !important; }
 
         /* ── SIDE PANEL ── */
         .sp {
@@ -342,7 +352,7 @@ function wr(c) {
     let r = 5 + (c.affinity || 0); 
     if (c.vendor==='H') r += 40;
     if (c.mo>=48 && c.mo<50) r += 40; else if (c.mo>=50) r -= 20;
-    if (c.specIn) r += 30; // 駆け引き要素：スペックイン効果
+    if (c.specIn) r += 30;
     r += c.vc*5 + (c.sc||0)*10;
     state.tasks.filter(t=>t.cid===c.id).forEach(t=>{
         if(t.type==='VISIT') r+=5;
@@ -374,6 +384,12 @@ function render() {
             const known=c.vc>0||c.vendor==='H';
             el.style.backgroundColor=VENDORS[known?c.vendor:'UNK'].bg;
             if(state.selId===c.id) el.classList.add('sel');
+            
+            // 指示：CXO防衛期間中のマスの発光エフェクト
+            if(c.cxoProtect > 0) el.classList.add('cxo-a');
+            else if(known && c.mo>=48 && c.mo<50) el.classList.add('rfp-a');
+            else if(known && c.mo>=50) el.classList.add('bld-a');
+
             const sp=document.createElement('span');sp.className='t-lbl';
             sp.textContent=known?`${Math.ceil(c.mo/12)}`:'?';
             el.appendChild(sp);
@@ -394,10 +410,11 @@ function render() {
         const known=c.vc>0||c.vendor==='H';
         document.getElementById('sp-vendor').textContent= (known || c.intelRevealed) ? VENDORS[c.vendor].name : '？';
         const stEl=document.getElementById('sp-status');
-        if(!known && !c.intelRevealed){stEl.textContent='情報未取得';}
-        else if(c.mo>=50){stEl.textContent=`構築中 (M${c.mo})`;}
-        else if(c.mo>=48){stEl.textContent=`📄 RFP放出中 (M${c.mo})`;}
-        else{stEl.textContent=`運用中 (M${c.mo})`;}
+        if(c.cxoProtect > 0){stEl.textContent=`🛡 CXO防衛中 (残り${c.cxoProtect}ヶ月)`; stEl.style.color = 'var(--sky)';}
+        else if(!known && !c.intelRevealed){stEl.textContent='情報未取得'; stEl.style.color = '';}
+        else if(c.mo>=50){stEl.textContent=`構築中 (M${c.mo})`; stEl.style.color = '';}
+        else if(c.mo>=48){stEl.textContent=`📄 RFP放出中 (M${c.mo})`; stEl.style.color = 'var(--amber)';}
+        else{stEl.textContent=`運用中 (M${c.mo})`; stEl.style.color = '';}
         
         document.getElementById('sp-prop-btn').disabled=!(known&&c.mo>=48&&c.mo<50);
         document.getElementById('sp-spec-btn').disabled=(c.mo>=48 || c.specIn);
@@ -438,8 +455,6 @@ function removeTask(i) {
 
 async function executeStrategy() {
     let turnResults = [];
-    const interacted = [...new Set(state.tasks.map(t=>t.cid))];
-
     for(const t of state.tasks){
         const c=state.customers.find(x=>x.id===t.cid);
         if(t.type==='VISIT'){
@@ -460,18 +475,13 @@ async function executeStrategy() {
         }
     }
 
-    // Rival moves (Politics)
-    state.customers.forEach(c => {
-        if(c.vendor !== 'H' && c.cxoProtect <= 0 && Math.random() < 0.15) {
-            // Nothing to show Nimo unless intel was revealed
-        }
-        if(c.cxoProtect > 0) c.cxoProtect--;
-    });
-
-    state.month++; if(state.month > 12) state.month = 12; // Wait for end
+    state.month++; 
     state.tasks = [];
     state.mh = MAX_MH; 
-    state.customers.forEach(c=>c.mo=c.mo>=60?1:c.mo+1);
+    state.customers.forEach(c=>{
+        c.mo=c.mo>=60?1:c.mo+1;
+        if(c.cxoProtect > 0) c.cxoProtect--;
+    });
 
     const rl=document.getElementById('res-list'); rl.innerHTML='';
     turnResults.forEach(r => {
