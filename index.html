@@ -147,7 +147,6 @@
         .sp-stat { flex: 1; background: rgba(255,255,255,.02); border: 1px solid var(--bdr); border-radius: 9px; padding: 8px; }
         .sp-sl { font-size: 6px; font-weight: 700; letter-spacing: .4em; color: var(--muted); text-transform: uppercase; margin-bottom: 3px; }
         .sp-sv { font-family: var(--D); font-size: 22px; color: #fff; }
-        /* 指示：Capture Prob数値の文字色を紺色に、白い線で囲む */
         .sp-win { 
             font-family: var(--D); font-size: 44px; 
             color: #002b5c; 
@@ -159,18 +158,17 @@
         .sp-rv { font-family: var(--D); font-size: 14px; color: var(--gold); letter-spacing: .1em; }
         .sp-status { font-size: 11px; font-weight: 600; color: #fff; }
         .sp-btns { margin-top: auto; display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
-        /* 指示：アクションボタンの透明度を下げる (0.7) */
         .sp-btn {
             background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2);
             color: #fff; border-radius: 10px; padding: 8px 8px;
             font-family: var(--D); font-size: 13px; letter-spacing: .12em;
             cursor: pointer; transition: all .18s; text-transform: uppercase;
-            opacity: 0.7;
+            opacity: 0.4;
         }
         .sp-btn:hover:not(:disabled) { background: rgba(255,255,255,.25); border-color: rgba(255,255,255,.4); opacity: 1; }
         .sp-btn.pri { background: rgba(0,214,143,.18); border-color: var(--emerald); color: var(--emerald); }
         .sp-btn.alt { background: rgba(201,168,76,.12); border-color: var(--gold); color: var(--gold); }
-        .sp-btn:disabled { opacity: 0.15; cursor: not-allowed; }
+        .sp-btn:disabled { opacity: 0.1; cursor: not-allowed; }
 
         /* ── RESULT OVERLAY ── */
         #result-ov {
@@ -352,7 +350,11 @@ function buildGrid() {
     [...state.customers].sort(()=>Math.random()-.5).forEach(c => {
         for (let i=0;i<c.tiles;i++) tiles.push({cid:c.id});
     });
-    while (tiles.length<36) tiles.push({cid:null});
+    if (tiles.length > 36) {
+        tiles = tiles.slice(0, 36);
+    } else {
+        while (tiles.length < 36) tiles.push({cid:null});
+    }
     state.grid = tiles;
 }
 
@@ -489,12 +491,31 @@ async function executeStrategy() {
 
     // Rival moves
     for (const rid of ['I', 'A', 'S']) {
-        const targets = state.customers.filter(c => c.vendor !== rid && c.cxoProtect <= 0);
-        if (targets.length && Math.random() < 0.4) {
+        // 指示：構築フェーズ(mo>=50)にいる顧客は急襲対象から完全に除外する
+        const targets = state.customers.filter(c => c.vendor !== rid && c.cxoProtect <= 0 && c.mo < 50);
+        
+        // アクションをとった顧客への他社の動きを確実に把握するためのロジック
+        interacted.forEach(cid => {
+            const tgt = state.customers.find(c => c.id === cid);
+            // 構築フェーズでなく、競合がその顧客をターゲットにする確率（30%）
+            if (tgt && tgt.mo < 50 && tgt.vendor !== rid && Math.random() < 0.3) {
+                const attemptSuccess = Math.random() * 100 < (tgt.mo >= 48 ? 40 : 15);
+                if (attemptSuccess) {
+                    tgt.vendor = rid; tgt.mo = 1; tgt.vc = 0; tgt.specIn = false;
+                    turnResults.push({ n: tgt.name, tx: `【急報】${VENDORS[rid].name}による強襲を確認。ベンダーが切り替わりました。`, self:false });
+                } else {
+                    turnResults.push({ n: tgt.name, tx: `【防衛】${VENDORS[rid].name}による干渉を検知しましたが、影響はありませんでした。`, self:false });
+                }
+            }
+        });
+
+        // アクションをとっていない顧客への一般的な動き
+        if (targets.length && Math.random() < 0.2) {
             const tgt = targets[Math.floor(Math.random() * targets.length)];
-            if (Math.random() * 100 < (tgt.mo >= 48 ? 40 : 15)) {
-                tgt.vendor = rid; tgt.mo = 1; tgt.vc = 0; tgt.specIn = false;
-                if (tgt.intelRevealed || interacted.includes(tgt.id)) {
+            // すでにinteractedでチェック済みならスキップ
+            if (!interacted.includes(tgt.id)) {
+                if (Math.random() * 100 < (tgt.mo >= 48 ? 40 : 15)) {
+                    tgt.vendor = rid; tgt.mo = 1; tgt.vc = 0; tgt.specIn = false;
                     turnResults.push({ n: tgt.name, tx: `【急報】${VENDORS[rid].name}による強襲を確認。ベンダーが切り替わりました。`, self:false });
                 }
             }
@@ -504,7 +525,6 @@ async function executeStrategy() {
     state.month++; 
     state.tasks = [];
     state.mh = MAX_MH; 
-    // 指示：月が替わるタイミング（ミッション実行時）でカードを閉じる
     state.selId = null; 
     state.customers.forEach(c=>{
         c.mo=c.mo>=60?1:c.mo+1;
