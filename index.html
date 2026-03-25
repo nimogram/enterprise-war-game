@@ -35,9 +35,6 @@
             background: repeating-linear-gradient(180deg, transparent 0px, transparent 3px, rgba(0,0,0,0.06) 3px, rgba(0,0,0,0.06) 4px);
         }
 
-        /* ══════════════════════════════
-           APP SHELL — strict flex column
-           ══════════════════════════════ */
         #app {
             width: 100%; max-width: 430px;
             height: 100dvh;
@@ -46,7 +43,7 @@
             background: var(--bg);
         }
 
-        /* ── HEADER (flex-shrink:0) ── */
+        /* ── HEADER ── */
         .hdr {
             flex: 0 0 auto;
             padding: 14px 18px 0;
@@ -72,7 +69,6 @@
         .hdr-mh-val { font-family: var(--D); font-size: 36px; color: var(--emerald); line-height: 1; }
         .hdr-mh-val.lo { color: var(--rose); }
 
-        /* Share bar */
         .share-bar {
             margin: 8px 0 0; height: 18px; display: flex; border-radius: 3px;
             overflow: hidden; border: 1px solid var(--bdr);
@@ -85,10 +81,10 @@
             font-weight: 600;
         }
 
-        /* ── GRID AREA (flex: 1, overflow hidden) ── */
+        /* ── GRID AREA ── */
         .grid-wrap {
             flex: 1 1 0;
-            min-height: 0;           /* ← critical: lets flex item shrink */
+            min-height: 0;
             display: flex; align-items: center; justify-content: center;
             padding: 8px 14px;
             position: relative;
@@ -109,7 +105,6 @@
             position: relative; user-select: none;
             transition: transform .12s, box-shadow .12s, border-color .12s;
         }
-        .tile:active { transform: scale(.88); }
         .tile.sel {
             border-color: #fff !important;
             box-shadow: 0 0 14px rgba(255,255,255,.35), inset 0 0 6px rgba(255,255,255,.05);
@@ -117,16 +112,7 @@
         }
         .t-lbl { font-family: var(--M); font-size: 16px; color: rgba(255,255,255,.8); pointer-events: none; font-weight: 600; } 
 
-        @keyframes rfp  { 0%,100%{box-shadow:0 0 8px var(--gold);border-color:var(--gold)} 50%{box-shadow:0 0 18px var(--gold);border-color:#ffe88a} }
-        @keyframes bld  { 0%,100%{box-shadow:0 0 6px rgba(255,255,255,.2);border-color:rgba(255,255,255,.35)} 50%{box-shadow:0 0 14px rgba(255,255,255,.5);border-color:#fff} }
-        @keyframes chg  { 0%,100%{box-shadow:0 0 12px #f472b6;border-color:#f472b6} 50%{box-shadow:0 0 24px #f472b6;border-color:#fce7f3} }
-        @keyframes inc  { 0%,100%{background-color:#5c0a0a} 50%{background-color:#b91c1c} }
-        .rfp-a  { animation: rfp  1.3s infinite ease-in-out; }
-        .bld-a  { animation: bld  1.7s infinite ease-in-out; }
-        .chg-a  { animation: chg  1.0s infinite ease-in-out; }
-        .inc-a  { animation: inc  .65s infinite ease-in-out; }
-
-        /* ── SIDE PANEL — absolute inside grid-wrap ── */
+        /* ── SIDE PANEL ── */
         .sp {
             position: absolute; top: 0; right: 0; bottom: 0;
             width: 78%;
@@ -135,7 +121,7 @@
             border-left: 1px solid rgba(255,255,255,.1);
             display: flex; flex-direction: column; gap: 10px;
             padding: 16px 15px 14px;
-            z-index: 50;    /* inside grid-wrap only */
+            z-index: 50;
             transform: translateX(100%);
             transition: transform .35s cubic-bezier(.16,1,.3,1);
             overflow-y: auto; overflow-x: hidden;
@@ -157,35 +143,19 @@
         .sp-rl { font-size: 6px; font-weight: 700; letter-spacing: .35em; color: var(--muted); text-transform: uppercase; margin-bottom: 2px; }
         .sp-rv { font-family: var(--D); font-size: 14px; color: var(--gold); letter-spacing: .1em; }
         .sp-status { font-size: 11px; font-weight: 600; color: #fff; }
-        .sp-status.rfp-st { color: var(--amber); }
-        .sp-status.bld-st { color: var(--muted); }
-        .sp-status.unk-st { color: var(--muted); font-style: italic; }
-        .sp-btns { margin-top: auto; display: flex; flex-direction: column; gap: 5px; flex-shrink: 0; }
+        .sp-btns { margin-top: auto; display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
         .sp-btn {
             background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2);
-            color: #fff; border-radius: 10px; padding: 9px 8px;
+            color: #fff; border-radius: 10px; padding: 8px 8px;
             font-family: var(--D); font-size: 13px; letter-spacing: .12em;
             cursor: pointer; transition: all .18s; text-transform: uppercase;
         }
         .sp-btn:hover:not(:disabled) { background: rgba(255,255,255,.25); border-color: rgba(255,255,255,.4); }
         .sp-btn.pri { background: rgba(0,214,143,.18); border-color: var(--emerald); color: var(--emerald); }
-        .sp-btn.pri:hover:not(:disabled) { background: rgba(0,214,143,.28); }
-        .sp-btn:disabled { opacity: .2; cursor: not-allowed; }
+        .sp-btn.alt { background: rgba(201,168,76,.12); border-color: var(--gold); color: var(--gold); }
+        .sp-btn:disabled { opacity: .15; cursor: not-allowed; }
 
-        /* EXEC & RIVAL overlay — inside grid-wrap */
-        .ov {
-            position: absolute; inset: 0;
-            display: flex; align-items: center; justify-content: center;
-            z-index: 80;
-        }
-        .ov.hidden { display: none; }
-        .exec-ov { background: rgba(6,10,17,.75); backdrop-filter: blur(10px); }
-        .exec-spin {
-            font-family: var(--M); color: #fff; font-size: 11px;
-            letter-spacing: .22em; animation: blink .85s infinite;
-        }
-
-        /* Result overlay — FULL FIXED over everything */
+        /* ── RESULT OVERLAY ── */
         #result-ov {
             position: fixed; inset: 0;
             display: flex; align-items: center; justify-content: center;
@@ -203,154 +173,53 @@
             overflow: hidden;
             box-shadow: 0 0 80px rgba(0,0,0,.9);
         }
-        .res-hdr {
-            padding: 20px 20px 14px;
-            border-bottom: 1px solid var(--bdr);
-            display: flex; justify-content: space-between; align-items: center;
-            flex-shrink: 0;
-        }
+        .res-hdr { padding: 20px 20px 14px; border-bottom: 1px solid var(--bdr); display: flex; justify-content: space-between; }
         .res-title { font-family: var(--D); font-size: 20px; letter-spacing: .45em; color: var(--gold); }
         .res-list { flex: 1; overflow-y: auto; padding: 10px 18px; scrollbar-width: none; }
-        .res-list::-webkit-scrollbar { display: none; }
-        .res-block { padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,.04); opacity: 0; transform: translateY(-16px); animation: sfdown .6s forwards; }
-        .res-block:last-child { border-bottom: none; }
-        @keyframes sfdown { to { opacity: 1; transform: translateY(0); } }
-        .res-bname { font-family: var(--D); color: var(--gold); font-size: 14px; letter-spacing: .2em; margin-bottom: 8px; padding-left: 8px; border-left: 3px solid var(--gold); }
         .res-row { display: flex; gap: 9px; font-size: 14.5px; margin-bottom: 5px; line-height: 1.45; align-items: flex-start; }
-        .res-ico { flex-shrink: 0; width: 18px; text-align: center; }
         .res-txt { color: #aabbcc; }
-        .res-txt .ok  { color: var(--emerald); font-weight: 700; display: block; font-size: 12px; margin-top: 2px; }
-        .res-txt .ng  { color: var(--rose);    font-weight: 700; display: block; font-size: 12px; margin-top: 2px; }
         .res-next {
             flex-shrink: 0; height: 52px; border: none; border-top: 1px solid var(--bdr);
-            background: #fff; color: var(--bg);
-            font-family: var(--D); font-size: 15px; letter-spacing: .5em; text-transform: uppercase;
-            cursor: pointer; transition: background .2s;
+            background: #fff; color: var(--bg); font-family: var(--D); font-size: 15px; letter-spacing: .5em; text-transform: uppercase; cursor: pointer;
         }
-        .res-next:hover { background: var(--emerald); }
 
-        /* ── TASK STRIP (flex-shrink:0) ── */
+        /* ── LOWER UI ── */
         .task-strip {
-            flex: 0 0 50px; min-height: 50px; max-height: 50px;
-            display: flex; align-items: center; gap: 6px;
-            padding: 0 14px; overflow-x: auto; overflow-y: hidden;
-            border-top: 1px solid var(--bdr);
-            scrollbar-width: none; background: var(--bg);
-            z-index: 10;
+            flex: 0 0 50px; min-height: 50px; display: flex; align-items: center; gap: 6px; padding: 0 14px; overflow-x: auto; border-top: 1px solid var(--bdr); background: var(--bg); z-index: 10;
         }
-        .task-strip::-webkit-scrollbar { display: none; }
-        .t-chip {
-            flex-shrink: 0; display: flex; align-items: center; gap: 5px;
-            background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.1);
-            border-radius: 18px; padding: 3px 9px 3px 11px;
-            font-size: 9.5px; font-weight: 600; color: #c0cee0; white-space: nowrap;
-            animation: chipin .25s ease;
-        }
-        @keyframes chipin { from{opacity:0;transform:scale(.7)} to{opacity:1;transform:scale(1)} }
+        .t-chip { flex-shrink: 0; display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.1); border-radius: 18px; padding: 3px 9px 3px 11px; font-size: 9.5px; font-weight: 600; color: #c0cee0; }
         .t-chip-name { color: var(--emerald); font-family: var(--M); font-size: 8.5px; }
-        .t-chip-rm { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 13px; line-height: 1; padding: 0; transition: color .15s; }
-        .t-chip-rm:hover { color: var(--rose); }
-        .t-standby { font-size: 9px; font-weight: 700; letter-spacing: .5em; color: var(--muted); text-transform: uppercase; font-family: var(--M); white-space: nowrap; }
+        .t-chip-rm { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 13px; padding: 0; }
 
-        /* ── EXEC BUTTON (flex-shrink:0, always visible) ── */
         .exec-btn {
-            flex: 0 0 50px; min-height: 50px;
-            border: none; border-top: 1px solid var(--bdr);
-            background: rgba(255,255,255,.03);
-            color: var(--muted);
-            font-family: var(--D); font-size: 17px; letter-spacing: .55em;
-            text-transform: uppercase; cursor: not-allowed; opacity: .4;
-            transition: all .25s; z-index: 10;
+            flex: 0 0 50px; min-height: 50px; border: none; border-top: 1px solid var(--bdr); background: rgba(255,255,255,.03); color: var(--muted); font-family: var(--D); font-size: 17px; letter-spacing: .55em; text-transform: uppercase; cursor: not-allowed; opacity: .4; transition: all .25s; z-index: 10;
         }
-        .exec-btn.on {
-            background: #fff; color: var(--bg);
-            cursor: pointer; opacity: 1;
-            box-shadow: 0 -8px 24px rgba(255,255,255,.12);
-        }
-        .exec-btn.on:active { transform: scale(.98); }
+        .exec-btn.on { background: #fff; color: var(--bg); cursor: pointer; opacity: 1; box-shadow: 0 -8px 24px rgba(255,255,255,.12); }
 
-        /* ── LOG (flex-shrink:0) ── */
-        .log-area {
-            flex: 0 0 40px; min-height: 40px;
-            overflow: hidden; padding: 5px 15px;
-            border-top: 1px solid var(--bdr);
-            background: var(--bg); z-index: 10;
-        }
-        .log-ln { font-family: var(--M); font-size: 8.5px; color: var(--muted); line-height: 1.55; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .log-ln.lt { color: var(--emerald); }
+        .log-area { flex: 0 0 40px; min-height: 40px; overflow: hidden; padding: 5px 15px; border-top: 1px solid var(--bdr); background: var(--bg); z-index: 10; }
+        .log-ln { font-family: var(--M); font-size: 8.5px; color: var(--muted); line-height: 1.55; }
 
-        /* ── SCORE BAR (flex-shrink:0) ── */
-        .score-bar {
-            flex: 0 0 48px; min-height: 48px;
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 0 18px; border-top: 1px solid var(--bdr);
-            background: var(--bg); z-index: 10;
-        }
-        .legend { display: flex; gap: 10px; align-items: center; }
-        .leg-i { display: flex; align-items: center; gap: 4px; font-size: 7.5px; font-weight: 700; letter-spacing: .3em; color: var(--muted); text-transform: uppercase; }
-        .leg-d { width: 7px; height: 7px; border-radius: 2px; }
-        .score-v { font-family: var(--D); font-size: 30px; color: #fff; letter-spacing: .04em; }
-        .score-v span { font-size: 13px; color: var(--muted); margin-left: 2px; }
+        .score-bar { flex: 0 0 48px; min-height: 48px; display: flex; justify-content: space-between; align-items: center; padding: 0 18px; border-top: 1px solid var(--bdr); background: var(--bg); z-index: 10; }
+        .score-v { font-family: var(--D); font-size: 30px; color: #fff; }
 
-        /* ── GAME START BANNER (fixed, pointer-events:none) ── */
-        #start-ov {
-            position: fixed; inset: 0; z-index: 9000;
-            display: flex; align-items: center; justify-content: center;
-            pointer-events: none;
-            background: rgba(6,10,17,0);
-            transition: background .4s;
-        }
-        .start-txt {
-            font-family: var(--D); font-size: 68px; color: #fff; letter-spacing: .25em;
-            text-shadow: 0 0 28px var(--emerald);
-            opacity: 0; transform: translateX(-110%);
-        }
-        .start-txt.go { animation: swipe 2.4s cubic-bezier(.16,1,.3,1) forwards; }
-        @keyframes swipe {
-            0%   { opacity:0; transform:translateX(-110%); }
-            18%  { opacity:1; transform:translateX(0); }
-            80%  { opacity:1; transform:translateX(0); }
-            100% { opacity:0; transform:translateX(110%); }
-        }
-
-        /* ── FINAL MODAL (fixed) ── */
-        #final-modal {
-            position: fixed; inset: 0; z-index: 9500;
-            display: flex; align-items: center; justify-content: center;
-            background: rgba(6,10,17,.97); padding: 16px;
-        }
+        #final-modal { position: fixed; inset: 0; z-index: 9500; display: flex; align-items: center; justify-content: center; background: rgba(6,10,17,.97); padding: 16px; }
         #final-modal.hidden { display: none; }
-        .final-box {
-            background: var(--surf); border: 1px solid rgba(255,255,255,.08);
-            border-radius: 28px; padding: 28px 22px; width: 100%;
-            max-height: 92dvh; overflow-y: auto; text-align: center;
-        }
-        .final-box::-webkit-scrollbar { display: none; }
-        .final-ttl { font-family: var(--D); font-size: 30px; color: #fff; letter-spacing: .06em; margin-bottom: 18px; }
+        .final-box { background: var(--surf); border: 1px solid rgba(255,255,255,.08); border-radius: 28px; padding: 28px 22px; width: 100%; text-align: center; }
         .final-score { font-family: var(--D); font-size: 64px; color: var(--emerald); line-height: 1; margin: 8px 0 20px; }
-        .final-lbl { font-size: 9px; font-weight: 700; letter-spacing: .5em; color: var(--muted); text-transform: uppercase; }
-        .final-btn {
-            width: 100%; height: 48px; border-radius: 12px; border: none;
-            font-family: var(--D); font-size: 15px; letter-spacing: .4em;
-            text-transform: uppercase; cursor: pointer; margin-top: 10px;
-            transition: opacity .2s;
-        }
-        .final-btn:active { opacity: .8; }
+        .final-btn { width: 100%; height: 48px; border-radius: 12px; border: none; font-family: var(--D); font-size: 15px; letter-spacing: .4em; text-transform: uppercase; cursor: pointer; margin-top: 10px; }
         .final-btn.pri { background: #fff; color: var(--bg); }
         .final-btn.sec { background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1); color: var(--muted); }
+        
+        .hidden { display: none; }
     </style>
 </head>
 <body>
 
-<!-- GAME START BANNER -->
-<div id="start-ov">
+<div id="start-ov" class="hidden">
     <div class="start-txt" id="start-txt">GAME START</div>
 </div>
 
-<!-- MAIN APP -->
 <div id="app">
-
-    <!-- HEADER -->
     <header class="hdr">
         <div class="hdr-row">
             <div>
@@ -365,179 +234,100 @@
         <div class="share-bar" id="share-bar"></div>
     </header>
 
-    <!-- GRID AREA -->
     <section class="grid-wrap">
         <div id="grid"></div>
-
-        <!-- Side Panel (inside grid-wrap) -->
         <aside class="sp" id="sp">
-            <div class="sp-hdr">
-                <span class="sp-tag">Target Intel</span>
-                <button class="sp-close" id="sp-close">✕</button>
-            </div>
+            <div class="sp-hdr"><span class="sp-tag">Tactical Intel</span><button class="sp-close" id="sp-close">✕</button></div>
             <div class="sp-name" id="sp-name">—</div>
             <div class="sp-full" id="sp-full">—</div>
             <div class="sp-stats">
                 <div class="sp-stat"><div class="sp-sl">Visit</div><div class="sp-sv" id="sp-vc">0</div></div>
                 <div class="sp-stat"><div class="sp-sl">Study</div><div class="sp-sv" id="sp-sc">0</div></div>
             </div>
-            <div>
-                <div class="sp-win" id="sp-win">—%</div>
-                <div class="sp-sl" style="margin-top:2px;">Capture Prob</div>
-            </div>
-            <div class="sp-row">
-                <div class="sp-rl">Provider</div>
-                <div class="sp-rv" id="sp-vendor">—</div>
-            </div>
-            <div class="sp-row">
-                <div class="sp-rl">Phase Vector</div>
-                <div class="sp-status" id="sp-status">—</div>
-            </div>
+            <div><div class="sp-win" id="sp-win">—%</div><div class="sp-sl">Capture Prob</div></div>
+            <div class="sp-row"><div class="sp-rl">Provider</div><div class="sp-rv" id="sp-vendor">—</div></div>
+            <div class="sp-row"><div class="sp-rl">Phase Vector</div><div class="sp-status" id="sp-status">—</div></div>
             <div class="sp-btns">
-                <button class="sp-btn" onclick="addTask('VISIT',5,'訪問')">Visit &nbsp;(-5 MH)</button>
-                <button class="sp-btn" onclick="addTask('STUDY',8,'勉強会')">Study (-8 MH)</button>
-                <button class="sp-btn pri" id="sp-prop-btn" onclick="addTask('PROPOSAL',10,'提案')" disabled>Proposal (-10 MH)</button>
+                <div style="display:flex; gap:4px;">
+                    <button class="sp-btn" style="flex:1;" onclick="addTask('VISIT',5,'訪問')">Visit(-5)</button>
+                    <button class="sp-btn" style="flex:1;" onclick="addTask('INTEL',3,'諜報')">Intel(-3)</button>
+                </div>
+                <button class="sp-btn" id="sp-spec-btn" onclick="addTask('SPECIN',12,'スペックイン')">Spec-in (-12 MH)</button>
+                <button class="sp-btn alt" onclick="addTask('CXO',15,'トップ面談')">CXO Meeting (-15 MH)</button>
+                <button class="sp-btn pri" id="sp-prop-btn" onclick="addTask('PROPOSAL',10,'提案')" disabled>Submit Proposal (-10 MH)</button>
             </div>
         </aside>
-
-        <!-- Exec spinner overlay (inside grid-wrap) -->
-        <div class="ov exec-ov hidden" id="exec-ov">
-            <span class="exec-spin">Analyzing Strategic Output…</span>
-        </div>
     </section>
 
-    <!-- TASK STRIP -->
-    <div class="task-strip" id="task-strip">
-        <span class="t-standby">>>> MISSION ON STANDBY</span>
-    </div>
-
-    <!-- EXECUTE BUTTON -->
+    <div class="task-strip" id="task-strip"></div>
     <button class="exec-btn" id="exec-btn" disabled onclick="executeStrategy()">Launch Mission</button>
-
-    <!-- LOG -->
     <div class="log-area" id="log-area"></div>
 
-    <!-- SCORE BAR -->
     <footer class="score-bar">
-        <div class="legend">
-            <div class="leg-i"><div class="leg-d" style="background:#00D68F"></div>SELF</div>
-            <div class="leg-i"><div class="leg-d" style="background:#38BDF8"></div>I社</div>
-            <div class="leg-i"><div class="leg-d" style="background:#A855F7"></div>A社</div>
-            <div class="leg-i"><div class="leg-d" style="background:#F59E0B"></div>S社</div>
-        </div>
         <div class="score-v" id="score-v">¥0<span>M</span></div>
     </footer>
 </div>
 
-<!-- RESULT OVERLAY (fixed, above everything except final modal) -->
 <div id="result-ov" class="hidden">
     <div class="res-box">
-        <div class="res-hdr">
-            <span class="res-title">Intel Sequence Report</span>
-            <span style="font-size:22px;">📡</span>
-        </div>
+        <div class="res-hdr"><span class="res-title">Intelligence Report</span></div>
         <div class="res-list" id="res-list"></div>
         <button class="res-next" onclick="closeResult()">Next Cycle ›</button>
     </div>
 </div>
 
-<!-- FINAL MODAL (fixed) -->
 <div id="final-modal" class="hidden">
     <div class="final-box">
-        <div class="final-ttl">Annual Strategic Report</div>
-        <div class="final-lbl">Aggregated Revenue</div>
-        <div class="final-score" id="final-score">¥0<span style="font-size:28px;color:var(--muted);margin-left:6px;">M</span></div>
-        <div id="final-ranking" style="margin:0 0 16px;text-align:left;"></div>
+        <div class="final-ttl">Annual Performance Report</div>
+        <div class="final-score" id="final-score">¥0</div>
         <button class="final-btn pri" onclick="continueGame()">⏩ Next Year</button>
         <button class="final-btn sec" onclick="resetGame()">↩ Reset</button>
     </div>
 </div>
 
 <script>
-/* ════════════════════════════════
-   CONSTANTS & STATE
-   ════════════════════════════════ */
 const MAX_MH = 20;
 const VENDORS = {
-    H: { name:'H社(SELF)', bg:'#00D68F', bright:'#00D68F' }, 
-    I: { name:'I社',        bg:'#0A1F3D', bright:'#38BDF8' },
-    A: { name:'A社',        bg:'#2D0A3D', bright:'#A855F7' },
-    S: { name:'S社',        bg:'#451A03', bright:'#F59E0B' },
-    NONE:{ name:'未開拓', bg:'#060A11', bright:'#1a2535' },
-    UNK: { name:'情報未取得', bg:'#111926', bright:'#1a2535' },
+    H: { name:'H社(SELF)', bg:'#00D68F' }, 
+    I: { name:'I社',        bg:'#0A1F3D' },
+    A: { name:'A社',        bg:'#2D0A3D' },
+    S: { name:'S社',        bg:'#451A03' },
+    NONE:{ name:'未開拓', bg:'#060A11' },
+    UNK: { name:'情報未取得', bg:'#111926' },
 };
 const CUSTOMER_POOL = [
-    { id:101, name:'NIT-Core', full:'ニトリHD: 基幹', budget:120, tiles:5 },
-    { id:102, name:'NIT-Logi', full:'ニトリHD: 物流', budget:80,  tiles:4 },
-    { id:201, name:'SAP-Net',  full:'札幌市: NW',     budget:70,  tiles:4 },
-    { id:202, name:'SAP-Win',  full:'札幌市: 窓口',   budget:65,  tiles:3 },
-    { id:301, name:'HDC-Fin',  full:'道庁: 財務',     budget:60,  tiles:3 },
-    { id:401, name:'HOU-Edu',  full:'北大: 教育',     budget:110, tiles:4 },
-    { id:501, name:'TSU-EC',   full:'ツルハ: EC',     budget:80,  tiles:3 },
-    { id:601, name:'JRH-Tick', full:'JR北: 発券',     budget:70,  tiles:4 },
-    { id:701, name:'HKL-Agri', full:'ホクレン: 農業', budget:60,  tiles:3 },
-    { id:801, name:'AIN-Ph',   full:'アイン: 調剤',    budget:50,  tiles:2 },
-    { id:901, name:'HBA-Sec',  full:'HBA: セキュ',     budget:50,  tiles:2 },
-    { id:1001,name:'SAT-POS',  full:'サツドラ: POS',  budget:40,  tiles:2 },
-    { id:1101,name:'HRP-Base', full:'HARP: 基盤',     budget:30,  tiles:1 },
-    { id:1201,name:'HPP-Sec',  full:'道警: 公安NW',    budget:25,  tiles:1 },
+    { id:101, name:'NIT-Core', budget:120, tiles:5 },
+    { id:102, name:'NIT-Logi', budget:80,  tiles:4 },
+    { id:201, name:'SAP-Net',  budget:70,  tiles:4 },
+    { id:202, name:'SAP-Win',  budget:65,  tiles:3 },
+    { id:401, name:'HOU-Edu',  budget:110, tiles:4 },
+    { id:501, name:'TSU-EC',   budget:80,  tiles:3 },
+    { id:701, name:'HKL-Agri', budget:60,  tiles:3 },
+    { id:901, name:'HBA-Sec',  budget:50,  tiles:2 },
+    { id:1001,name:'SAT-POS',  budget:40,  tiles:2 },
+    { id:1201,name:'HPP-Sec',  budget:25,  tiles:1 },
 ];
 
 let state = {
-    month:1, year:1, mh:MAX_MH, nextPenalty:0,
-    sales:0, selId:null, tasks:[], logs:['システム同期完了。'],
-    changed:[], incidents:[], customers:[], grid:[],
+    month:1, year:1, mh:MAX_MH, sales:0, selId:null, tasks:[], 
+    logs:['Intelligence system online.'], customers:[], grid:[],
 };
 
-/* ════════════════════════════════
-   AUDIO
-   ════════════════════════════════ */
-let AC;
-function initAC() { if (!AC) AC = new (window.AudioContext||window.webkitAudioContext)(); }
-function snd(type) {
-    try {
-        initAC();
-        if (AC.state === 'suspended') AC.resume();
-        const o = AC.createOscillator(), g = AC.createGain();
-        o.connect(g); g.connect(AC.destination);
-        const t = AC.currentTime;
-        const beep = (freq, dur, vol=0.06, wave='sine') => {
-            o.type=wave; o.frequency.setValueAtTime(freq,t);
-            g.gain.setValueAtTime(vol,t); g.gain.linearRampToValueAtTime(0,t+dur);
-            o.start(t); o.stop(t+dur);
-        };
-        if (type==='click')   beep(880,.09,.04);
-        else if (type==='add')    beep(660,.12,.03,'square');
-        else if (type==='fail')   { o.type='sawtooth'; o.frequency.setValueAtTime(220,t); o.frequency.linearRampToValueAtTime(80,t+.4); g.gain.setValueAtTime(.08,t); g.gain.linearRampToValueAtTime(0,t+.4); o.start(t); o.stop(t+.4); }
-        else if (type==='win') {
-            [523,659,784,1047].forEach((f,i)=>{
-                const oi=AC.createOscillator(),gi=AC.createGain();
-                oi.connect(gi);gi.connect(AC.destination);
-                oi.type='triangle'; oi.frequency.setValueAtTime(f,t+i*.1);
-                gi.gain.setValueAtTime(.04,t+i*.1); gi.gain.linearRampToValueAtTime(0,t+i*.1+.4);
-                oi.start(t+i*.1); oi.stop(t+i*.1+.4);
-            });
-        }
-        else if (type==='start') { o.type='sawtooth'; o.frequency.setValueAtTime(55,t); o.frequency.exponentialRampToValueAtTime(440,t+.9); g.gain.setValueAtTime(.07,t); g.gain.linearRampToValueAtTime(0,t+.9); o.start(t); o.stop(t+.9); }
-    } catch(e) {}
-}
-
-/* ════════════════════════════════
-   INIT
-   ════════════════════════════════ */
 function initEnv() {
     const vd = ['H','I','A','S'];
     state.customers = CUSTOMER_POOL.map(b => ({
         ...b,
         vendor: vd[Math.floor(Math.random()*4)],
         mo: Math.floor(Math.random()*45)+1,
-        vc:0, sc:0, lv:0,
-        reshuffleMonth: Math.floor(Math.random()*12)+1,
-        // 指示：初期確度をランダムにするため、個別の「潜在親和性」を付与
-        affinity: Math.floor(Math.random() * 21) // 0-20の追加加点
+        vc:0, sc:0, 
+        affinity: Math.floor(Math.random() * 21),
+        specIn: false, 
+        cxoProtect: 0,
+        intelRevealed: false
     }));
     buildGrid();
 }
+
 function buildGrid() {
     let tiles = [];
     [...state.customers].sort(()=>Math.random()-.5).forEach(c => {
@@ -547,310 +337,163 @@ function buildGrid() {
     state.grid = tiles;
 }
 
-/* ════════════════════════════════
-   WIN RATE
-   ════════════════════════════════ */
 function wr(c) {
     if (!c) return 0;
-    // 指示：基本確度(10)に個別の親和性を合算
     let r = 5 + (c.affinity || 0); 
     if (c.vendor==='H') r += 40;
-    if (c.mo>=48&&c.mo<50) r+=40; else if (c.mo>=50) r-=20;
-    r += c.vc*5 + c.sc*10;
-    const idle = state.month - (c.lv||0);
-    if (idle>1) r -= (idle-1)*8;
-    state.tasks.filter(t=>t.cid===c.id).forEach(t=>r+=(t.type==='VISIT'?5:10));
-    return Math.min(99,Math.max(5,Math.round(r)));
+    if (c.mo>=48 && c.mo<50) r += 40; else if (c.mo>=50) r -= 20;
+    if (c.specIn) r += 30; // 駆け引き要素：スペックイン効果
+    r += c.vc*5 + (c.sc||0)*10;
+    state.tasks.filter(t=>t.cid===c.id).forEach(t=>{
+        if(t.type==='VISIT') r+=5;
+        if(t.type==='CXO') r+=50;
+    });
+    return Math.min(99, Math.max(5, Math.round(r)));
 }
 
-/* ════════════════════════════════
-   SHARE
-   ════════════════════════════════ */
-function share() {
-    const s={H:0,I:0,A:0,S:0};
-    state.customers.forEach(c=>{if(s[c.vendor]!==undefined)s[c.vendor]+=c.budget;});
-    const total = Object.values(s).reduce((a,b)=>a+b,0)||1;
-    return {s,total};
-}
-
-/* ════════════════════════════════
-   RENDER
-   ════════════════════════════════ */
 function render() {
-    // Header
     document.getElementById('phase-disp').textContent = `FY2${state.year+5}M${state.month}`;
     const me = document.getElementById('mh-disp');
     me.textContent = state.mh;
-    me.className = 'hdr-mh-val'+(state.mh<5?' lo':'');
     document.getElementById('score-v').innerHTML = `¥${state.sales}<span>M</span>`;
 
-    // Share bar
-    const {s,total} = share();
+    const s={H:0,I:0,A:0,S:0};
+    state.customers.forEach(c=>{if(s[c.vendor]!==undefined)s[c.vendor]+=c.budget;});
+    const total = Object.values(s).reduce((a,b)=>a+b,0)||1;
     const bar = document.getElementById('share-bar'); bar.innerHTML='';
     [['H','#00D68F'],['I','#38BDF8'],['A','#A855F7'],['S','#F59E0B']].forEach(([v,c])=>{
         const p=(s[v]||0)/total*100;
         if(p>0){const d=document.createElement('div');d.className='share-seg';d.style.cssText=`width:${p}%;background:${c}`;if(p>6)d.textContent=Math.round(p)+'%';bar.appendChild(d);}
     });
 
-    // Grid
     const gEl = document.getElementById('grid'); gEl.innerHTML='';
     state.grid.forEach(t=>{
         const el=document.createElement('div'); el.className='tile';
         if (t.cid) {
             const c=state.customers.find(x=>x.id===t.cid);
-            const known=c.vc>0||c.sc>0||c.vendor==='H';
+            const known=c.vc>0||c.vendor==='H';
             el.style.backgroundColor=VENDORS[known?c.vendor:'UNK'].bg;
-            if(known){
-                if(c.mo>=48&&c.mo<50) el.classList.add('rfp-a');
-                else if(c.mo>=50)     el.classList.add('bld-a');
-            }
-            if(state.incidents.some(i=>i.cid===c.id)) el.classList.add('inc-a');
-            if(state.changed.includes(c.id))           el.classList.add('chg-a');
-            if(state.selId===c.id)                     el.classList.add('sel');
+            if(state.selId===c.id) el.classList.add('sel');
             const sp=document.createElement('span');sp.className='t-lbl';
             sp.textContent=known?`${Math.ceil(c.mo/12)}`:'?';
             el.appendChild(sp);
-            el.onclick=e=>{e.stopPropagation();state.selId=c.id;snd('click');render();};
+            el.onclick=e=>{state.selId=c.id;render();};
         } else {
             el.style.backgroundColor=VENDORS.NONE.bg;
         }
         gEl.appendChild(el);
     });
 
-    // Side panel
     const sp=document.getElementById('sp');
     if (state.selId) {
         const c=state.customers.find(x=>x.id===state.selId);
         sp.classList.add('open');
         document.getElementById('sp-name').textContent=c.name;
-        document.getElementById('sp-full').textContent=c.full;
         document.getElementById('sp-vc').textContent=c.vc;
-        document.getElementById('sp-sc').textContent=c.sc;
         document.getElementById('sp-win').textContent=`${wr(c)}%`;
-        const known=c.vc>0||c.sc>0||c.vendor==='H';
-        document.getElementById('sp-vendor').textContent=known?VENDORS[c.vendor].name:'？';
+        const known=c.vc>0||c.vendor==='H';
+        document.getElementById('sp-vendor').textContent= (known || c.intelRevealed) ? VENDORS[c.vendor].name : '？';
         const stEl=document.getElementById('sp-status');
-        const isRFP=c.mo>=48&&c.mo<50;
-        if(!known){stEl.textContent='情報未取得';stEl.className='sp-status unk-st';}
-        else if(c.mo>=50){stEl.textContent=`構築中 (M${c.mo})`;stEl.className='sp-status bld-st';}
-        else if(isRFP){stEl.textContent=`📄 RFP放出中 (M${c.mo})`;stEl.className='sp-status rfp-st';}
-        else{stEl.textContent=`通常運用 (M${c.mo})`;stEl.className='sp-status';}
-        document.getElementById('sp-prop-btn').disabled=!(known&&isRFP);
+        if(!known && !c.intelRevealed){stEl.textContent='情報未取得';}
+        else if(c.mo>=50){stEl.textContent=`構築中 (M${c.mo})`;}
+        else if(c.mo>=48){stEl.textContent=`📄 RFP放出中 (M${c.mo})`;}
+        else{stEl.textContent=`運用中 (M${c.mo})`;}
+        
+        document.getElementById('sp-prop-btn').disabled=!(known&&c.mo>=48&&c.mo<50);
+        document.getElementById('sp-spec-btn').disabled=(c.mo>=48 || c.specIn);
     } else {
         sp.classList.remove('open');
     }
 
-    // Task strip
     const ts=document.getElementById('task-strip'); ts.innerHTML='';
-    if(state.tasks.length===0){
-        const s=document.createElement('span');s.className='t-standby';s.textContent='>>> MISSION ON STANDBY';ts.appendChild(s);
-    } else {
-        state.tasks.forEach((t,i)=>{
-            const c=document.createElement('div');c.className='t-chip';
-            c.innerHTML=`<span class="t-chip-name">${t.cname}</span><span>${t.label}</span><button class="t-chip-rm" onclick="removeTask(${i})">✕</button>`;
-            ts.appendChild(c);
-        });
-    }
+    state.tasks.forEach((t,i)=>{
+        const c=document.createElement('div');c.className='t-chip';
+        c.innerHTML=`<span class="t-chip-name">${t.cname}</span><span>${t.label}</span><button class="t-chip-rm" onclick="removeTask(${i})">✕</button>`;
+        ts.appendChild(c);
+    });
 
-    // Exec btn
     const eb=document.getElementById('exec-btn');
     eb.disabled=state.tasks.length===0;
     eb.className='exec-btn'+(eb.disabled?'':' on');
 
-    // Log
     const la=document.getElementById('log-area'); la.innerHTML='';
     state.logs.slice(0,3).forEach((l,i)=>{
-        const d=document.createElement('div');d.className='log-ln'+(i===0?' lt':'');
+        const d=document.createElement('div');d.className='log-ln';
         d.textContent=(i===0?'>>> ':'... ')+l;la.appendChild(d);
     });
 }
 
-/* ════════════════════════════════
-   TASK MANAGEMENT
-   ════════════════════════════════ */
 function addTask(type,cost,label) {
     if(!state.selId) return;
-    if(state.mh<cost){state.logs.unshift('! 工数不足');render();return;}
+    if(state.mh<cost) return;
     const c=state.customers.find(x=>x.id===state.selId);
     state.tasks.push({cid:c.id,cname:c.name,type,cost,label});
-    state.mh-=cost; snd('add'); render();
+    state.mh-=cost; render();
 }
+
 function removeTask(i) {
     state.mh+=state.tasks[i].cost;
     state.tasks.splice(i,1); render();
 }
 
-/* ════════════════════════════════
-   EXECUTE
-   ════════════════════════════════ */
 async function executeStrategy() {
-    snd('start');
-    document.getElementById('exec-ov').classList.remove('hidden');
-    let gained=0, changed=[];
-    const resMap={};
-    const interacted=[...new Set(state.tasks.map(t=>t.cid))];
-    const infoIds=[...new Set(state.tasks.filter(t=>t.type==='VISIT'||t.type==='STUDY').map(t=>t.cid))];
-    interacted.forEach(id=>resMap[id]=[]);
+    let turnResults = [];
+    const interacted = [...new Set(state.tasks.map(t=>t.cid))];
 
     for(const t of state.tasks){
-        await new Promise(r=>setTimeout(r,350));
         const c=state.customers.find(x=>x.id===t.cid);
-        if(t.type==='VISIT'){c.vc++;c.lv=state.month;resMap[c.id].push({i:'👁',tx:'[H社] 戦略訪問完了。最新情報を入手。',self:true});}
-        else if(t.type==='STUDY'){c.sc++;c.lv=state.month;resMap[c.id].push({i:'📚',tx:'[H社] 勉強会実施。受注確度を引き上げ。',self:true});}
-        else if(t.type==='PROPOSAL'){
-            const ok=Math.random()*100<wr(c);
-            if(ok){snd('win');c.vendor='H';c.mo=55;c.vc=1;c.sc=0;c.lv=state.month;gained+=c.budget;changed.push(c.id);resMap[c.id].push({i:'✅',tx:'[H社] 本提案を投入。',res:'受注確定！構築フェーズ(6ヶ月)開始。',ok:true,self:true});}
-            else{snd('fail');resMap[c.id].push({i:'❌',tx:'[H社] 本提案を投入。',res:'コンペ敗北。提案が通りませんでした。',ok:false,self:true});}
-        }
-        render();
-    }
-
-    // Events
-    state.customers.forEach(c=>{
-        if(c.reshuffleMonth===state.month){
-            c.vc=0;c.sc=0;c.lv=0;
-            if(!resMap[c.id]){interacted.push(c.id);resMap[c.id]=[];}
-            resMap[c.id].push({i:'👤',tx:'[人事] キーマン異動。リレーション消失。'});
-        }
-        if(Math.random()<1/30){
-            state.incidents.push({cid:c.id});
-            if(!resMap[c.id]){interacted.push(c.id);resMap[c.id]=[];}
-            if(c.vendor==='H'){state.nextPenalty+=5;resMap[c.id].push({i:'🚨',tx:'[障害] システムトラブル発生。次月MH-5。',self:true});}
-            else resMap[c.id].push({i:'⚡',tx:`[競合] ${VENDORS[c.vendor].name}でトラブルを検知。`});
-        }
-    });
-
-    state.sales+=gained; state.tasks=[];
-    const {s:shareS,total:shareT}=share();
-    const hLeading=shareS.H>=Math.max(shareS.I,shareS.A,shareS.S);
-
-    // Rival moves
-    for(const rid of ['I','A','S']){
-        await new Promise(r=>setTimeout(r,100));
-        const targets=state.customers.filter(c=>c.vendor!==rid);
-        if(targets.length){
-            const tgt=targets[Math.floor(Math.random()*targets.length)];
-            const rfp=tgt.mo>=48&&tgt.mo<50;
-            const pow=(hLeading&&tgt.vendor==='H')?(rfp?40:20):(rfp?30:10);
-            if(Math.random()*100<pow){
-                tgt.vendor=rid;tgt.mo=1;tgt.vc=0;tgt.sc=0;changed.push(tgt.id);
-                if(infoIds.includes(tgt.id)){
-                    if(!resMap[tgt.id]){interacted.push(tgt.id);resMap[tgt.id]=[];}
-                    resMap[tgt.id].push({i:'⚔️',tx:`[${rid}社] 強力な提案で顧客を奪取されました。`});
-                }
+        if(t.type==='VISIT'){
+            c.vc++; turnResults.push({n:c.name, tx:'戦略訪問を実施。顧客キーマンの情報を入手。'});
+        } else if(t.type==='INTEL'){
+            c.intelRevealed = true; turnResults.push({n:c.name, tx:`競合調査を実施。${VENDORS[c.vendor].name}の潜伏を特定。`});
+        } else if(t.type==='SPECIN'){
+            c.specIn = true; turnResults.push({n:c.name, tx:'自社有利な要件をRFPに盛り込む「スペックイン」に成功。'});
+        } else if(t.type==='CXO'){
+            c.cxoProtect = 4; turnResults.push({n:c.name, tx:'CXOとの合意を形成。以後3ヶ月間、他社の介入をシャットアウト。'});
+        } else if(t.type==='PROPOSAL'){
+            if(Math.random()*100<wr(c)){
+                c.vendor='H';c.mo=55;c.vc=1;c.specIn=false;state.sales+=c.budget;
+                turnResults.push({n:c.name, tx:'【受注】コンペを制しました。構築フェーズへ移行。'});
+            } else {
+                turnResults.push({n:c.name, tx:'【失注】競合のロジックに押し切られました。'});
             }
         }
-        infoIds.forEach(cid=>{
-            const tgt=state.customers.find(x=>x.id===cid);
-            if(!resMap[cid]){interacted.push(cid);resMap[cid]=[];}
-            if(tgt.vendor===rid) resMap[cid].push({i:'🛡',tx:`[${rid}社] ベンダー防衛行動を確認。`});
-            else if(Math.random()<.5) resMap[cid].push({i:'🕵️',tx:`[${rid}社] 競合営業の接触形跡を捕捉。`});
-        });
     }
 
+    // Rival moves (Politics)
+    state.customers.forEach(c => {
+        if(c.vendor !== 'H' && c.cxoProtect <= 0 && Math.random() < 0.15) {
+            // Nothing to show Nimo unless intel was revealed
+        }
+        if(c.cxoProtect > 0) c.cxoProtect--;
+    });
+
+    state.month++; if(state.month > 12) state.month = 12; // Wait for end
+    state.tasks = [];
+    state.mh = MAX_MH; 
     state.customers.forEach(c=>c.mo=c.mo>=60?1:c.mo+1);
-    state.changed=changed;
-    document.getElementById('exec-ov').classList.remove('hidden');
-    document.getElementById('exec-ov').classList.add('hidden');
 
-    // Build result
     const rl=document.getElementById('res-list'); rl.innerHTML='';
-    let delay=0;
-    const seen=new Set();
-    interacted.forEach(cid=>{
-        if(seen.has(cid)||!resMap[cid]||resMap[cid].length===0){return;}
-        seen.add(cid);
-        const c=state.customers.find(x=>x.id===cid); if(!c)return;
+    turnResults.forEach(r => {
         const blk=document.createElement('div'); blk.className='res-block';
-        blk.style.animationDelay=`${delay*.35}s`; delay++;
-        let h=`<div class="res-bname">${c.name.toUpperCase()}</div>`;
-        resMap[cid].forEach(r=>{
-            h+=`<div class="res-row"><span class="res-ico">${r.i}</span><div class="res-txt" style="${r.self?'color:#aabbcc':'color:#6a7a90'}">${r.tx}${r.res?`<span class="${r.ok?'ok':'ng'}">${r.res}</span>`:''}</div></div>`;
-        });
-        blk.innerHTML=h; rl.appendChild(blk);
+        blk.innerHTML=`<div class="res-bname">${r.n}</div><div class="res-row"><div class="res-txt">${r.tx}</div></div>`;
+        rl.appendChild(blk);
     });
-    if(seen.size===0) rl.innerHTML='<div style="text-align:center;padding:40px 0;font-family:var(--M);font-size:10px;letter-spacing:.5em;color:var(--muted);">SILENCE SECTOR — NO DATA</div>';
-
     document.getElementById('result-ov').classList.remove('hidden');
-}
-
-/* ════════════════════════════════
-   CLOSE RESULT / NEXT
-   ════════════════════════════════ */
-function closeResult() {
-    document.getElementById('result-ov').classList.add('hidden');
-    state.selId=null;
-    if(state.month>=12) showFinal();
-    else {
-        state.month++;
-        const hTiles=state.grid.filter(t=>t.cid&&state.customers.find(x=>x.id===t.cid).vendor==='H').length;
-        const maint=Math.min(4,Math.floor(hTiles/4));
-        state.mh=Math.max(5,MAX_MH-state.nextPenalty-maint);
-        state.nextPenalty=0; state.changed=[]; state.incidents=[];
-        render();
-    }
-}
-
-/* ════════════════════════════════
-   FINAL / RESET
-   ════════════════════════════════ */
-function showFinal() {
-    const{s,total}=share();
-    document.getElementById('final-score').innerHTML=`¥${state.sales}<span style="font-size:26px;color:var(--muted);margin-left:6px;">M</span>`;
-    const rk=document.getElementById('final-ranking'); rk.innerHTML='';
-    [['H','SELF','#00D68F'],['I','I社','#38BDF8'],['A','A社','#A855F7'],['S','S社','#F59E0B']].forEach(([v,label,col])=>{
-        const p=Math.round((s[v]||0)/total*100);
-        const d=document.createElement('div');
-        d.style.cssText='display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:12px;';
-        d.innerHTML=`<span style="color:${col};font-family:var(--D);letter-spacing:.1em;">${label}</span><span style="font-family:var(--D);color:#fff;">${p}%</span>`;
-        rk.appendChild(d);
-    });
-    document.getElementById('final-modal').classList.remove('hidden');
-}
-function continueGame(){
-    state.month=1;state.year++;
-    state.customers.forEach(c=>c.reshuffleMonth=Math.floor(Math.random()*12)+1);
-    document.getElementById('final-modal').classList.add('hidden');
     render();
 }
-function resetGame(){
-    state={month:1,year:1,mh:MAX_MH,nextPenalty:0,sales:0,selId:null,tasks:[],logs:['システム同期完了。'],changed:[],incidents:[],customers:[],grid:[]};
-    initEnv();
-    document.getElementById('final-modal').classList.add('hidden');
-    triggerStart(); render();
-}
-function saveGame(){localStorage.setItem('ent_v3',JSON.stringify(state));state.logs.unshift('SYSTEM SYNCHRONIZED.');render();}
 
-/* ════════════════════════════════
-   GAME START BANNER
-   ════════════════════════════════ */
-function triggerStart(){
-    const b=document.getElementById('start-txt');
-    b.classList.remove('go'); void b.offsetWidth; b.classList.add('go');
-    const o=document.getElementById('start-ov');
-    o.style.background='rgba(6,10,17,.85)';
-    setTimeout(()=>o.style.background='rgba(6,10,17,0)',400);
-    snd('start');
+function closeResult() {
+    document.getElementById('result-ov').classList.add('hidden');
+    if(state.month >= 12 && state.tasks.length === 0) showFinal();
 }
 
-/* ════════════════════════════════
-   BOOT
-   ════════════════════════════════ */
-window.onload=()=>{
-    const saved=localStorage.getItem('ent_v3');
-    if(saved){try{const p=JSON.parse(saved);state={...p,tasks:[],mh:MAX_MH,incidents:p.incidents||[]};} catch(e){}}
-    if(!state.customers.length) initEnv();
-    document.getElementById('sp-close').onclick=()=>{state.selId=null;render();};
-    document.addEventListener('click',e=>{
-        const sp=document.getElementById('sp');
-        const grid=document.getElementById('grid');
-        if(sp.classList.contains('open')&&!sp.contains(e.target)&&!grid.contains(e.target)){
-            state.selId=null;sp.classList.remove('open');
-        }
-    });
-    document.body.addEventListener('click',initAC,{once:true});
-    triggerStart(); render();
-};
+function showFinal() { document.getElementById('final-modal').classList.remove('hidden'); }
+function continueGame(){ state.year++; state.month=1; state.sales=0; document.getElementById('final-modal').classList.add('hidden'); render(); }
+function resetGame(){ location.reload(); }
+
+window.onload=()=>{ initEnv(); render(); };
 </script>
 </body>
 </html>
+
