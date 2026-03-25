@@ -254,7 +254,7 @@
     <section class="grid-wrap">
         <div id="grid"></div>
         <aside class="sp" id="sp">
-            <div class="sp-hdr"><span class="sp-tag">Tactical Intel</span><button class="sp-close" id="sp-close">✕</button></div>
+            <div class="sp-hdr"><span class="sp-tag">Tactical Detail</span><button class="sp-close" id="sp-close">✕</button></div>
             <div class="sp-name" id="sp-name">—</div>
             <div class="sp-full" id="sp-full">—</div>
             <div class="sp-stats">
@@ -267,7 +267,8 @@
             <div class="sp-btns">
                 <div style="display:flex; gap:4px;">
                     <button class="sp-btn" style="flex:1;" onclick="addTask('VISIT',5,'訪問')">Visit(-5)</button>
-                    <button class="sp-btn" style="flex:1;" onclick="addTask('INTEL',3,'諜報')">Intel(-3)</button>
+                    <!-- SURVEY への改称を適用 -->
+                    <button class="sp-btn" style="flex:1;" onclick="addTask('SURVEY',3,'調査')">Survey(-3)</button>
                 </div>
                 <button class="sp-btn" id="sp-spec-btn" onclick="addTask('SPECIN',12,'スペックイン')">Spec-in (-12 MH)</button>
                 <button class="sp-btn alt" onclick="addTask('CXO',15,'トップ面談')">CXO Meeting (-15 MH)</button>
@@ -306,19 +307,20 @@
 const MAX_MH = 20;
 const VENDORS = {
     H: { name:'H社(SELF)', bg:'#00D68F' }, 
-    I: { name:'I社',        bg:'#0A1F3D' },
-    A: { name:'A社',        bg:'#2D0A3D' },
-    S: { name:'S社',        bg:'#451A03' },
+    I: { name:'D社',        bg:'#1E40AF' },
+    A: { name:'A社',        bg:'#7C3AED' }, // パープルの彩度を上げ、明るく調整
+    S: { name:'S社',        bg:'#B45309' }, // ブラウンを明るいアンバー系に調整
     NONE:{ name:'未開拓', bg:'#060A11' },
     UNK: { name:'情報未取得', bg:'#111926' },
 };
+// 合計タイル数を36に調整
 const CUSTOMER_POOL = [
-    { id:101, name:'NIT-Core', budget:120, tiles:5 },
-    { id:102, name:'NIT-Logi', budget:80,  tiles:4 },
-    { id:201, name:'SAP-Net',  budget:70,  tiles:4 },
+    { id:101, name:'NIT-Core', budget:120, tiles:6 },
+    { id:102, name:'NIT-Logi', budget:80,  tiles:5 },
+    { id:201, name:'SAP-Net',  budget:70,  tiles:5 },
     { id:202, name:'SAP-Win',  budget:65,  tiles:3 },
-    { id:401, name:'HOU-Edu',  budget:110, tiles:4 },
-    { id:501, name:'TSU-EC',   budget:80,  tiles:3 },
+    { id:401, name:'HOU-Edu',  budget:110, tiles:5 },
+    { id:501, name:'TSU-EC',   budget:80,  tiles:4 },
     { id:701, name:'HKL-Agri', budget:60,  tiles:3 },
     { id:901, name:'HBA-Sec',  budget:50,  tiles:2 },
     { id:1001,name:'SAT-POS',  budget:40,  tiles:2 },
@@ -346,16 +348,46 @@ function initEnv() {
 }
 
 function buildGrid() {
-    let tiles = [];
-    [...state.customers].sort(()=>Math.random()-.5).forEach(c => {
-        for (let i=0;i<c.tiles;i++) tiles.push({cid:c.id});
+    const grid = Array(36).fill(null);
+    // 顧客をランダムな順序で配置
+    const customers = [...state.customers].sort(() => Math.random() - 0.5);
+    
+    customers.forEach(c => {
+        let placed = 0;
+        while (placed < c.tiles) {
+            let possibleSpots = [];
+            let emptySpots = [];
+            
+            for (let i = 0; i < 36; i++) {
+                if (grid[i] === null) {
+                    emptySpots.push(i);
+                    // 隣接チェック
+                    const row = Math.floor(i / 6);
+                    const col = i % 6;
+                    const neighbors = [
+                        col > 0 ? i - 1 : -1,
+                        col < 5 ? i + 1 : -1,
+                        row > 0 ? i - 6 : -1,
+                        row < 5 ? i + 6 : -1
+                    ];
+                    if (neighbors.some(n => n !== -1 && grid[n]?.cid === c.id)) {
+                        possibleSpots.push(i);
+                    }
+                }
+            }
+
+            let target;
+            if (placed === 0 || possibleSpots.length === 0) {
+                target = emptySpots[Math.floor(Math.random() * emptySpots.length)];
+            } else {
+                target = possibleSpots[Math.floor(Math.random() * possibleSpots.length)];
+            }
+            
+            grid[target] = { cid: c.id };
+            placed++;
+        }
     });
-    if (tiles.length > 36) {
-        tiles = tiles.slice(0, 36);
-    } else {
-        while (tiles.length < 36) tiles.push({cid:null});
-    }
-    state.grid = tiles;
+    state.grid = grid;
 }
 
 function wr(c) {
@@ -382,7 +414,8 @@ function render() {
     state.customers.forEach(c=>{if(s[c.vendor]!==undefined)s[c.vendor]+=c.budget;});
     const total = Object.values(s).reduce((a,b)=>a+b,0)||1;
     const bar = document.getElementById('share-bar'); bar.innerHTML='';
-    [['H','#00D68F'],['I','#38BDF8'],['A','#A855F7'],['S','#F59E0B']].forEach(([v,c])=>{
+    // シェアバーの色も調整したカラーに更新
+    [['H','#00D68F'],['I','#1E40AF'],['A','#7C3AED'],['S','#B45309']].forEach(([v,c])=>{
         const p=(s[v]||0)/total*100;
         if(p>0){const d=document.createElement('div');d.className='share-seg';d.style.cssText=`width:${p}%;background:${c}`;if(p>6)d.textContent=Math.round(p)+'%';bar.appendChild(d);}
     });
@@ -473,8 +506,8 @@ async function executeStrategy() {
         const c=state.customers.find(x=>x.id===t.cid);
         if(t.type==='VISIT'){
             c.vc++; turnResults.push({n:c.name, tx:'戦略訪問を実施。顧客キーマンの情報を入手。', self:true});
-        } else if(t.type==='INTEL'){
-            c.intelRevealed = true; turnResults.push({n:c.name, tx:`競合調査を実施。${VENDORS[c.vendor].name}の潜伏を特定。`, self:true});
+        } else if(t.type==='SURVEY'){ // 名称変更適用済み
+            c.intelRevealed = true; turnResults.push({n:c.name, tx:`市場調査を実施。${VENDORS[c.vendor].name}の動向を特定。`, self:true});
         } else if(t.type==='SPECIN'){
             c.specIn = true; turnResults.push({n:c.name, tx:'自社有利な要件をRFPに盛り込む「スペックイン」に成功。', self:true});
         } else if(t.type==='CXO'){
@@ -491,13 +524,10 @@ async function executeStrategy() {
 
     // Rival moves
     for (const rid of ['I', 'A', 'S']) {
-        // 指示：構築フェーズ(mo>=50)にいる顧客は急襲対象から完全に除外する
         const targets = state.customers.filter(c => c.vendor !== rid && c.cxoProtect <= 0 && c.mo < 50);
         
-        // アクションをとった顧客への他社の動きを確実に把握するためのロジック
         interacted.forEach(cid => {
             const tgt = state.customers.find(c => c.id === cid);
-            // 構築フェーズでなく、競合がその顧客をターゲットにする確率（30%）
             if (tgt && tgt.mo < 50 && tgt.vendor !== rid && Math.random() < 0.3) {
                 const attemptSuccess = Math.random() * 100 < (tgt.mo >= 48 ? 40 : 15);
                 if (attemptSuccess) {
@@ -509,10 +539,8 @@ async function executeStrategy() {
             }
         });
 
-        // アクションをとっていない顧客への一般的な動き
         if (targets.length && Math.random() < 0.2) {
             const tgt = targets[Math.floor(Math.random() * targets.length)];
-            // すでにinteractedでチェック済みならスキップ
             if (!interacted.includes(tgt.id)) {
                 if (Math.random() * 100 < (tgt.mo >= 48 ? 40 : 15)) {
                     tgt.vendor = rid; tgt.mo = 1; tgt.vc = 0; tgt.specIn = false;
@@ -554,10 +582,16 @@ async function executeStrategy() {
 
 function closeResult() {
     document.getElementById('result-ov').classList.add('hidden');
-    if(state.month >= 12 && state.tasks.length === 0) showFinal();
+    // 年度末（12ヶ月経過後）にリザルトを表示するよう条件を修正
+    if(state.month > 12) showFinal();
 }
 
-function showFinal() { document.getElementById('final-modal').classList.remove('hidden'); }
+function showFinal() {
+    // 最終スコアを画面に反映
+    document.getElementById('final-score').textContent = `¥${state.sales}M`;
+    document.getElementById('final-modal').classList.remove('hidden');
+}
+
 function continueGame(){ state.year++; state.month=1; state.sales=0; document.getElementById('final-modal').classList.add('hidden'); render(); }
 function resetGame(){ location.reload(); }
 
