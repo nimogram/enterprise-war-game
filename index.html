@@ -19,6 +19,7 @@
             --D: 'Bebas Neue', cursive;
             --M: 'DM Mono', monospace;
             --B: 'Outfit', sans-serif;
+            --grid-size: 6;
         }
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
@@ -42,6 +43,24 @@
             position: relative; overflow: hidden;
             background: var(--bg);
         }
+
+        /* ── MODE SELECT OVERLAY ── */
+        #mode-select-ov {
+            position: fixed; inset: 0; z-index: 10000;
+            background: var(--bg); display: flex; flex-direction: column;
+            align-items: center; justify-content: center; padding: 20px;
+            text-align: center;
+        }
+        .mode-title { font-family: var(--D); font-size: 32px; color: #fff; letter-spacing: 0.1em; margin-bottom: 8px; }
+        .mode-sub { font-size: 12px; color: var(--gold); margin-bottom: 40px; letter-spacing: 0.2em; }
+        .mode-btns { display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 260px; }
+        .mode-btn {
+            background: rgba(255,255,255,0.03); border: 1px solid var(--bdr);
+            color: #fff; border-radius: 12px; padding: 18px;
+            font-family: var(--D); font-size: 18px; letter-spacing: 0.2em;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .mode-btn:hover { background: rgba(255,255,255,0.1); border-color: var(--gold); color: var(--gold); }
 
         /* ── HEADER ── */
         .hdr {
@@ -92,10 +111,10 @@
         }
         #grid {
             display: grid;
-            grid-template-columns: repeat(6,1fr);
-            grid-template-rows: repeat(6,1fr);
+            grid-template-columns: repeat(var(--grid-size), 1fr);
+            grid-template-rows: repeat(var(--grid-size), 1fr);
             gap: 5px;
-            width: 100%; max-width: 360px;
+            width: 100%; max-width: 380px;
             aspect-ratio: 1;
         }
         .tile {
@@ -111,7 +130,7 @@
             box-shadow: 0 0 14px rgba(255,255,255,.35), inset 0 0 6px rgba(255,255,255,.05);
             transform: scale(1.07); z-index: 5;
         }
-        .t-lbl { font-family: var(--M); font-size: 16px; color: rgba(255,255,255,.8); pointer-events: none; font-weight: 600; } 
+        .t-lbl { font-family: var(--M); font-size: 14px; color: rgba(255,255,255,.8); pointer-events: none; font-weight: 600; } 
 
         /* ── ANIMATIONS ── */
         @keyframes rfp  { 0%,100%{box-shadow:0 0 8px var(--gold);border-color:var(--gold)} 50%{box-shadow:0 0-18px var(--gold);border-color:#ffe88a} }
@@ -232,6 +251,15 @@
 </head>
 <body>
 
+<div id="mode-select-ov">
+    <div class="mode-title">Operation Scoping</div>
+    <div class="mode-sub">SELECT MISSION SCALE</div>
+    <div class="mode-btns">
+        <button class="mode-btn" onclick="startGame(6)">Standard (6×6)</button>
+        <button class="mode-btn" onclick="startGame(8)">Large (8×8)</button>
+    </div>
+</div>
+
 <div id="start-ov" class="hidden">
     <div class="start-txt" id="start-txt">GAME START</div>
 </div>
@@ -267,7 +295,6 @@
             <div class="sp-btns">
                 <div style="display:flex; gap:4px;">
                     <button class="sp-btn" style="flex:1;" onclick="addTask('VISIT',5,'訪問')">Visit(-5)</button>
-                    <!-- SURVEY への改称を適用 -->
                     <button class="sp-btn" style="flex:1;" onclick="addTask('SURVEY',3,'調査')">Survey(-3)</button>
                 </div>
                 <button class="sp-btn" id="sp-spec-btn" onclick="addTask('SPECIN',12,'スペックイン')">Spec-in (-12 MH)</button>
@@ -308,34 +335,44 @@ const MAX_MH = 20;
 const VENDORS = {
     H: { name:'H社(SELF)', bg:'#00D68F' }, 
     I: { name:'D社',        bg:'#1E40AF' },
-    A: { name:'A社',        bg:'#7C3AED' }, // パープルの彩度を上げ、明るく調整
-    S: { name:'S社',        bg:'#B45309' }, // ブラウンを明るいアンバー系に調整
+    A: { name:'A社',        bg:'#7C3AED' },
+    S: { name:'S社',        bg:'#B45309' },
     NONE:{ name:'未開拓', bg:'#060A11' },
     UNK: { name:'情報未取得', bg:'#111926' },
 };
-// 合計タイル数を36に調整
-const CUSTOMER_POOL = [
-    { id:101, name:'NIT-Core', budget:120, tiles:6 },
-    { id:102, name:'NIT-Logi', budget:80,  tiles:5 },
-    { id:201, name:'SAP-Net',  budget:70,  tiles:5 },
-    { id:202, name:'SAP-Win',  budget:65,  tiles:3 },
-    { id:401, name:'HOU-Edu',  budget:110, tiles:5 },
-    { id:501, name:'TSU-EC',   budget:80,  tiles:4 },
-    { id:701, name:'HKL-Agri', budget:60,  tiles:3 },
-    { id:901, name:'HBA-Sec',  budget:50,  tiles:2 },
-    { id:1001,name:'SAT-POS',  budget:40,  tiles:2 },
-    { id:1201,name:'HPP-Sec',  budget:25,  tiles:1 },
+
+const CUSTOMER_POOL_BASE = [
+    { id:101, name:'NIT-Core', budget:120, tiles6:6, tiles8:10 },
+    { id:102, name:'NIT-Logi', budget:80,  tiles6:5, tiles8:9 },
+    { id:201, name:'SAP-Net',  budget:70,  tiles6:5, tiles8:9 },
+    { id:202, name:'SAP-Win',  budget:65,  tiles6:3, tiles8:5 },
+    { id:401, name:'HOU-Edu',  budget:110, tiles6:5, tiles8:9 },
+    { id:501, name:'TSU-EC',   budget:80,  tiles6:4, tiles8:7 },
+    { id:701, name:'HKL-Agri', budget:60,  tiles6:3, tiles8:5 },
+    { id:901, name:'HBA-Sec',  budget:50,  tiles6:2, tiles8:4 },
+    { id:1001,name:'SAT-POS',  budget:40,  tiles6:2, tiles8:4 },
+    { id:1201,name:'HPP-Sec',  budget:25,  tiles6:1, tiles8:2 },
 ];
 
 let state = {
     month:1, year:1, mh:MAX_MH, sales:0, selId:null, tasks:[], 
     logs:['Intelligence system online.'], customers:[], grid:[],
+    gridSize: 6
 };
+
+function startGame(size) {
+    state.gridSize = size;
+    document.documentElement.style.setProperty('--grid-size', size);
+    document.getElementById('mode-select-ov').classList.add('hidden');
+    initEnv();
+    render();
+}
 
 function initEnv() {
     const vd = ['H','I','A','S'];
-    state.customers = CUSTOMER_POOL.map(b => ({
+    state.customers = CUSTOMER_POOL_BASE.map(b => ({
         ...b,
+        tiles: state.gridSize === 6 ? b.tiles6 : b.tiles8,
         vendor: vd[Math.floor(Math.random()*4)],
         mo: Math.floor(Math.random()*45)+1,
         vc:0, sc:0, 
@@ -348,8 +385,9 @@ function initEnv() {
 }
 
 function buildGrid() {
-    const grid = Array(36).fill(null);
-    // 顧客をランダムな順序で配置
+    const size = state.gridSize;
+    const totalCells = size * size;
+    const grid = Array(totalCells).fill(null);
     const customers = [...state.customers].sort(() => Math.random() - 0.5);
     
     customers.forEach(c => {
@@ -358,17 +396,16 @@ function buildGrid() {
             let possibleSpots = [];
             let emptySpots = [];
             
-            for (let i = 0; i < 36; i++) {
+            for (let i = 0; i < totalCells; i++) {
                 if (grid[i] === null) {
                     emptySpots.push(i);
-                    // 隣接チェック
-                    const row = Math.floor(i / 6);
-                    const col = i % 6;
+                    const row = Math.floor(i / size);
+                    const col = i % size;
                     const neighbors = [
                         col > 0 ? i - 1 : -1,
-                        col < 5 ? i + 1 : -1,
-                        row > 0 ? i - 6 : -1,
-                        row < 5 ? i + 6 : -1
+                        col < size - 1 ? i + 1 : -1,
+                        row > 0 ? i - size : -1,
+                        row < size - 1 ? i + size : -1
                     ];
                     if (neighbors.some(n => n !== -1 && grid[n]?.cid === c.id)) {
                         possibleSpots.push(i);
@@ -383,8 +420,12 @@ function buildGrid() {
                 target = possibleSpots[Math.floor(Math.random() * possibleSpots.length)];
             }
             
-            grid[target] = { cid: c.id };
-            placed++;
+            if (target !== undefined) {
+                grid[target] = { cid: c.id };
+                placed++;
+            } else {
+                break; 
+            }
         }
     });
     state.grid = grid;
@@ -414,7 +455,6 @@ function render() {
     state.customers.forEach(c=>{if(s[c.vendor]!==undefined)s[c.vendor]+=c.budget;});
     const total = Object.values(s).reduce((a,b)=>a+b,0)||1;
     const bar = document.getElementById('share-bar'); bar.innerHTML='';
-    // シェアバーの色も調整したカラーに更新
     [['H','#00D68F'],['I','#1E40AF'],['A','#7C3AED'],['S','#B45309']].forEach(([v,c])=>{
         const p=(s[v]||0)/total*100;
         if(p>0){const d=document.createElement('div');d.className='share-seg';d.style.cssText=`width:${p}%;background:${c}`;if(p>6)d.textContent=Math.round(p)+'%';bar.appendChild(d);}
@@ -506,7 +546,7 @@ async function executeStrategy() {
         const c=state.customers.find(x=>x.id===t.cid);
         if(t.type==='VISIT'){
             c.vc++; turnResults.push({n:c.name, tx:'戦略訪問を実施。顧客キーマンの情報を入手。', self:true});
-        } else if(t.type==='SURVEY'){ // 名称変更適用済み
+        } else if(t.type==='SURVEY'){ 
             c.intelRevealed = true; turnResults.push({n:c.name, tx:`市場調査を実施。${VENDORS[c.vendor].name}の動向を特定。`, self:true});
         } else if(t.type==='SPECIN'){
             c.specIn = true; turnResults.push({n:c.name, tx:'自社有利な要件をRFPに盛り込む「スペックイン」に成功。', self:true});
@@ -522,10 +562,8 @@ async function executeStrategy() {
         }
     }
 
-    // Rival moves
     for (const rid of ['I', 'A', 'S']) {
         const targets = state.customers.filter(c => c.vendor !== rid && c.cxoProtect <= 0 && c.mo < 50);
-        
         interacted.forEach(cid => {
             const tgt = state.customers.find(c => c.id === cid);
             if (tgt && tgt.mo < 50 && tgt.vendor !== rid && Math.random() < 0.3) {
@@ -582,12 +620,10 @@ async function executeStrategy() {
 
 function closeResult() {
     document.getElementById('result-ov').classList.add('hidden');
-    // 年度末（12ヶ月経過後）にリザルトを表示するよう条件を修正
     if(state.month > 12) showFinal();
 }
 
 function showFinal() {
-    // 最終スコアを画面に反映
     document.getElementById('final-score').textContent = `¥${state.sales}M`;
     document.getElementById('final-modal').classList.remove('hidden');
 }
@@ -596,10 +632,9 @@ function continueGame(){ state.year++; state.month=1; state.sales=0; document.ge
 function resetGame(){ location.reload(); }
 
 window.onload=()=>{ 
-    initEnv(); 
     document.getElementById('sp-close').onclick=()=>{state.selId=null;render();};
-    render(); 
 };
 </script>
 </body>
 </html>
+
