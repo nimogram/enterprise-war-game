@@ -23,33 +23,24 @@
         }
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
-        html, body { height: 100%; overflow: hidden; }
-        body {
-            font-family: var(--B);
-            background: var(--bg);
-            color: #7a8fa8;
-            display: flex; align-items: center; justify-content: center;
-        }
-        /* Scanline */
+        html, body { height: 100%; overflow: hidden; background: var(--bg); }
         body::after {
             content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 9998;
             background: repeating-linear-gradient(180deg, transparent 0px, transparent 3px, rgba(0,0,0,0.06) 3px, rgba(0,0,0,0.06) 4px);
         }
 
         #app {
-            width: 100%; max-width: 430px;
-            height: 100dvh;
-            display: flex; flex-direction: column;
-            position: relative; overflow: hidden;
-            background: var(--bg);
+            width: 100%; max-width: 430px; height: 100dvh;
+            display: flex; flex-direction: column; position: relative; overflow: hidden;
+            background: var(--bg); margin: 0 auto; opacity: 0; transition: opacity 0.5s;
         }
+        #app.visible { opacity: 1; }
 
         /* ── MODE SELECT OVERLAY ── */
         #mode-select-ov {
             position: fixed; inset: 0; z-index: 10000;
             background: var(--bg); display: flex; flex-direction: column;
-            align-items: center; justify-content: center; padding: 20px;
-            text-align: center;
+            align-items: center; justify-content: center; padding: 20px; text-align: center;
         }
         .mode-title { font-family: var(--D); font-size: 32px; color: #fff; letter-spacing: 0.1em; margin-bottom: 8px; }
         .mode-sub { font-size: 12px; color: var(--gold); margin-bottom: 40px; letter-spacing: 0.2em; }
@@ -63,73 +54,24 @@
         .mode-btn:hover { background: rgba(255,255,255,0.1); border-color: var(--gold); color: var(--gold); }
 
         /* ── HEADER ── */
-        .hdr {
-            flex: 0 0 auto;
-            padding: 14px 18px 0;
-            background: var(--bg);
-            border-bottom: 1px solid var(--bdr);
-            z-index: 10;
-        }
+        .hdr { flex: 0 0 auto; padding: 14px 18px 0; background: var(--bg); border-bottom: 1px solid var(--bdr); z-index: 10; }
         .hdr-row { display: flex; justify-content: space-between; align-items: flex-end; }
-        .hdr-tag {
-            font-family: var(--D); font-size: 8px; letter-spacing: .65em;
-            color: var(--gold); line-height: 1; margin-bottom: 3px;
-            display: flex; align-items: center; gap: 5px;
-        }
-        .hdr-tag::before {
-            content: ''; width: 5px; height: 5px; border-radius: 50%;
-            background: var(--gold); flex-shrink: 0;
-            animation: blink 2s infinite;
-        }
+        .hdr-tag { font-family: var(--D); font-size: 8px; letter-spacing: .65em; color: var(--gold); line-height: 1; margin-bottom: 3px; display: flex; align-items: center; gap: 5px; }
+        .hdr-tag::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: var(--gold); flex-shrink: 0; animation: blink 2s infinite; }
         @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
         .hdr-phase { font-family: var(--D); font-size: 32px; color: #fff; line-height: 1; letter-spacing: .04em; }
         .hdr-mh { text-align: right; padding-bottom: 3px; }
         .hdr-mh-lbl { font-size: 7px; font-weight: 700; letter-spacing: .4em; color: var(--muted); text-transform: uppercase; margin-bottom: 1px; }
         .hdr-mh-val { font-family: var(--D); font-size: 36px; color: var(--emerald); line-height: 1; }
-        .hdr-mh-val.lo { color: var(--rose); }
-
-        .share-bar {
-            margin: 8px 0 0; height: 18px; display: flex; border-radius: 3px;
-            overflow: hidden; border: 1px solid var(--bdr);
-        }
-        .share-seg {
-            height: 100%; transition: width .7s ease;
-            display: flex; align-items: center; justify-content: center;
-            font-family: var(--D); font-size: 11px; color: rgba(255,255,255,.9); 
-            white-space: nowrap; overflow: hidden;
-            font-weight: 600;
-        }
+        .share-bar { margin: 8px 0 0; height: 18px; display: flex; border-radius: 3px; overflow: hidden; border: 1px solid var(--bdr); }
+        .share-seg { height: 100%; transition: width .7s ease; display: flex; align-items: center; justify-content: center; font-family: var(--D); font-size: 11px; color: rgba(255,255,255,.9); white-space: nowrap; overflow: hidden; font-weight: 600; }
 
         /* ── GRID AREA ── */
-        .grid-wrap {
-            flex: 1 1 0;
-            min-height: 0;
-            display: flex; align-items: center; justify-content: center;
-            padding: 8px 14px;
-            position: relative;
-            overflow: hidden;
-        }
-        #grid {
-            display: grid;
-            grid-template-columns: repeat(var(--grid-size), 1fr);
-            grid-template-rows: repeat(var(--grid-size), 1fr);
-            gap: 5px;
-            width: 100%; max-width: 380px;
-            aspect-ratio: 1;
-        }
-        .tile {
-            aspect-ratio: 1; border-radius: 7px;
-            border: 1.5px solid rgba(255,255,255,.05);
-            cursor: pointer; display: flex; align-items: center; justify-content: center;
-            position: relative; user-select: none;
-            transition: transform .12s, box-shadow .12s, border-color .12s;
-        }
+        .grid-wrap { flex: 1 1 0; min-height: 0; display: flex; align-items: center; justify-content: center; padding: 8px 14px; position: relative; overflow: hidden; }
+        #grid { display: grid; grid-template-columns: repeat(var(--grid-size), 1fr); grid-template-rows: repeat(var(--grid-size), 1fr); gap: 5px; width: 100%; max-width: 380px; aspect-ratio: 1; }
+        .tile { aspect-ratio: 1; border-radius: 7px; border: 1.5px solid rgba(255,255,255,.05); cursor: pointer; display: flex; align-items: center; justify-content: center; position: relative; user-select: none; transition: transform .12s, box-shadow .12s, border-color .12s; }
         .tile:active { transform: scale(.88); }
-        .tile.sel {
-            border-color: #fff !important;
-            box-shadow: 0 0 14px rgba(255,255,255,.35), inset 0 0 6px rgba(255,255,255,.05);
-            transform: scale(1.07); z-index: 5;
-        }
+        .tile.sel { border-color: #fff !important; box-shadow: 0 0 14px rgba(255,255,255,.35), inset 0 0 6px rgba(255,255,255,.05); transform: scale(1.07); z-index: 5; }
         .t-lbl { font-family: var(--M); font-size: 14px; color: rgba(255,255,255,.8); pointer-events: none; font-weight: 600; } 
 
         /* ── ANIMATIONS ── */
@@ -141,72 +83,34 @@
         .cxo-a  { animation: cxo  1.5s infinite ease-in-out; border-width: 2.2px !important; }
 
         /* ── SIDE PANEL ── */
-        .sp {
-            position: absolute; top: 0; right: 0; bottom: 0;
-            width: 78%;
-            background: rgba(6,10,17,0.1); 
-            backdrop-filter: blur(4px) saturate(1.4);
-            border-left: 1px solid rgba(255,255,255,.1);
-            display: flex; flex-direction: column; gap: 10px;
-            padding: 16px 15px 14px;
-            z-index: 50;
-            transform: translateX(100%);
-            transition: transform .35s cubic-bezier(.16,1,.3,1);
-            overflow-y: auto; overflow-x: hidden;
-        }
+        .sp { position: absolute; top: 0; right: 0; bottom: 0; width: 78%; background: rgba(6,10,17,0.1); backdrop-filter: blur(8px) saturate(1.4); border-left: 1px solid rgba(255,255,255,.1); display: flex; flex-direction: column; gap: 10px; padding: 16px 15px 14px; z-index: 50; transform: translateX(100%); transition: transform .35s cubic-bezier(.16,1,.3,1); overflow-y: auto; overflow-x: hidden; }
         .sp::-webkit-scrollbar { display: none; }
         .sp.open { transform: translateX(0); }
         .sp-hdr { display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
         .sp-tag { font-size: 7px; font-weight: 700; letter-spacing: .5em; color: var(--emerald); text-transform: uppercase; }
         .sp-close { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 18px; line-height: 1; padding: 2px 4px; transition: color .15s; }
-        .sp-close:hover { color: #fff; }
         .sp-name { font-family: var(--D); font-size: 22px; color: #fff; letter-spacing: .04em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex-shrink: 0; }
         .sp-full { font-size: 10px; color: #4a5f78; line-height: 1.45; border-left: 3px solid var(--gold); padding-left: 7px; flex-shrink: 0; }
         .sp-stats { display: flex; gap: 6px; flex-shrink: 0; }
         .sp-stat { flex: 1; background: rgba(255,255,255,.02); border: 1px solid var(--bdr); border-radius: 9px; padding: 8px; }
         .sp-sl { font-size: 6px; font-weight: 700; letter-spacing: .4em; color: var(--muted); text-transform: uppercase; margin-bottom: 3px; }
         .sp-sv { font-family: var(--D); font-size: 22px; color: #fff; }
-        .sp-win { 
-            font-family: var(--D); font-size: 44px; 
-            color: #002b5c; 
-            -webkit-text-stroke: 1px #fff;
-            line-height: 1; flex-shrink: 0; 
-        }
+        .sp-win { font-family: var(--D); font-size: 44px; color: #002b5c; -webkit-text-stroke: 1px #fff; line-height: 1; flex-shrink: 0; }
         .sp-row { flex-shrink: 0; }
         .sp-rl { font-size: 6px; font-weight: 700; letter-spacing: .35em; color: var(--muted); text-transform: uppercase; margin-bottom: 2px; }
         .sp-rv { font-family: var(--D); font-size: 14px; color: var(--gold); letter-spacing: .1em; }
         .sp-status { font-size: 11px; font-weight: 600; color: #fff; }
         .sp-btns { margin-top: auto; display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
-        .sp-btn {
-            background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2);
-            color: #fff; border-radius: 10px; padding: 8px 8px;
-            font-family: var(--D); font-size: 13px; letter-spacing: .12em;
-            cursor: pointer; transition: all .18s; text-transform: uppercase;
-            opacity: 0.4;
-        }
+        .sp-btn { background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); color: #fff; border-radius: 10px; padding: 8px 8px; font-family: var(--D); font-size: 13px; letter-spacing: .12em; cursor: pointer; transition: all .18s; text-transform: uppercase; opacity: 0.4; }
         .sp-btn:hover:not(:disabled) { background: rgba(255,255,255,.25); border-color: rgba(255,255,255,.4); opacity: 1; }
         .sp-btn.pri { background: rgba(0,214,143,.18); border-color: var(--emerald); color: var(--emerald); }
         .sp-btn.alt { background: rgba(201,168,76,.12); border-color: var(--gold); color: var(--gold); }
         .sp-btn:disabled { opacity: 0.1; cursor: not-allowed; }
 
         /* ── RESULT OVERLAY ── */
-        #result-ov {
-            position: fixed; inset: 0;
-            display: flex; align-items: center; justify-content: center;
-            background: rgba(6,10,17,.82); backdrop-filter: blur(18px);
-            z-index: 800;
-        }
+        #result-ov { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(6,10,17,.82); backdrop-filter: blur(18px); z-index: 800; }
         #result-ov.hidden { display: none; }
-        .res-box {
-            width: 93%; max-height: 88dvh;
-            border: 1px solid rgba(255,255,255,.12);
-            border-radius: 24px;
-            background: rgba(12,18,33,.45);
-            backdrop-filter: blur(24px);
-            display: flex; flex-direction: column;
-            overflow: hidden;
-            box-shadow: 0 0 80px rgba(0,0,0,.9);
-        }
+        .res-box { width: 93%; max-height: 88dvh; border: 1px solid rgba(255,255,255,.12); border-radius: 24px; background: rgba(12,18,33,.45); backdrop-filter: blur(24px); display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 0 80px rgba(0,0,0,.9); }
         .res-hdr { padding: 20px 20px 14px; border-bottom: 1px solid var(--bdr); display: flex; justify-content: space-between; }
         .res-title { font-family: var(--D); font-size: 20px; letter-spacing: .45em; color: var(--gold); }
         .res-list { flex: 1; overflow-y: auto; padding: 10px 18px; scrollbar-width: none; }
@@ -214,22 +118,15 @@
         .res-bname { font-family: var(--D); color: var(--gold); font-size: 14px; letter-spacing: .2em; margin-bottom: 8px; padding-left: 8px; border-left: 3px solid var(--gold); }
         .res-row { display: flex; gap: 9px; font-size: 14.5px; margin-bottom: 5px; line-height: 1.45; align-items: flex-start; }
         .res-txt { color: #aabbcc; }
-        .res-next {
-            flex-shrink: 0; height: 52px; border: none; border-top: 1px solid var(--bdr);
-            background: #fff; color: var(--bg); font-family: var(--D); font-size: 15px; letter-spacing: .5em; text-transform: uppercase; cursor: pointer;
-        }
+        .res-next { flex-shrink: 0; height: 52px; border: none; border-top: 1px solid var(--bdr); background: #fff; color: var(--bg); font-family: var(--D); font-size: 15px; letter-spacing: .5em; text-transform: uppercase; cursor: pointer; }
 
         /* ── LOWER UI ── */
-        .task-strip {
-            flex: 0 0 50px; min-height: 50px; display: flex; align-items: center; gap: 6px; padding: 0 14px; overflow-x: auto; border-top: 1px solid var(--bdr); background: var(--bg); z-index: 10;
-        }
+        .task-strip { flex: 0 0 50px; min-height: 50px; display: flex; align-items: center; gap: 6px; padding: 0 14px; overflow-x: auto; border-top: 1px solid var(--bdr); background: var(--bg); z-index: 10; }
         .t-chip { flex-shrink: 0; display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.1); border-radius: 18px; padding: 3px 9px 3px 11px; font-size: 9.5px; font-weight: 600; color: #c0cee0; }
         .t-chip-name { color: var(--emerald); font-family: var(--M); font-size: 8.5px; }
         .t-chip-rm { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 13px; padding: 0; }
 
-        .exec-btn {
-            flex: 0 0 50px; min-height: 50px; border: none; border-top: 1px solid var(--bdr); background: rgba(255,255,255,.03); color: var(--muted); font-family: var(--D); font-size: 17px; letter-spacing: .55em; text-transform: uppercase; cursor: not-allowed; opacity: .4; transition: all .25s; z-index: 10;
-        }
+        .exec-btn { flex: 0 0 50px; min-height: 50px; border: none; border-top: 1px solid var(--bdr); background: rgba(255,255,255,.03); color: var(--muted); font-family: var(--D); font-size: 17px; letter-spacing: .55em; text-transform: uppercase; cursor: not-allowed; opacity: .4; transition: all .25s; z-index: 10; }
         .exec-btn.on { background: #fff; color: var(--bg); cursor: pointer; opacity: 1; box-shadow: 0 -8px 24px rgba(255,255,255,.12); }
 
         .log-area { flex: 0 0 40px; min-height: 40px; overflow: hidden; padding: 5px 15px; border-top: 1px solid var(--bdr); background: var(--bg); z-index: 10; }
@@ -239,14 +136,14 @@
         .score-v { font-family: var(--D); font-size: 30px; color: #fff; }
 
         #final-modal { position: fixed; inset: 0; z-index: 9500; display: flex; align-items: center; justify-content: center; background: rgba(6,10,17,.97); padding: 16px; }
-        #final-modal.hidden { display: none; }
+        #final-modal.hidden { display: none !important; }
         .final-box { background: var(--surf); border: 1px solid rgba(255,255,255,.08); border-radius: 28px; padding: 28px 22px; width: 100%; text-align: center; }
         .final-score { font-family: var(--D); font-size: 64px; color: var(--emerald); line-height: 1; margin: 8px 0 20px; }
         .final-btn { width: 100%; height: 48px; border-radius: 12px; border: none; font-family: var(--D); font-size: 15px; letter-spacing: .4em; text-transform: uppercase; cursor: pointer; margin-top: 10px; }
         .final-btn.pri { background: #fff; color: var(--bg); }
         .final-btn.sec { background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1); color: var(--muted); }
         
-        .hidden { display: none; }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
@@ -255,13 +152,9 @@
     <div class="mode-title">Operation Scoping</div>
     <div class="mode-sub">SELECT MISSION SCALE</div>
     <div class="mode-btns">
-        <button class="mode-btn" onclick="startGame(6)">Standard (6×6)</button>
-        <button class="mode-btn" onclick="startGame(8)">Large (8×8)</button>
+        <button class="mode-btn" onclick="handleStart(6)">Standard (6×6) / 4 Vendors</button>
+        <button class="mode-btn" onclick="handleStart(8)">Large (8×8) / 6 Vendors</button>
     </div>
-</div>
-
-<div id="start-ov" class="hidden">
-    <div class="start-txt" id="start-txt">GAME START</div>
 </div>
 
 <div id="app">
@@ -331,12 +224,41 @@
 </div>
 
 <script>
-const MAX_MH = 20;
+// --- AUDIO ENGINE ---
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+function playSound(freq, type, duration, vol = 0.1) {
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+    gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + duration);
+}
+
+const SFX = {
+    select: () => playSound(600, 'sine', 0.1),
+    add: () => playSound(800, 'square', 0.05, 0.05),
+    exec: () => {
+        playSound(200, 'sawtooth', 0.3, 0.1);
+        setTimeout(() => playSound(400, 'sawtooth', 0.2, 0.1), 100);
+    },
+    report: () => playSound(523.25, 'sine', 0.5, 0.1),
+    error: () => playSound(150, 'triangle', 0.3, 0.2)
+};
+
+// --- GAME LOGIC ---
 const VENDORS = {
     H: { name:'H社(SELF)', bg:'#00D68F' }, 
     I: { name:'D社',        bg:'#1E40AF' },
     A: { name:'A社',        bg:'#7C3AED' },
     S: { name:'S社',        bg:'#B45309' },
+    E: { name:'E社',        bg:'#DB2777' }, // 新規
+    F: { name:'F社',        bg:'#0891B2' }, // 新規
     NONE:{ name:'未開拓', bg:'#060A11' },
     UNK: { name:'情報未取得', bg:'#111926' },
 };
@@ -357,23 +279,26 @@ const CUSTOMER_POOL_BASE = [
 let state = {
     month:1, year:1, mh:MAX_MH, sales:0, selId:null, tasks:[], 
     logs:['Intelligence system online.'], customers:[], grid:[],
-    gridSize: 6
+    gridSize: 6,
+    vendorList: ['H','I','A','S']
 };
 
-function startGame(size) {
+function handleStart(size) {
+    SFX.select();
     state.gridSize = size;
+    state.vendorList = size === 6 ? ['H','I','A','S'] : ['H','I','A','S','E','F'];
     document.documentElement.style.setProperty('--grid-size', size);
     document.getElementById('mode-select-ov').classList.add('hidden');
+    document.getElementById('app').classList.add('visible');
     initEnv();
     render();
 }
 
 function initEnv() {
-    const vd = ['H','I','A','S'];
     state.customers = CUSTOMER_POOL_BASE.map(b => ({
         ...b,
         tiles: state.gridSize === 6 ? b.tiles6 : b.tiles8,
-        vendor: vd[Math.floor(Math.random()*4)],
+        vendor: state.vendorList[Math.floor(Math.random() * state.vendorList.length)],
         mo: Math.floor(Math.random()*45)+1,
         vc:0, sc:0, 
         affinity: Math.floor(Math.random() * 21),
@@ -395,7 +320,6 @@ function buildGrid() {
         while (placed < c.tiles) {
             let possibleSpots = [];
             let emptySpots = [];
-            
             for (let i = 0; i < totalCells; i++) {
                 if (grid[i] === null) {
                     emptySpots.push(i);
@@ -407,25 +331,19 @@ function buildGrid() {
                         row > 0 ? i - size : -1,
                         row < size - 1 ? i + size : -1
                     ];
-                    if (neighbors.some(n => n !== -1 && grid[n]?.cid === c.id)) {
-                        possibleSpots.push(i);
-                    }
+                    if (neighbors.some(n => n !== -1 && grid[n]?.cid === c.id)) possibleSpots.push(i);
                 }
             }
-
             let target;
             if (placed === 0 || possibleSpots.length === 0) {
                 target = emptySpots[Math.floor(Math.random() * emptySpots.length)];
             } else {
                 target = possibleSpots[Math.floor(Math.random() * possibleSpots.length)];
             }
-            
             if (target !== undefined) {
                 grid[target] = { cid: c.id };
                 placed++;
-            } else {
-                break; 
-            }
+            } else break;
         }
     });
     state.grid = grid;
@@ -437,7 +355,7 @@ function wr(c) {
     if (c.vendor==='H') r += 40;
     if (c.mo>=48 && c.mo<50) r += 40; else if (c.mo>=50) r -= 20;
     if (c.specIn) r += 30;
-    r += c.vc*5 + (c.sc||0)*10;
+    r += c.vc*5;
     state.tasks.filter(t=>t.cid===c.id).forEach(t=>{
         if(t.type==='VISIT') r+=5;
         if(t.type==='CXO') r+=50;
@@ -447,17 +365,24 @@ function wr(c) {
 
 function render() {
     document.getElementById('phase-disp').textContent = `FY2${state.year+5}M${state.month}`;
-    const me = document.getElementById('mh-disp');
-    me.textContent = state.mh;
+    document.getElementById('mh-disp').textContent = state.mh;
     document.getElementById('score-v').innerHTML = `¥${state.sales}<span>M</span>`;
 
-    const s={H:0,I:0,A:0,S:0};
+    const s={};
+    state.vendorList.forEach(v => s[v] = 0);
     state.customers.forEach(c=>{if(s[c.vendor]!==undefined)s[c.vendor]+=c.budget;});
     const total = Object.values(s).reduce((a,b)=>a+b,0)||1;
     const bar = document.getElementById('share-bar'); bar.innerHTML='';
-    [['H','#00D68F'],['I','#1E40AF'],['A','#7C3AED'],['S','#B45309']].forEach(([v,c])=>{
+    
+    state.vendorList.forEach(v => {
         const p=(s[v]||0)/total*100;
-        if(p>0){const d=document.createElement('div');d.className='share-seg';d.style.cssText=`width:${p}%;background:${c}`;if(p>6)d.textContent=Math.round(p)+'%';bar.appendChild(d);}
+        if(p>0){
+            const d=document.createElement('div');
+            d.className='share-seg';
+            d.style.cssText=`width:${p}%;background:${VENDORS[v].bg}`;
+            if(p>10) d.textContent=Math.round(p)+'%';
+            bar.appendChild(d);
+        }
     });
 
     const gEl = document.getElementById('grid'); gEl.innerHTML='';
@@ -468,18 +393,14 @@ function render() {
             const known=c.vc>0||c.vendor==='H';
             el.style.backgroundColor=VENDORS[known?c.vendor:'UNK'].bg;
             if(state.selId===c.id) el.classList.add('sel');
-            
             if(c.cxoProtect > 0) el.classList.add('cxo-a');
             else if(known && c.mo>=48 && c.mo<50) el.classList.add('rfp-a');
             else if(known && c.mo>=50) el.classList.add('bld-a');
-
             const sp=document.createElement('span');sp.className='t-lbl';
             sp.textContent=known?`${Math.ceil(c.mo/12)}`:'?';
             el.appendChild(sp);
-            el.onclick=e=>{state.selId=c.id;render();};
-        } else {
-            el.style.backgroundColor=VENDORS.NONE.bg;
-        }
+            el.onclick=()=>{ SFX.select(); state.selId=c.id; render(); };
+        } else el.style.backgroundColor=VENDORS.NONE.bg;
         gEl.appendChild(el);
     });
 
@@ -498,12 +419,9 @@ function render() {
         else if(c.mo>=50){stEl.textContent=`構築中 (M${c.mo})`; stEl.style.color = '';}
         else if(c.mo>=48){stEl.textContent=`📄 RFP放出中 (M${c.mo})`; stEl.style.color = 'var(--amber)';}
         else{stEl.textContent=`運用中 (M${c.mo})`; stEl.style.color = '';}
-        
         document.getElementById('sp-prop-btn').disabled=!(known&&c.mo>=48&&c.mo<50);
         document.getElementById('sp-spec-btn').disabled=(c.mo>=48 || c.specIn);
-    } else {
-        sp.classList.remove('open');
-    }
+    } else sp.classList.remove('open');
 
     const ts=document.getElementById('task-strip'); ts.innerHTML='';
     state.tasks.forEach((t,i)=>{
@@ -511,11 +429,9 @@ function render() {
         c.innerHTML=`<span class="t-chip-name">${t.cname}</span><span>${t.label}</span><button class="t-chip-rm" onclick="removeTask(${i})">✕</button>`;
         ts.appendChild(c);
     });
-
     const eb=document.getElementById('exec-btn');
     eb.disabled=state.tasks.length===0;
     eb.className='exec-btn'+(eb.disabled?'':' on');
-
     const la=document.getElementById('log-area'); la.innerHTML='';
     state.logs.slice(0,3).forEach((l,i)=>{
         const d=document.createElement('div');d.className='log-ln';
@@ -524,24 +440,25 @@ function render() {
 }
 
 function addTask(type,cost,label) {
-    if(!state.selId) return;
-    if(state.mh<cost) return;
+    if(!state.selId || state.mh<cost) { SFX.error(); return; }
+    SFX.add();
     const c=state.customers.find(x=>x.id===state.selId);
     state.tasks.push({cid:c.id,cname:c.name,type,cost,label});
-    state.mh-=cost; 
-    state.selId = null; 
-    render();
+    state.mh-=cost; state.selId = null; render();
 }
 
 function removeTask(i) {
+    SFX.select();
     state.mh+=state.tasks[i].cost;
     state.tasks.splice(i,1); render();
 }
 
 async function executeStrategy() {
+    SFX.exec();
     let turnResults = [];
     const interacted = [...new Set(state.tasks.map(t=>t.cid))];
-
+    
+    // User Actions
     for(const t of state.tasks){
         const c=state.customers.find(x=>x.id===t.cid);
         if(t.type==='VISIT'){
@@ -556,69 +473,54 @@ async function executeStrategy() {
             if(Math.random()*100<wr(c)){
                 c.vendor='H';c.mo=55;c.vc=1;c.specIn=false;state.sales+=c.budget;
                 turnResults.push({n:c.name, tx:'【受注】コンペを制しました。構築フェーズへ移行。', self:true});
-            } else {
-                turnResults.push({n:c.name, tx:'【失注】競合のロジックに押し切られました。', self:true});
-            }
+            } else turnResults.push({n:c.name, tx:'【失注】競合のロジックに押し切られました。', self:true});
         }
     }
 
-    for (const rid of ['I', 'A', 'S']) {
-        const targets = state.customers.filter(c => c.vendor !== rid && c.cxoProtect <= 0 && c.mo < 50);
-        interacted.forEach(cid => {
-            const tgt = state.customers.find(c => c.id === cid);
-            if (tgt && tgt.mo < 50 && tgt.vendor !== rid && Math.random() < 0.3) {
-                const attemptSuccess = Math.random() * 100 < (tgt.mo >= 48 ? 40 : 15);
-                if (attemptSuccess) {
-                    tgt.vendor = rid; tgt.mo = 1; tgt.vc = 0; tgt.specIn = false;
-                    turnResults.push({ n: tgt.name, tx: `【急報】${VENDORS[rid].name}による強襲を確認。ベンダーが切り替わりました。`, self:false });
-                } else {
-                    turnResults.push({ n: tgt.name, tx: `【防衛】${VENDORS[rid].name}による干渉を検知しましたが、影響はありませんでした。`, self:false });
-                }
-            }
-        });
-
-        if (targets.length && Math.random() < 0.2) {
+    // Rival Actions (Dynamic MH)
+    const rivals = state.vendorList.filter(v => v !== 'H');
+    rivals.forEach(rid => {
+        let rmh = Math.floor(Math.random() * 11) + 15; // 15-25 MH
+        while (rmh >= 6) {
+            const targets = state.customers.filter(c => c.vendor !== rid && c.cxoProtect <= 0 && c.mo < 50);
+            if (!targets.length) break;
             const tgt = targets[Math.floor(Math.random() * targets.length)];
-            if (!interacted.includes(tgt.id)) {
-                if (Math.random() * 100 < (tgt.mo >= 48 ? 40 : 15)) {
+            
+            if (rmh >= 12 && (tgt.mo >= 48 || interacted.includes(tgt.id))) {
+                // Attack (Switch Vendor)
+                rmh -= 12;
+                if (Math.random() * 100 < (tgt.mo >= 48 ? 35 : 12)) {
                     tgt.vendor = rid; tgt.mo = 1; tgt.vc = 0; tgt.specIn = false;
-                    turnResults.push({ n: tgt.name, tx: `【急報】${VENDORS[rid].name}による強襲を確認。ベンダーが切り替わりました。`, self:false });
+                    turnResults.push({ n: tgt.name, tx: `【急報】${VENDORS[rid].name}がリソースを集中投下。ベンダーが切り替わりました。`, self:false });
+                }
+            } else {
+                // Interference
+                rmh -= 6;
+                if (interacted.includes(tgt.id)) {
+                    turnResults.push({ n: tgt.name, tx: `【防衛】${VENDORS[rid].name}による干渉を検知。影響はありません。`, self:false });
                 }
             }
         }
-    }
-
-    state.month++; 
-    state.tasks = [];
-    state.mh = MAX_MH; 
-    state.selId = null; 
-    state.customers.forEach(c=>{
-        c.mo=c.mo>=60?1:c.mo+1;
-        if(c.cxoProtect > 0) c.cxoProtect--;
     });
+
+    state.month++; state.tasks = []; state.mh = MAX_MH; state.selId = null; 
+    state.customers.forEach(c=>{ c.mo=c.mo>=60?1:c.mo+1; if(c.cxoProtect > 0) c.cxoProtect--; });
 
     const rl=document.getElementById('res-list'); rl.innerHTML='';
     const grouped = {};
-    turnResults.forEach(r => {
-        if(!grouped[r.n]) grouped[r.n] = [];
-        grouped[r.n].push(r);
-    });
-
+    turnResults.forEach(r => { if(!grouped[r.n]) grouped[r.n] = []; grouped[r.n].push(r); });
     Object.keys(grouped).forEach(name => {
         const blk=document.createElement('div'); blk.className='res-block';
         let h = `<div class="res-bname">${name}</div>`;
-        grouped[name].forEach(r => {
-            h += `<div class="res-row"><div class="res-txt" style="${r.self ? 'color:var(--emerald);' : ''}">${r.tx}</div></div>`;
-        });
-        blk.innerHTML = h;
-        rl.appendChild(blk);
+        grouped[name].forEach(r => h += `<div class="res-row"><div class="res-txt" style="${r.self ? 'color:var(--emerald);' : ''}">${r.tx}</div></div>`);
+        blk.innerHTML = h; rl.appendChild(blk);
     });
-
-    document.getElementById('result-ov').classList.remove('hidden');
+    setTimeout(() => { SFX.report(); document.getElementById('result-ov').classList.remove('hidden'); }, 300);
     render();
 }
 
 function closeResult() {
+    SFX.select();
     document.getElementById('result-ov').classList.add('hidden');
     if(state.month > 12) showFinal();
 }
@@ -628,13 +530,12 @@ function showFinal() {
     document.getElementById('final-modal').classList.remove('hidden');
 }
 
-function continueGame(){ state.year++; state.month=1; state.sales=0; document.getElementById('final-modal').classList.add('hidden'); render(); }
+function continueGame(){ SFX.report(); state.year++; state.month=1; state.sales=0; document.getElementById('final-modal').classList.add('hidden'); render(); }
 function resetGame(){ location.reload(); }
 
 window.onload=()=>{ 
-    document.getElementById('sp-close').onclick=()=>{state.selId=null;render();};
+    document.getElementById('sp-close').onclick=()=>{SFX.select(); state.selId=null;render();};
 };
 </script>
 </body>
 </html>
-
