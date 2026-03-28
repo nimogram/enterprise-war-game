@@ -1,10 +1,309 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { X, ChevronRight, Shield, Zap, Search, Users, Trophy, Volume2, Info } from 'lucide-react';
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>THE ENTERPRISE: 覇権奪還</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Outfit:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold:    #C9A84C;
+            --emerald: #00D68F;
+            --rose:    #FF4D6D;
+            --sky:     #38BDF8;
+            --amber:   #F59E0B;
+            --bg:      #060A11;
+            --surf:    #0C1221;
+            --bdr:     rgba(255,255,255,0.07);
+            --muted:   #2a3a50;
+            --D: 'Bebas Neue', cursive;
+            --M: 'DM Mono', monospace;
+            --B: 'Outfit', sans-serif;
+            --grid-size: 6;
+        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
-// --- AUDIO ENGINE (Synthesized via Web Audio API) ---
-const playSound = (freq, type, duration, vol = 0.1) => {
-  try {
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        html, body { height: 100%; overflow: hidden; }
+        body {
+            font-family: var(--B);
+            background: var(--bg);
+            color: #7a8fa8;
+            display: flex; align-items: center; justify-content: center;
+        }
+        /* Scanline */
+        body::after {
+            content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 9998;
+            background: repeating-linear-gradient(180deg, transparent 0px, transparent 3px, rgba(0,0,0,0.06) 3px, rgba(0,0,0,0.06) 4px);
+        }
+
+        #app {
+            width: 100%; max-width: 430px;
+            height: 100dvh;
+            display: flex; flex-direction: column;
+            position: relative; overflow: hidden;
+            background: var(--bg);
+            opacity: 0; transition: opacity 0.5s;
+        }
+        #app.visible { opacity: 1; }
+
+        /* ── START OVERLAY ── */
+        #mode-select-ov {
+            position: fixed; inset: 0; z-index: 10000;
+            background: var(--bg); display: flex; flex-direction: column;
+            align-items: center; justify-content: center; padding: 20px; text-align: center;
+        }
+        .mode-title { font-family: var(--D); font-size: 42px; color: #fff; letter-spacing: 0.15em; margin-bottom: 8px; }
+        .mode-sub { font-size: 11px; color: var(--gold); margin-bottom: 40px; letter-spacing: 0.4em; font-weight: 900; }
+        .mode-btns { display: flex; flex-direction: column; gap: 15px; width: 100%; max-width: 280px; }
+        .mode-btn {
+            background: rgba(255,255,255,0.03); border: 1px solid var(--bdr);
+            color: #fff; border-radius: 16px; padding: 24px;
+            font-family: var(--D); font-size: 22px; letter-spacing: 0.2em;
+            cursor: pointer; transition: all 0.25s;
+        }
+        .mode-btn:hover { background: rgba(255,255,255,0.08); border-color: var(--gold); color: var(--gold); transform: translateY(-2px); }
+
+        /* ── HEADER ── */
+        .hdr {
+            flex: 0 0 auto;
+            padding: 14px 18px 0;
+            background: var(--bg);
+            border-bottom: 1px solid var(--bdr);
+            z-index: 10;
+        }
+        .hdr-row { display: flex; justify-content: space-between; align-items: flex-end; }
+        .hdr-tag {
+            font-family: var(--D); font-size: 8px; letter-spacing: .65em;
+            color: var(--gold); line-height: 1; margin-bottom: 3px;
+            display: flex; align-items: center; gap: 5px;
+        }
+        .hdr-tag::before {
+            content: ''; width: 5px; height: 5px; border-radius: 50%;
+            background: var(--gold); flex-shrink: 0;
+            animation: blink 2s infinite;
+        }
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
+        .hdr-phase { font-family: var(--D); font-size: 32px; color: #fff; line-height: 1; letter-spacing: .04em; }
+        .hdr-mh { text-align: right; padding-bottom: 3px; }
+        .hdr-mh-lbl { font-size: 7px; font-weight: 700; letter-spacing: .4em; color: var(--muted); text-transform: uppercase; margin-bottom: 1px; }
+        .hdr-mh-val { font-family: var(--D); font-size: 36px; color: var(--emerald); line-height: 1; }
+
+        .share-bar {
+            margin: 8px 0 0; height: 18px; display: flex; border-radius: 3px;
+            overflow: hidden; border: 1px solid var(--bdr);
+        }
+        .share-seg {
+            height: 100%; transition: width .7s ease;
+            display: flex; align-items: center; justify-content: center;
+            font-family: var(--D); font-size: 11px; color: rgba(255,255,255,.9); 
+            white-space: nowrap; overflow: hidden;
+            font-weight: 600;
+        }
+
+        /* ── GRID AREA ── */
+        .grid-wrap {
+            flex: 1 1 0;
+            min-height: 0;
+            display: flex; align-items: center; justify-content: center;
+            padding: 8px 14px;
+            position: relative;
+            overflow: hidden;
+        }
+        #grid {
+            display: grid;
+            grid-template-columns: repeat(var(--grid-size), 1fr);
+            grid-template-rows: repeat(var(--grid-size), 1fr);
+            gap: 5px;
+            width: 100%; max-width: 380px;
+            aspect-ratio: 1;
+        }
+        .tile {
+            aspect-ratio: 1; border-radius: 7px;
+            border: 1.5px solid rgba(255,255,255,.05);
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            position: relative; user-select: none;
+            transition: transform .12s, box-shadow .12s, border-color .12s;
+        }
+        .tile:active { transform: scale(.88); }
+        .tile.sel {
+            border-color: #fff !important;
+            box-shadow: 0 0 14px rgba(255,255,255,.35), inset 0 0 6px rgba(255,255,255,.05);
+            transform: scale(1.07); z-index: 5;
+        }
+        .t-lbl { font-family: var(--M); font-size: 14px; color: rgba(255,255,255,.8); pointer-events: none; font-weight: 600; } 
+
+        /* ── ANIMATIONS ── */
+        @keyframes rfp  { 0%,100%{box-shadow:0 0 8px var(--gold);border-color:var(--gold)} 50%{box-shadow:0 0 16px var(--gold);border-color:#ffe88a} }
+        @keyframes bld  { 0%,100%{box-shadow:0 0 6px rgba(255,255,255,0.2);border-color:rgba(255,255,255,0.35)} 50%{box-shadow:0 0 14px rgba(255,255,255,0.5);border-color:#fff} }
+        @keyframes cxo  { 0%,100%{box-shadow:0 0 10px var(--sky);border-color:var(--sky)} 50%{box-shadow:0 0 20px var(--sky);border-color:#93e2ff} }
+        .rfp-a  { animation: rfp  1.3s infinite ease-in-out; }
+        .bld-a  { animation: bld  1.7s infinite ease-in-out; }
+        .cxo-a  { animation: cxo  1.5s infinite ease-in-out; border-width: 2.2px !important; }
+
+        /* ── SIDE PANEL ── */
+        .sp {
+            position: absolute; top: 0; right: 0; bottom: 0;
+            width: 78%;
+            background: rgba(6,10,17,0.1); 
+            backdrop-filter: blur(25px) saturate(1.4);
+            border-left: 1px solid rgba(255,255,255,.1);
+            display: flex; flex-direction: column; gap: 10px;
+            padding: 16px 15px 14px;
+            z-index: 50;
+            transform: translateX(100%);
+            transition: transform .35s cubic-bezier(.16,1,.3,1);
+            overflow-y: auto; overflow-x: hidden;
+        }
+        .sp::-webkit-scrollbar { display: none; }
+        .sp.open { transform: translateX(0); }
+        .sp-hdr { display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+        .sp-tag { font-size: 7px; font-weight: 700; letter-spacing: .5em; color: var(--emerald); text-transform: uppercase; }
+        .sp-close { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 18px; line-height: 1; padding: 2px 4px; transition: color .15s; }
+        .sp-name { font-family: var(--D); font-size: 22px; color: #fff; letter-spacing: .04em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex-shrink: 0; }
+        .sp-full { font-size: 10px; color: #4a5f78; line-height: 1.45; border-left: 3px solid var(--gold); padding-left: 7px; flex-shrink: 0; }
+        .sp-stats { display: flex; gap: 6px; flex-shrink: 0; }
+        .sp-stat { flex: 1; background: rgba(255,255,255,.02); border: 1px solid var(--bdr); border-radius: 9px; padding: 8px; }
+        .sp-sl { font-size: 6px; font-weight: 700; letter-spacing: .4em; color: var(--muted); text-transform: uppercase; margin-bottom: 3px; }
+        .sp-sv { font-family: var(--D); font-size: 22px; color: #fff; }
+        .sp-win { font-family: var(--D); font-size: 44px; color: #002b5c; -webkit-text-stroke: 1px #fff; line-height: 1; flex-shrink: 0; }
+        .sp-row { flex-shrink: 0; }
+        .sp-rl { font-size: 6px; font-weight: 700; letter-spacing: .35em; color: var(--muted); text-transform: uppercase; margin-bottom: 2px; }
+        .sp-rv { font-family: var(--D); font-size: 14px; color: var(--gold); letter-spacing: .1em; }
+        .sp-status { font-size: 11px; font-weight: 600; color: #fff; }
+        .sp-btns { margin-top: auto; display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
+        .sp-btn {
+            background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2);
+            color: #fff; border-radius: 10px; padding: 8px 8px;
+            font-family: var(--D); font-size: 13px; letter-spacing: .12em;
+            cursor: pointer; transition: all .18s; text-transform: uppercase;
+            opacity: 0.4;
+        }
+        .sp-btn:hover:not(:disabled) { background: rgba(255,255,255,.25); border-color: rgba(255,255,255,.4); opacity: 1; }
+        .sp-btn.pri { background: rgba(0,214,143,.18); border-color: var(--emerald); color: var(--emerald); }
+        .sp-btn.alt { background: rgba(201,168,76,.12); border-color: var(--gold); color: var(--gold); }
+        .sp-btn:disabled { opacity: 0.1; cursor: not-allowed; }
+
+        /* ── LOWER UI ── */
+        .task-strip { flex: 0 0 50px; min-height: 50px; display: flex; align-items: center; gap: 6px; padding: 0 14px; overflow-x: auto; border-top: 1px solid var(--bdr); background: var(--bg); z-index: 10; }
+        .t-chip { flex-shrink: 0; display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.1); border-radius: 18px; padding: 3px 9px 3px 11px; font-size: 9.5px; font-weight: 600; color: #c0cee0; }
+        .t-chip-name { color: var(--emerald); font-family: var(--M); font-size: 8.5px; }
+        .t-chip-rm { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 13px; padding: 0; }
+
+        .exec-btn { flex: 0 0 50px; min-height: 50px; border: none; border-top: 1px solid var(--bdr); background: rgba(255,255,255,.03); color: var(--muted); font-family: var(--D); font-size: 17px; letter-spacing: .55em; text-transform: uppercase; cursor: not-allowed; opacity: .4; transition: all .25s; z-index: 10; }
+        .exec-btn.on { background: #fff; color: var(--bg); cursor: pointer; opacity: 1; box-shadow: 0 -8px 24px rgba(255,255,255,.12); }
+
+        .log-area { flex: 0 0 40px; min-height: 40px; overflow: hidden; padding: 5px 15px; border-top: 1px solid var(--bdr); background: var(--bg); z-index: 10; }
+        .log-ln { font-family: var(--M); font-size: 8.5px; color: var(--muted); line-height: 1.55; }
+
+        .score-bar { flex: 0 0 48px; min-height: 48px; display: flex; justify-content: space-between; align-items: center; padding: 0 18px; border-top: 1px solid var(--bdr); background: var(--bg); z-index: 10; }
+        .score-v { font-family: var(--D); font-size: 30px; color: #fff; }
+
+        /* ── OVERLAYS ── */
+        #result-ov, #final-modal { 
+            position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; 
+            background: rgba(6,10,17,.4); /* 半透明度を調整 */
+            backdrop-filter: blur(8px); /* ぼかしを少し抑えて後ろが見えるように */
+            z-index: 800; 
+        }
+        .res-box, .final-box { 
+            width: 93%; max-height: 88dvh; border: 1px solid rgba(255,255,255,.12); 
+            border-radius: 24px; background: rgba(12,18,33,.6); /* ボックス自体の背景も透過 */
+            display: flex; flex-direction: column; overflow: hidden; 
+        }
+        .res-hdr { padding: 20px; border-bottom: 1px solid var(--bdr); }
+        .res-title { font-family: var(--D); font-size: 20px; letter-spacing: .45em; color: var(--gold); }
+        .res-list { flex: 1; overflow-y: auto; padding: 10px 18px; }
+        .res-block { padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+        .res-bname { font-family: var(--D); color: var(--gold); font-size: 14px; letter-spacing: .2em; border-left: 3px solid var(--gold); padding-left: 8px; margin-bottom: 8px; }
+        .res-txt { font-size: 14.5px; color: #aabbcc; }
+        .res-next, .final-btn { height: 52px; border: none; background: #fff; color: var(--bg); font-family: var(--D); font-size: 15px; letter-spacing: .5em; text-transform: uppercase; cursor: pointer; }
+        
+        #final-modal .final-box { text-align: center; padding: 30px 20px; }
+        .final-score { font-family: var(--D); font-size: 64px; color: var(--emerald); margin: 20px 0; }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+<div id="mode-select-ov">
+    <div class="mode-title">Operation Scoping</div>
+    <div class="mode-sub">SELECT MISSION SCALE</div>
+    <div class="mode-btns">
+        <button class="mode-btn" onclick="startApp(6)">Standard (6×6)</button>
+        <button class="mode-btn" onclick="startApp(8)">Large (8×8)</button>
+    </div>
+</div>
+
+<div id="app">
+    <header class="hdr">
+        <div class="hdr-row">
+            <div>
+                <div class="hdr-tag">TACTICAL COMMAND</div>
+                <div class="hdr-phase" id="phase-disp">FY26M1</div>
+            </div>
+            <div class="hdr-mh">
+                <div class="hdr-mh-lbl">RESOURCE MH</div>
+                <div class="hdr-mh-val" id="mh-disp">20</div>
+            </div>
+        </div>
+        <div class="share-bar" id="share-bar"></div>
+    </header>
+
+    <section class="grid-wrap">
+        <div id="grid"></div>
+        <aside class="sp" id="sp">
+            <div class="sp-hdr"><span class="sp-tag">Tactical Detail</span><button class="sp-close" id="sp-close">✕</button></div>
+            <div class="sp-name" id="sp-name">—</div>
+            <div class="sp-full" id="sp-full">領域システム情報を確認中...</div>
+            <div class="sp-stats">
+                <div class="sp-stat"><div class="sp-sl">Visit</div><div class="sp-sv" id="sp-vc">0</div></div>
+                <div class="sp-stat"><div class="sp-sl">Win Prob.</div><div class="sp-sv" id="sp-win">0%</div></div>
+            </div>
+            <div class="sp-row"><div class="sp-rl">Provider</div><div class="sp-rv" id="sp-vendor">—</div></div>
+            <div class="sp-row"><div class="sp-rl">Phase</div><div class="sp-status" id="sp-status">—</div></div>
+            <div class="sp-btns">
+                <div style="display:flex; gap:4px;">
+                    <button class="sp-btn" style="flex:1;" onclick="addTask('VISIT',5,'訪問')">Visit(-5)</button>
+                    <button class="sp-btn" style="flex:1;" onclick="addTask('SURVEY',3,'調査')">Survey(-3)</button>
+                </div>
+                <button class="sp-btn" id="sp-spec-btn" onclick="addTask('SPECIN',12,'スペックイン')">Spec-in (-12 MH)</button>
+                <button class="sp-btn alt" onclick="addTask('CXO',15,'トップ面談')">CXO Meeting (-15 MH)</button>
+                <button class="sp-btn pri" id="sp-prop-btn" onclick="addTask('PROPOSAL',10,'提案')" disabled>Submit Proposal (-10 MH)</button>
+            </div>
+        </aside>
+    </section>
+
+    <div class="task-strip" id="task-strip"></div>
+    <button class="exec-btn" id="exec-btn" disabled onclick="executeStrategy()">Launch Mission</button>
+    <div class="log-area" id="log-area"></div>
+
+    <footer class="score-bar">
+        <div class="score-v" id="score-v">¥0<span>M</span></div>
+    </footer>
+</div>
+
+<div id="result-ov" class="hidden">
+    <div class="res-box">
+        <div class="res-hdr"><span class="res-title">CALL REPORT</span></div>
+        <div class="res-list" id="res-list"></div>
+        <button class="res-next" onclick="closeResult()">Next Cycle ›</button>
+    </div>
+</div>
+
+<div id="final-modal" class="hidden">
+    <div class="final-box">
+        <div class="res-hdr"><span class="res-title">ANNUAL RESULT</span></div>
+        <div class="final-score" id="final-score">¥0M</div>
+        <button class="final-btn" onclick="location.reload()">Reset System</button>
+    </div>
+</div>
+
+<script>
+// --- AUDIO ENGINE ---
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+function playSound(freq, type, duration, vol = 0.1) {
+    if (audioCtx.state === 'suspended') audioCtx.resume();
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
     osc.type = type;
@@ -15,533 +314,256 @@ const playSound = (freq, type, duration, vol = 0.1) => {
     gain.connect(audioCtx.destination);
     osc.start();
     osc.stop(audioCtx.currentTime + duration);
-  } catch (e) {
-    console.warn("Audio Context blocked or failed.");
-  }
-};
+}
 
 const SFX = {
-  select: () => playSound(600, 'sine', 0.1),
-  add: () => playSound(800, 'square', 0.05, 0.03),
-  remove: () => playSound(400, 'sine', 0.1, 0.05),
-  exec: () => {
-    playSound(200, 'sawtooth', 0.3, 0.1);
-    setTimeout(() => playSound(400, 'sawtooth', 0.2, 0.1), 100);
-  },
-  report: () => playSound(523.25, 'sine', 0.4, 0.08),
-  win: () => {
-    [523, 659, 784, 1046].forEach((f, i) => {
-      setTimeout(() => playSound(f, 'sine', 0.6, 0.08), i * 120);
-    });
-  },
-  lost: () => {
-    playSound(150, 'sawtooth', 0.5, 0.15);
-    setTimeout(() => playSound(120, 'sawtooth', 0.4, 0.15), 200);
-  },
-  error: () => playSound(150, 'triangle', 0.3, 0.2)
+    select: () => playSound(600, 'sine', 0.1),
+    add: () => playSound(800, 'square', 0.05, 0.05),
+    exec: () => {
+        playSound(200, 'sawtooth', 0.3, 0.1);
+        setTimeout(() => playSound(400, 'sawtooth', 0.2, 0.1), 100);
+    },
+    win: () => {
+        const now = audioCtx.currentTime;
+        [523, 659, 784, 1046].forEach((f, i) => {
+            setTimeout(() => playSound(f, 'sine', 0.6, 0.08), i * 120);
+        });
+    },
+    lost: () => playSound(100, 'sawtooth', 0.8, 0.15),
+    report: () => playSound(523.25, 'sine', 0.5, 0.1),
+    error: () => playSound(150, 'triangle', 0.3, 0.2)
 };
 
-// --- DATA CONSTANTS ---
+// --- GAME LOGIC ---
+const MAX_MH = 20;
 const VENDORS = {
-  H: { name: 'H社(SELF)', bg: '#00D68F', color: 'text-[#00D68F]' },
-  I: { name: 'D社',        bg: '#1E40AF', color: 'text-[#1E40AF]' }, // Royal Blue
-  A: { name: 'A社',        bg: '#7C3AED', color: 'text-[#7C3AED]' }, // Bright Purple
-  S: { name: 'S社',        bg: '#B45309', color: 'text-[#B45309]' }, // Bright Amber
-  E: { name: 'E社',        bg: '#DB2777', color: 'text-[#DB2777]' }, // Pink (Large Mode)
-  F: { name: 'F社',        bg: '#0891B2', color: 'text-[#0891B2]' }, // Cyan (Large Mode)
-  NONE: { name: '未開拓', bg: '#060A11', color: 'text-gray-500' },
-  UNK:  { name: '情報未取得', bg: '#111926', color: 'text-gray-600' },
+    H: { name:'H社(SELF)', bg:'#00D68F' }, 
+    I: { name:'D社',        bg:'#1E40AF' },
+    A: { name:'A社',        bg:'#7C3AED' },
+    S: { name:'S社',        bg:'#B45309' },
+    E: { name:'E社',        bg:'#DB2777' }, 
+    F: { name:'F社',        bg:'#0891B2' }, 
+    NONE:{ name:'未開拓', bg:'#060A11' },
+    UNK: { name:'情報未取得', bg:'#111926' },
 };
-
 const CUSTOMER_POOL_BASE = [
-  { id: 101, name: 'NIT-Core', budget: 120, tiles6: 6, tiles8: 10 },
-  { id: 102, name: 'NIT-Logi', budget: 80,  tiles6: 5, tiles8: 9 },
-  { id: 201, name: 'SAP-Net',  budget: 70,  tiles6: 5, tiles8: 9 },
-  { id: 202, name: 'SAP-Win',  budget: 65,  tiles6: 3, tiles8: 5 },
-  { id: 401, name: 'HOU-Edu',  budget: 110, tiles6: 5, tiles8: 9 },
-  { id: 501, name: 'TSU-EC',   budget: 80,  tiles6: 4, tiles8: 7 },
-  { id: 701, name: 'HKL-Agri', budget: 60,  tiles6: 3, tiles8: 5 },
-  { id: 901, name: 'HBA-Sec',  budget: 50,  tiles6: 2, tiles8: 4 },
-  { id: 1001, name: 'SAT-POS', budget: 40,  tiles6: 2, tiles8: 4 },
-  { id: 1201, name: 'HPP-Sec', budget: 25,  tiles6: 1, tiles8: 2 },
+    { id:101, name:'NIT-Core', budget:120, tiles6:6, tiles8:10 },
+    { id:102, name:'NIT-Logi', budget:80,  tiles6:5, tiles8:9 },
+    { id:201, name:'SAP-Net',  budget:70,  tiles6:5, tiles8:9 },
+    { id:202, name:'SAP-Win',  budget:65,  tiles6:3, tiles8:5 },
+    { id:401, name:'HOU-Edu',  budget:110, tiles6:5, tiles8:9 },
+    { id:501, name:'TSU-EC',   budget:80,  tiles6:4, tiles8:7 },
+    { id:701, name:'HKL-Agri', budget:60,  tiles6:3, tiles8:5 },
+    { id:901, name:'HBA-Sec',  budget:50,  tiles6:2, tiles8:4 },
+    { id:1001,name:'SAT-POS',  budget:40,  tiles6:2, tiles8:4 },
+    { id:1201,name:'HPP-Sec',  budget:25,  tiles6:1, tiles8:2 },
 ];
 
-const App = () => {
-  const [mode, setMode] = useState(null); // null, 6, 8
-  const [state, setState] = useState({
-    month: 1,
-    year: 1,
-    mh: 20,
-    sales: 0,
-    selId: null,
-    tasks: [],
-    logs: ['Intelligence system online.'],
-    customers: [],
-    grid: [],
-    showReport: false,
-    showFinal: false,
-    turnResults: [],
-    vendorList: []
-  });
-
-  // Initialization
-  const initGame = useCallback((size) => {
-    SFX.select();
-    const vendors = size === 6 ? ['H', 'I', 'A', 'S'] : ['H', 'I', 'A', 'S', 'E', 'F'];
-    const customers = CUSTOMER_POOL_BASE.map(b => ({
-      ...b,
-      tiles: size === 6 ? b.tiles6 : b.tiles8,
-      vendor: vendors[Math.floor(Math.random() * vendors.length)],
-      mo: Math.floor(Math.random() * 45) + 1,
-      vc: 0,
-      affinity: Math.floor(Math.random() * 21),
-      specIn: false,
-      cxoProtect: 0,
-      intelRevealed: false
-    }));
-
-    const totalCells = size * size;
-    const grid = Array(totalCells).fill(null);
-    const shuffledCustomers = [...customers].sort(() => Math.random() - 0.5);
-
-    // Adjacent Clustering Logic
-    shuffledCustomers.forEach(c => {
-      let placed = 0;
-      while (placed < c.tiles) {
-        let possibleSpots = [];
-        let emptySpots = [];
-        for (let i = 0; i < totalCells; i++) {
-          if (grid[i] === null) {
-            emptySpots.push(i);
-            const row = Math.floor(i / size);
-            const col = i % size;
-            const neighbors = [
-              col > 0 ? i - 1 : -1,
-              col < size - 1 ? i + 1 : -1,
-              row > 0 ? i - size : -1,
-              row < size - 1 ? i + size : -1
-            ];
-            if (neighbors.some(n => n !== -1 && grid[n]?.cid === c.id)) possibleSpots.push(i);
-          }
-        }
-        let target = (placed === 0 || possibleSpots.length === 0) 
-          ? emptySpots[Math.floor(Math.random() * emptySpots.length)]
-          : possibleSpots[Math.floor(Math.random() * possibleSpots.length)];
-        
-        if (target !== undefined) {
-          grid[target] = { cid: c.id };
-          placed++;
-        } else break;
-      }
-    });
-
-    setState(prev => ({
-      ...prev,
-      month: 1,
-      year: 1,
-      mh: 20,
-      sales: 0,
-      customers,
-      grid,
-      gridSize: size,
-      vendorList: vendors,
-      showReport: false,
-      showFinal: false,
-      tasks: [],
-      selId: null,
-      turnResults: []
-    }));
-    setMode(size);
-  }, []);
-
-  const getWinRate = (c) => {
-    if (!c) return 0;
-    let r = 5 + (c.affinity || 0);
-    if (c.vendor === 'H') r += 40;
-    if (c.mo >= 48 && c.mo < 50) r += 40;
-    else if (c.mo >= 50) r -= 20;
-    if (c.specIn) r += 30;
-    r += (c.vc || 0) * 5;
-    state.tasks.filter(t => t.cid === c.id).forEach(t => {
-      if (t.type === 'VISIT') r += 5;
-      if (t.type === 'CXO') r += 50;
-    });
-    return Math.min(99, Math.max(5, Math.round(r)));
-  };
-
-  const addTask = (type, cost, label) => {
-    if (!state.selId || state.mh < cost) {
-      SFX.error();
-      return;
-    }
-    SFX.add();
-    const c = state.customers.find(x => x.id === state.selId);
-    setState(prev => ({
-      ...prev,
-      mh: prev.mh - cost,
-      tasks: [...prev.tasks, { cid: c.id, cname: c.name, type, cost, label }],
-      selId: null
-    }));
-  };
-
-  const removeTask = (idx) => {
-    SFX.remove();
-    const task = state.tasks[idx];
-    setState(prev => ({
-      ...prev,
-      mh: prev.mh + task.cost,
-      tasks: prev.tasks.filter((_, i) => i !== idx)
-    }));
-  };
-
-  const executeTurn = () => {
-    SFX.exec();
-    let turnResults = [];
-    let newSales = state.sales;
-    const interacted = [...new Set(state.tasks.map(t => t.cid))];
-    const newCustomers = state.customers.map(c => ({ ...c }));
-
-    // User's Mission
-    state.tasks.forEach(t => {
-      const c = newCustomers.find(x => x.id === t.cid);
-      if (t.type === 'VISIT') {
-        c.vc = (c.vc || 0) + 1;
-        turnResults.push({ n: c.name, tx: '戦略訪問を実施。顧客キーマンの情報を入手。', self: true });
-      } else if (t.type === 'SURVEY') {
-        c.intelRevealed = true;
-        turnResults.push({ n: c.name, tx: `市場調査を実施。${VENDORS[c.vendor].name}の動向を特定。`, self: true });
-      } else if (t.type === 'SPECIN') {
-        c.specIn = true;
-        turnResults.push({ n: c.name, tx: '自社有利な要件をRFPに盛り込む「スペックイン」に成功。', self: true });
-      } else if (t.type === 'CXO') {
-        c.cxoProtect = 4;
-        turnResults.push({ n: c.name, tx: 'CXOとの合意を形成。以後3ヶ月間、他社の介入をシャットアウト。', self: true });
-      } else if (t.type === 'PROPOSAL') {
-        if (Math.random() * 100 < getWinRate(c)) {
-          SFX.win();
-          c.vendor = 'H'; c.mo = 55; c.vc = 1; c.specIn = false;
-          newSales += c.budget;
-          turnResults.push({ n: c.name, tx: '【受注】コンペを制しました！構築フェーズへ移行。', self: true });
-        } else {
-          SFX.lost();
-          turnResults.push({ n: c.name, tx: '【失注】競合のロジックに押し切られました。', self: true });
-        }
-      }
-    });
-
-    // Rival AI Actions (Dynamic Resource Allocation)
-    const rivals = state.vendorList.filter(v => v !== 'H');
-    rivals.forEach(rid => {
-      let rmh = Math.floor(Math.random() * 11) + 15; // 15-25 MH
-      while (rmh >= 6) {
-        const targets = newCustomers.filter(c => c.vendor !== rid && c.cxoProtect <= 0 && c.mo < 50);
-        if (!targets.length) break;
-        const tgt = targets[Math.floor(Math.random() * targets.length)];
-        
-        if (rmh >= 12 && (tgt.mo >= 48 || interacted.includes(tgt.id))) {
-          rmh -= 12;
-          if (Math.random() * 100 < (tgt.mo >= 48 ? 35 : 12)) {
-            tgt.vendor = rid; tgt.mo = 1; tgt.vc = 0; tgt.specIn = false;
-            turnResults.push({ n: tgt.name, tx: `【急報】${VENDORS[rid].name}がリソースを集中投下。ベンダーが切り替わりました。`, self: false });
-          }
-        } else {
-          rmh -= 6;
-          if (interacted.includes(tgt.id)) {
-            turnResults.push({ n: tgt.name, tx: `【防衛】${VENDORS[rid].name}による干渉を検知しましたが、防衛に成功しました。`, self: false });
-          }
-        }
-      }
-    });
-
-    // Advance Phase
-    newCustomers.forEach(c => {
-      c.mo = c.mo >= 60 ? 1 : c.mo + 1;
-      if (c.cxoProtect > 0) c.cxoProtect--;
-    });
-
-    setState(prev => ({
-      ...prev,
-      month: prev.month + 1,
-      sales: newSales,
-      customers: newCustomers,
-      tasks: [],
-      mh: 20,
-      selId: null,
-      turnResults,
-      showReport: true
-    }));
-  };
-
-  const closeReport = () => {
-    SFX.select();
-    if (state.month > 12) {
-      setState(p => ({ ...p, showReport: false, showFinal: true }));
-    } else {
-      setState(p => ({ ...p, showReport: false }));
-    }
-  };
-
-  // --- RENDERING ---
-  if (!mode) {
-    return (
-      <div className="fixed inset-0 z-[10000] bg-[#060A11] flex flex-col items-center justify-center p-6 text-center">
-        <div className="font-['Bebas_Neue'] text-4xl text-white tracking-widest mb-2 animate-pulse">The Enterprise</div>
-        <div className="text-[10px] text-[#C9A84C] mb-12 tracking-[0.3em] font-bold uppercase">Select Operation Scale</div>
-        <div className="flex flex-col gap-4 w-full max-w-[280px]">
-          <button 
-            onClick={() => initGame(6)}
-            className="group relative bg-white/5 border border-white/10 text-white rounded-2xl py-6 overflow-hidden transition-all hover:border-[#C9A84C] active:scale-95"
-          >
-            <div className="font-['Bebas_Neue'] text-xl tracking-widest group-hover:text-[#C9A84C]">Standard (6×6)</div>
-            <div className="text-[8px] text-gray-500 mt-1">4 RIVAL VENDORS</div>
-          </button>
-          <button 
-            onClick={() => initGame(8)}
-            className="group relative bg-white/5 border border-white/10 text-white rounded-2xl py-6 overflow-hidden transition-all hover:border-[#C9A84C] active:scale-95"
-          >
-            <div className="font-['Bebas_Neue'] text-xl tracking-widest group-hover:text-[#C9A84C]">Large (8×8)</div>
-            <div className="text-[8px] text-gray-500 mt-1">6 RIVAL VENDORS / DYNAMIC MH</div>
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  const selectedCustomer = state.customers.find(c => c.id === state.selId);
-  const isKnown = selectedCustomer ? (selectedCustomer.vc > 0 || selectedCustomer.vendor === 'H') : false;
-
-  return (
-    <div className="flex flex-col w-full max-w-[430px] h-screen bg-[#060A11] mx-auto relative overflow-hidden font-['Outfit']">
-      {/* SCANLINES */}
-      <div className="fixed inset-0 pointer-events-none z-[9998] bg-[repeating-linear-gradient(180deg,transparent_0px,transparent_3px,rgba(0,0,0,0.06)_3px,rgba(0,0,0,0.06)_4px)]" />
-
-      {/* HEADER */}
-      <header className="flex-none p-4 pb-2 border-b border-white/5 bg-[#060A11] z-10">
-        <div className="flex justify-between items-end">
-          <div>
-            <div className="font-['Bebas_Neue'] text-[8px] tracking-[0.6em] text-[#C9A84C] flex items-center gap-1.5 mb-0.5">
-              <span className="w-1.5 h-1.5 bg-[#C9A84C] rounded-full animate-pulse" />
-              THE ENTERPRISE COMMAND
-            </div>
-            <div className="font-['Bebas_Neue'] text-3xl text-white tracking-wider leading-none">
-              FY2{state.year + 5}M{state.month > 12 ? 12 : state.month}
-            </div>
-          </div>
-          <div className="text-right">
-            <div className="text-[7px] font-black tracking-[0.4em] text-[#2a3a50] uppercase mb-0.5">Resource MH</div>
-            <div className="font-['Bebas_Neue'] text-4xl text-[#00D68F] leading-none">{state.mh}</div>
-          </div>
-        </div>
-        <div className="mt-2.5 h-4 flex rounded-sm overflow-hidden border border-white/10 bg-white/5">
-          {state.vendorList.map(v => {
-            const budget = state.customers.filter(c => c.vendor === v).reduce((acc, curr) => acc + curr.budget, 0);
-            const total = state.customers.reduce((acc, curr) => acc + curr.budget, 0);
-            const p = (budget / total) * 100;
-            return p > 0 ? (
-              <div 
-                key={v}
-                className="h-full transition-all duration-700 flex items-center justify-center font-['Bebas_Neue'] text-[10px] text-white/90"
-                style={{ width: `${p}%`, backgroundColor: VENDORS[v].bg }}
-              >
-                {p > 10 ? `${Math.round(p)}%` : ''}
-              </div>
-            ) : null;
-          })}
-        </div>
-      </header>
-
-      {/* GRID */}
-      <section className="flex-1 flex items-center justify-center p-3 relative overflow-hidden">
-        <div 
-          className="grid gap-1.5 w-full max-w-[380px] aspect-square"
-          style={{ gridTemplateColumns: `repeat(${state.gridSize}, 1fr)` }}
-        >
-          {state.grid.map((tile, i) => {
-            if (!tile) return <div key={i} className="aspect-square bg-white/5 rounded-md" />;
-            const c = state.customers.find(x => x.id === tile.cid);
-            const known = c.vc > 0 || c.vendor === 'H';
-            const isSelected = state.selId === c.id;
-            
-            return (
-              <div 
-                key={i}
-                onClick={() => { SFX.select(); setState(p => ({ ...p, selId: c.id })); }}
-                className={`
-                  aspect-square rounded-md border-2 cursor-pointer flex items-center justify-center relative transition-all duration-150
-                  ${isSelected ? 'border-white scale-105 z-10 shadow-[0_0_15px_rgba(255,255,255,0.4)]' : 'border-white/5'}
-                  ${known && c.mo >= 48 && c.mo < 50 ? 'animate-[rfp_1.3s_infinite]' : known && c.mo >= 50 ? 'animate-[bld_1.7s_infinite]' : ''}
-                  ${c.cxoProtect > 0 ? 'animate-[cxo_1.5s_infinite]' : ''}
-                `}
-                style={{ backgroundColor: VENDORS[known ? c.vendor : 'UNK'].bg }}
-              >
-                <span className="font-['DM_Mono'] text-sm font-bold text-white/80 select-none">
-                  {known ? Math.ceil(c.mo / 12) : '?'}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* SIDE PANEL */}
-        <aside className={`
-          absolute inset-y-0 right-0 w-[80%] bg-[#060A11]/40 backdrop-blur-2xl border-l border-white/10 p-6 flex flex-col gap-5 z-50 transition-transform duration-300
-          ${state.selId ? 'translate-x-0' : 'translate-x-full'}
-        `}>
-          <div className="flex justify-between items-center">
-            <span className="text-[8px] font-black tracking-[0.5em] text-[#00D68F] uppercase">Tactical Detail</span>
-            <button onClick={() => setState(p => ({ ...p, selId: null }))} className="text-white/30 hover:text-white p-1">
-              <X size={24} />
-            </button>
-          </div>
-          {selectedCustomer && (
-            <>
-              <div>
-                <div className="font-['Bebas_Neue'] text-3xl text-white truncate mb-1">{selectedCustomer.name}</div>
-                <div className="text-[10px] text-[#4a5f78] border-l-2 border-[#C9A84C] pl-2 leading-relaxed">
-                  {isKnown ? '現行システム情報を同期済み。' : '未開拓セグメント。情報収集が必要です。'}
-                </div>
-              </div>
-
-              <div className="flex gap-2.5">
-                <div className="flex-1 bg-white/5 border border-white/10 rounded-xl p-3">
-                  <div className="text-[7px] font-bold tracking-widest text-[#2a3a50] uppercase mb-1">Visit</div>
-                  <div className="font-['Bebas_Neue'] text-2xl text-white">{selectedCustomer.vc}</div>
-                </div>
-                <div className="flex-1 bg-white/5 border border-white/10 rounded-xl p-3">
-                  <div className="text-[7px] font-bold tracking-widest text-[#2a3a50] uppercase mb-1">Prob.</div>
-                  <div className="font-['Bebas_Neue'] text-2xl text-[#00D68F]">{getWinRate(selectedCustomer)}%</div>
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <div className="text-[7px] font-bold tracking-widest text-[#2a3a50] uppercase">Current Provider</div>
-                <div className={`font-['Bebas_Neue'] text-lg tracking-widest ${VENDORS[isKnown || selectedCustomer.intelRevealed ? selectedCustomer.vendor : 'UNK'].color}`}>
-                  {isKnown || selectedCustomer.intelRevealed ? VENDORS[selectedCustomer.vendor].name : 'UNKNOWN'}
-                </div>
-              </div>
-
-              <div className="mt-auto space-y-2.5">
-                <div className="grid grid-cols-2 gap-2">
-                  <button onClick={() => addTask('VISIT', 5, '訪問')} className="bg-white/10 border border-white/15 text-white rounded-xl py-2.5 font-['Bebas_Neue'] tracking-widest hover:bg-white/20">VISIT(-5)</button>
-                  <button onClick={() => addTask('SURVEY', 3, '調査')} className="bg-white/10 border border-white/15 text-white rounded-xl py-2.5 font-['Bebas_Neue'] tracking-widest hover:bg-white/20">SURVEY(-3)</button>
-                </div>
-                <button 
-                  onClick={() => addTask('SPECIN', 12, 'スペックイン')} 
-                  disabled={selectedCustomer.mo >= 48 || selectedCustomer.specIn}
-                  className="w-full bg-white/10 border border-white/15 text-white rounded-xl py-3 font-['Bebas_Neue'] tracking-widest disabled:opacity-10"
-                >
-                  SPEC-IN(-12 MH)
-                </button>
-                <button onClick={() => addTask('CXO', 15, 'トップ面談')} className="w-full bg-[#38BDF8]/15 border border-[#38BDF8] text-[#38BDF8] rounded-xl py-3 font-['Bebas_Neue'] tracking-widest hover:bg-[#38BDF8]/25">CXO MEETING(-15)</button>
-                <button 
-                  onClick={() => addTask('PROPOSAL', 10, '提案')} 
-                  disabled={!(isKnown && selectedCustomer.mo >= 48 && selectedCustomer.mo < 50)}
-                  className="w-full bg-[#00D68F]/20 border border-[#00D68F] text-[#00D68F] rounded-xl py-4 font-['Bebas_Neue'] text-lg tracking-widest disabled:opacity-10"
-                >
-                  SUBMIT PROPOSAL(-10)
-                </button>
-              </div>
-            </>
-          )}
-        </aside>
-      </section>
-
-      {/* TASK STRIP */}
-      <div className="flex-none h-14 flex items-center gap-2 px-4 overflow-x-auto border-t border-white/5 bg-[#060A11] scrollbar-hide">
-        {state.tasks.map((t, i) => (
-          <div key={i} className="flex-none flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-3.5 py-1.5 text-[10px] font-bold text-[#c0cee0]">
-            <span className="text-[#00D68F] font-['DM_Mono'] text-[9px]">{t.cname}</span>
-            <span>{t.label}</span>
-            <button onClick={() => removeTask(i)} className="text-white/20 hover:text-white ml-1">
-              <X size={14} />
-            </button>
-          </div>
-        ))}
-        {state.tasks.length === 0 && <div className="text-[10px] text-gray-700 italic tracking-widest">No Active Missions...</div>}
-      </div>
-
-      {/* EXEC BUTTON */}
-      <button 
-        onClick={executeTurn}
-        disabled={state.tasks.length === 0}
-        className={`
-          flex-none h-16 border-t border-white/10 font-['Bebas_Neue'] text-xl tracking-[0.6em] uppercase transition-all
-          ${state.tasks.length > 0 ? 'bg-white text-[#060A11] shadow-[0_-10px_30px_rgba(255,255,255,0.15)]' : 'bg-white/5 text-white/10'}
-        `}
-      >
-        Launch Mission
-      </button>
-
-      {/* FOOTER */}
-      <footer className="flex-none h-12 flex justify-between items-center px-6 border-t border-white/5 bg-[#060A11]">
-        <div className="font-['Bebas_Neue'] text-3xl text-white">
-          ¥{state.sales}<span className="text-sm ml-1 text-white/40">M</span>
-        </div>
-        <div className="font-['DM_Mono'] text-[8px] text-[#2a3a50] tracking-widest animate-pulse">SYSTEM STATUS: OPTIMAL</div>
-      </footer>
-
-      {/* REPORT MODAL */}
-      {state.showReport && (
-        <div className="fixed inset-0 flex items-center justify-center bg-[#060A11]/90 backdrop-blur-xl z-[800]">
-          <div className="w-[93%] max-h-[85vh] border border-white/15 rounded-[32px] bg-[#0C1221]/60 backdrop-blur-3xl flex flex-col overflow-hidden shadow-2xl">
-            <div className="p-6 border-b border-white/10 flex justify-between items-center">
-              <span className="font-['Bebas_Neue'] text-2xl tracking-[0.5em] text-[#C9A84C]">MISSION REPORT</span>
-            </div>
-            <div className="flex-1 overflow-y-auto p-6 space-y-5 scrollbar-hide">
-              {Object.entries(state.turnResults.reduce((acc, r) => ({ ...acc, [r.n]: [...(acc[r.n] || []), r] }), {})).map(([name, results]) => (
-                <div key={name} className="py-4 border-b border-white/5">
-                  <div className="font-['Bebas_Neue'] text-[#C9A84C] text-lg tracking-widest border-l-3 border-[#C9A84C] pl-3 mb-3">{name}</div>
-                  {results.map((r, i) => (
-                    <div key={i} className={`text-xs leading-relaxed mb-1.5 flex gap-2 ${r.self ? 'text-[#00D68F]' : 'text-rose-400'}`}>
-                      <span>{r.self ? '▶' : '⚠'}</span>
-                      <p>{r.tx}</p>
-                    </div>
-                  ))}
-                </div>
-              ))}
-              {state.turnResults.length === 0 && (
-                <div className="text-center text-[#2a3a50] py-16 font-['Bebas_Neue'] text-xl tracking-widest">NO ENGAGEMENT LOGS</div>
-              )}
-            </div>
-            <button onClick={closeReport} className="flex-none h-16 bg-white text-[#060A11] font-['Bebas_Neue'] text-lg tracking-[0.5em] uppercase hover:bg-gray-100">
-              Continue <ChevronRight className="inline ml-1" size={20} />
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* FINAL REPORT */}
-      {state.showFinal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-[#060A11]/98 z-[9500] p-8">
-          <div className="w-full bg-[#0C1221] border border-white/10 rounded-[40px] p-10 text-center shadow-3xl">
-            <div className="font-['Bebas_Neue'] text-white text-xl tracking-[0.6em] mb-4 opacity-40">ANNUAL RESULT</div>
-            <div className="font-['Bebas_Neue'] text-8xl text-[#00D68F] leading-none my-8 drop-shadow-[0_0_20px_rgba(0,214,143,0.3)]">¥{state.sales}M</div>
-            <div className="space-y-4">
-              <button 
-                onClick={() => setMode(null)}
-                className="w-full h-16 bg-white text-[#060A11] rounded-2xl font-['Bebas_Neue'] text-xl tracking-[0.5em] uppercase hover:scale-105 transition-transform"
-              >
-                Change Scope
-              </button>
-              <button 
-                onClick={() => window.location.reload()}
-                className="w-full h-16 bg-white/5 border border-white/10 text-white/50 rounded-2xl font-['Bebas_Neue'] text-lg tracking-[0.4em] uppercase"
-              >
-                Reset System
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <style dangerouslySetInnerHTML={{ __html: `
-        @keyframes rfp { 0%,100%{box-shadow:0 0 8px #C9A84C;border-color:#C9A84C} 50%{box-shadow:0 0 16px #C9A84C;border-color:#ffe88a} }
-        @keyframes bld { 0%,100%{box-shadow:0 0 6px rgba(255,255,255,0.2);border-color:rgba(255,255,255,0.3)} 50%{box-shadow:0 0 14px rgba(255,255,255,0.5);border-color:#fff} }
-        @keyframes cxo { 0%,100%{box-shadow:0 0 10px #38BDF8;border-color:#38BDF8} 50%{box-shadow:0 0 20px #38BDF8;border-color:#93e2ff} }
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
-      `}} />
-    </div>
-  );
+let state = {
+    month:1, mh:MAX_MH, sales:0, selId:null, tasks:[], 
+    logs:[], customers:[], grid:[], gridSize: 6, vendorList: []
 };
 
-export default App;
+function startApp(size) {
+    SFX.select();
+    state.gridSize = size;
+    state.vendorList = size === 6 ? ['H','I','A','S'] : ['H','I','A','S','E','F'];
+    document.documentElement.style.setProperty('--grid-size', size);
+    document.getElementById('mode-select-ov').classList.add('hidden');
+    document.getElementById('app').classList.add('visible');
+    init();
+}
+
+function init() {
+    state.customers = CUSTOMER_POOL_BASE.map(b => ({
+        ...b,
+        tiles: state.gridSize === 6 ? b.tiles6 : b.tiles8,
+        vendor: state.vendorList[Math.floor(Math.random()*state.vendorList.length)],
+        mo: Math.floor(Math.random()*45)+1,
+        vc:0, specIn:false, cxoProtect:0, intelRevealed:false
+    }));
+    buildGrid();
+    render();
+}
+
+function buildGrid() {
+    const size = state.gridSize;
+    const totalCells = size * size;
+    const grid = Array(totalCells).fill(null);
+    const shuffled = [...state.customers].sort(() => Math.random() - 0.5);
+    shuffled.forEach(c => {
+        let placed = 0;
+        while (placed < c.tiles) {
+            let options = [];
+            let empties = [];
+            for (let i = 0; i < totalCells; i++) {
+                if (grid[i] === null) {
+                    empties.push(i);
+                    const row = Math.floor(i / size), col = i % size;
+                    const ns = [col > 0 ? i-1 : -1, col < size-1 ? i+1 : -1, row > 0 ? i-size : -1, row < size-1 ? i+size : -1];
+                    if (ns.some(n => n !== -1 && grid[n]?.cid === c.id)) options.push(i);
+                }
+            }
+            let target = (placed === 0 || options.length === 0) ? empties[Math.floor(Math.random() * empties.length)] : options[Math.floor(Math.random() * options.length)];
+            if (target !== undefined) { grid[target] = { cid: c.id }; placed++; } else break;
+        }
+    });
+    state.grid = grid;
+}
+
+function getWR(c) {
+    if (!c) return 0;
+    let r = 5 + (c.vc * 5);
+    if (c.vendor==='H') r += 40;
+    if (c.mo>=48 && c.mo<50) r += 40; else if (c.mo>=50) r -= 20;
+    if (c.specIn) r += 30;
+    state.tasks.filter(t=>t.cid===c.id).forEach(t=>{ if(t.type==='VISIT') r+=5; if(t.type==='CXO') r+=50; });
+    return Math.min(99, Math.max(5, Math.round(r)));
+}
+
+function render() {
+    document.getElementById('phase-disp').textContent = `FY26M${state.month}`;
+    document.getElementById('mh-disp').textContent = state.mh;
+    document.getElementById('score-v').innerHTML = `¥${state.sales}<span>M</span>`;
+
+    const s={};
+    state.vendorList.forEach(v => s[v] = 0);
+    state.customers.forEach(c=>{ if(s[c.vendor]!==undefined) s[c.vendor]+=c.budget; });
+    
+    const bar = document.getElementById('share-bar'); bar.innerHTML='';
+    const total = Object.values(s).reduce((a,b)=>a+b,0)||1;
+    state.vendorList.forEach(v=>{
+        const p=(s[v]/total)*100;
+        if(p>0){ const d=document.createElement('div'); d.className='share-seg'; d.style.cssText=`width:${p}%;background:${VENDORS[v].bg}`; d.textContent=p>10?Math.round(p)+'%':''; bar.appendChild(d); }
+    });
+
+    const size = state.gridSize;
+    const gEl = document.getElementById('grid'); gEl.innerHTML='';
+    state.grid.forEach(t=>{
+        const el=document.createElement('div'); el.className='tile';
+        if (t.cid) {
+            const c=state.customers.find(x=>x.id===t.cid);
+            const kn=c.vc>0||c.vendor==='H';
+            el.style.backgroundColor=VENDORS[kn?c.vendor:'UNK'].bg;
+            if(state.selId===c.id) el.classList.add('sel');
+            if(c.cxoProtect > 0) el.classList.add('cxo-a');
+            else if(kn && c.mo>=48 && c.mo<50) el.classList.add('rfp-a');
+            else if(kn && c.mo>=50) el.classList.add('bld-a');
+            const sp=document.createElement('span'); sp.className='t-lbl'; sp.textContent=kn?Math.ceil(c.mo/12):'?'; el.appendChild(sp);
+            el.onclick=()=>{ SFX.select(); state.selId=c.id; render(); };
+        } else el.style.backgroundColor=VENDORS.NONE.bg;
+        gEl.appendChild(el);
+    });
+
+    const sp=document.getElementById('sp');
+    if (state.selId) {
+        const c=state.customers.find(x=>x.id===state.selId);
+        sp.classList.add('open');
+        document.getElementById('sp-name').textContent=c.name;
+        document.getElementById('sp-vc').textContent=c.vc;
+        document.getElementById('sp-win').textContent=`${getWR(c)}%`;
+        const kn=c.vc>0||c.vendor==='H';
+        document.getElementById('sp-vendor').textContent= (kn || c.intelRevealed) ? VENDORS[c.vendor].name : '？';
+        const st=document.getElementById('sp-status');
+        if(c.cxoProtect>0){ st.textContent=`🛡 CXO防衛中 (${c.cxoProtect})`; st.style.color='var(--sky)'; }
+        else if(c.mo>=50){ st.textContent='運用/構築中'; st.style.color=''; }
+        else if(c.mo>=48){ st.textContent='📄 RFP放出中'; st.style.color='var(--amber)'; }
+        else{ st.textContent='稼働中'; st.style.color=''; }
+        document.getElementById('sp-prop-btn').disabled=!(kn && c.mo>=48 && c.mo<50);
+        document.getElementById('sp-spec-btn').disabled=(c.mo>=48 || c.specIn);
+    } else sp.classList.remove('open');
+
+    const ts=document.getElementById('task-strip'); ts.innerHTML='';
+    state.tasks.forEach((t,i)=>{
+        const c=document.createElement('div'); c.className='t-chip';
+        c.innerHTML=`<span class="t-chip-name">${t.cname}</span><span>${t.label}</span><button class="t-chip-rm" onclick="removeTask(${i})">✕</button>`;
+        ts.appendChild(c);
+    });
+    document.getElementById('exec-btn').disabled=state.tasks.length===0;
+    document.getElementById('exec-btn').className='exec-btn'+(state.tasks.length?' on':'');
+}
+
+function addTask(type,cost,label) {
+    if(!state.selId || state.mh<cost) { SFX.error(); return; }
+    SFX.add();
+    const c=state.customers.find(x=>x.id===state.selId);
+    state.tasks.push({cid:c.id,cname:c.name,type,cost,label});
+    state.mh-=cost; state.selId=null; render();
+}
+function removeTask(i) { SFX.select(); state.mh+=state.tasks[i].cost; state.tasks.splice(i,1); render(); }
+
+function executeStrategy() {
+    SFX.exec();
+    let tr = [];
+    const activeCids = [...new Set(state.tasks.map(t => t.cid))];
+
+    state.tasks.forEach(t=>{
+        const c=state.customers.find(x=>x.id===t.cid);
+        if(t.type==='VISIT'){ 
+            c.vc++; 
+            // ── 訪問時の他社の動きをシミュレーション ──
+            const otherRivals = state.vendorList.filter(v => v !== 'H' && v !== c.vendor);
+            let observation = "";
+            if (Math.random() > 0.4) {
+                const observedVendor = VENDORS[otherRivals[Math.floor(Math.random() * otherRivals.length)]].name;
+                observation = ` 受付で${observedVendor}の担当者とすれ違いました。`;
+            } else {
+                observation = " 他社の出入りは確認されず、現在は自社が先行しているようです。";
+            }
+            tr.push({n:c.name, tx:'訪問によりキーマン接触。' + observation}); 
+        }
+        else if(t.type==='SURVEY'){ c.intelRevealed=true; tr.push({n:c.name, tx:`市場調査により${VENDORS[c.vendor].name}の動向を特定。`}); }
+        else if(t.type==='SPECIN'){ c.specIn=true; tr.push({n:c.name, tx:'スペックイン成功。RFP要件に自社仕様が組み込まれました。'}); }
+        else if(t.type==='CXO'){ c.cxoProtect=4; tr.push({n:c.name, tx:'CXO合意を獲得。以後3ヶ月間、他社の介入をシャットアウト。'}); }
+        else if(t.type==='PROPOSAL'){
+            if(Math.random()*100<getWR(c)){ SFX.win(); c.vendor='H'; c.mo=55; state.sales+=c.budget; tr.push({n:c.name, tx:'【受注】覇権を奪還しました！構築フェーズへ移行。'}); }
+            else { SFX.lost(); tr.push({n:c.name, tx:'【失注】競合のロジックに押し切られました。'}); }
+        }
+    });
+
+    // --- RIVAL DYNAMIC MH LOGIC ---
+    state.vendorList.filter(v => v !== 'H').forEach(rid => {
+        let rmh = Math.floor(Math.random() * 11) + 15; // 15-25 MH
+        while (rmh >= 6) {
+            const targets = state.customers.filter(c => c.vendor !== rid && c.cxoProtect <= 0 && c.mo < 50);
+            if (!targets.length) break;
+            const tgt = targets[Math.floor(Math.random() * targets.length)];
+            
+            if (rmh >= 12 && (tgt.mo >= 48 || activeCids.includes(tgt.id))) {
+                rmh -= 12;
+                if (Math.random() * 100 < (tgt.mo >= 48 ? 35 : 12)) {
+                    tgt.vendor = rid; tgt.mo = 1; tgt.vc = 0; tgt.specIn = false;
+                    tr.push({ n: tgt.name, tx: `【急報】${VENDORS[rid].name}のリソース集中投下によりベンダーが交代。` });
+                }
+            } else {
+                rmh -= 6; 
+            }
+        }
+    });
+
+    state.month++; state.tasks=[]; state.mh=MAX_MH; state.selId=null;
+    state.customers.forEach(c=>{ c.mo=c.mo>=60?1:c.mo+1; if(c.cxoProtect>0) c.cxoProtect--; });
+    
+    const rl=document.getElementById('res-list'); rl.innerHTML='';
+    tr.forEach(r=>{ rl.innerHTML+=`<div class="res-block"><div class="res-bname">${r.n}</div><div class="res-txt">${r.tx}</div></div>`; });
+    
+    setTimeout(() => {
+        SFX.report();
+        document.getElementById('result-ov').classList.remove('hidden');
+    }, 300);
+    render();
+}
+
+function closeResult() { 
+    SFX.select();
+    document.getElementById('result-ov').classList.add('hidden'); 
+    if(state.month>12) { 
+        document.getElementById('final-score').textContent=`¥${state.sales}M`; 
+        document.getElementById('final-modal').classList.remove('hidden'); 
+    } 
+}
+
+document.getElementById('sp-close').onclick=()=>{ SFX.select(); state.selId=null; render(); };
+</script>
+</body>
+</html>
