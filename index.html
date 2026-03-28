@@ -84,7 +84,6 @@
         }
         @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
         .hdr-phase { font-family: var(--D); font-size: 32px; color: #fff; line-height: 1; letter-spacing: .04em; }
-        .hdr-phase { font-family: var(--D); font-size: 32px; color: #fff; line-height: 1; letter-spacing: .04em; }
         .hdr-mh { text-align: right; padding-bottom: 3px; }
         .hdr-mh-lbl { font-size: 7px; font-weight: 700; letter-spacing: .4em; color: var(--muted); text-transform: uppercase; margin-bottom: 1px; }
         .hdr-mh-val { font-family: var(--D); font-size: 36px; color: var(--emerald); line-height: 1; }
@@ -177,7 +176,7 @@
             color: #fff; border-radius: 10px; padding: 8px 8px;
             font-family: var(--D); font-size: 13px; letter-spacing: .12em;
             cursor: pointer; transition: all .18s; text-transform: uppercase;
-            opacity: 1; /* 不透明にして見やすく修正 */
+            opacity: 1; 
         }
         .sp-btn:hover:not(:disabled) { background: rgba(255,255,255,.25); border-color: rgba(255,255,255,.4); opacity: 1; }
         .sp-btn.pri { background: rgba(0,214,143,.18); border-color: var(--emerald); color: var(--emerald); }
@@ -202,13 +201,13 @@
         /* ── OVERLAYS ── */
         #result-ov, #final-modal { 
             position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; 
-            background: rgba(6,10,17,.4); /* 半透明度を調整 */
-            backdrop-filter: blur(8px); /* ぼかしを少し抑えて後ろが見えるように */
+            background: rgba(6,10,17,.4); 
+            backdrop-filter: blur(8px); 
             z-index: 800; 
         }
         .res-box, .final-box { 
             width: 93%; max-height: 88dvh; border: 1px solid rgba(255,255,255,.12); 
-            border-radius: 24px; background: rgba(12,18,33,.6); /* ボックス自体の背景も透過 */
+            border-radius: 24px; background: rgba(12,18,33,.6); 
             display: flex; flex-direction: column; overflow: hidden; 
         }
         .res-hdr { padding: 20px; border-bottom: 1px solid var(--bdr); }
@@ -412,13 +411,27 @@ function buildGrid() {
     state.grid = grid;
 }
 
-function getWR(c) {
+/** * 信頼度（Win Prob）計算ロジック 
+ * vIdを指定することで他社の信頼度も算出可能
+ */
+function getWR(c, vId = 'H') {
     if (!c) return 0;
-    let r = 5 + (c.vc * 5);
-    if (c.vendor==='H') r += 40;
-    if (c.mo>=48 && c.mo<50) r += 40; else if (c.mo>=50) r -= 20;
-    if (c.specIn) r += 30;
-    state.tasks.filter(t=>t.cid===c.id).forEach(t=>{ if(t.type==='VISIT') r+=5; if(t.type==='CXO') r+=50; });
+    let r = 5;
+    // 自社のみ訪問(vc)をカウント。他社は個体値(affinity)で代用
+    if (vId === 'H') r += (c.vc * 5); 
+    else r += (c.affinity || 0);
+
+    if (c.vendor === vId) r += 40;
+    if (c.mo >= 48 && c.mo < 50) r += 40; else if (c.mo >= 50) r -= 20;
+    if (vId === 'H' && c.specIn) r += 30; // 自社のスペックイン効果
+
+    // 予約中のタスク（自社のみ）を反映
+    if (vId === 'H') {
+        state.tasks.filter(t=>t.cid===c.id).forEach(t=>{ 
+            if(t.type==='VISIT') r+=5; 
+            if(t.type==='CXO') r+=50; 
+        });
+    }
     return Math.min(99, Math.max(5, Math.round(r)));
 }
 
@@ -452,119 +465,4 @@ function render() {
             else if(kn && c.mo>=50) el.classList.add('bld-a');
             const sp=document.createElement('span'); sp.className='t-lbl'; sp.textContent=kn?Math.ceil(c.mo/12):'?'; el.appendChild(sp);
             el.onclick=()=>{ SFX.select(); state.selId=c.id; render(); };
-        } else el.style.backgroundColor=VENDORS.NONE.bg;
-        gEl.appendChild(el);
-    });
-
-    const sp=document.getElementById('sp');
-    if (state.selId) {
-        const c=state.customers.find(x=>x.id===state.selId);
-        sp.classList.add('open');
-        document.getElementById('sp-name').textContent=c.name;
-        document.getElementById('sp-vc').textContent=c.vc;
-        document.getElementById('sp-win').textContent=`${getWR(c)}%`;
-        const kn=c.vc>0||c.vendor==='H';
-        document.getElementById('sp-vendor').textContent= (kn || c.intelRevealed) ? VENDORS[c.vendor].name : '？';
-        const st=document.getElementById('sp-status');
-        if(c.cxoProtect>0){ st.textContent=`🛡 CXO防衛中 (${c.cxoProtect})`; st.style.color='var(--sky)'; }
-        else if(c.mo>=50){ st.textContent='運用/構築中'; st.style.color=''; }
-        else if(c.mo>=48){ st.textContent='📄 RFP放出中'; st.style.color='var(--amber)'; }
-        else{ st.textContent='稼働中'; st.style.color=''; }
-        document.getElementById('sp-prop-btn').disabled=!(kn && c.mo>=48 && c.mo<50);
-        document.getElementById('sp-spec-btn').disabled=(c.mo>=48 || c.specIn);
-    } else sp.classList.remove('open');
-
-    const ts=document.getElementById('task-strip'); ts.innerHTML='';
-    state.tasks.forEach((t,i)=>{
-        const c=document.createElement('div'); c.className='t-chip';
-        c.innerHTML=`<span class="t-chip-name">${t.cname}</span><span>${t.label}</span><button class="t-chip-rm" onclick="removeTask(${i})">✕</button>`;
-        ts.appendChild(c);
-    });
-    document.getElementById('exec-btn').disabled=state.tasks.length===0;
-    document.getElementById('exec-btn').className='exec-btn'+(state.tasks.length?' on':'');
-}
-
-function addTask(type,cost,label) {
-    if(!state.selId || state.mh<cost) { SFX.error(); return; }
-    SFX.add();
-    const c=state.customers.find(x=>x.id===state.selId);
-    state.tasks.push({cid:c.id,cname:c.name,type,cost,label});
-    state.mh-=cost; state.selId=null; render();
-}
-function removeTask(i) { SFX.select(); state.mh+=state.tasks[i].cost; state.tasks.splice(i,1); render(); }
-
-function executeStrategy() {
-    SFX.exec();
-    let tr = [];
-    const activeCids = [...new Set(state.tasks.map(t => t.cid))];
-
-    state.tasks.forEach(t=>{
-        const c=state.customers.find(x=>x.id===t.cid);
-        if(t.type==='VISIT'){ 
-            c.vc++; 
-            // ── 訪問時の他社の動きをシミュレーション ──
-            const otherRivals = state.vendorList.filter(v => v !== 'H' && v !== c.vendor);
-            let observation = "";
-            if (Math.random() > 0.4) {
-                const observedVendor = VENDORS[otherRivals[Math.floor(Math.random() * otherRivals.length)]].name;
-                observation = ` 受付で${observedVendor}の担当者とすれ違いました。`;
-            } else {
-                observation = " 他社の出入りは確認されず、現在は自社が先行しているようです。";
-            }
-            tr.push({n:c.name, tx:'訪問によりキーマン接触。' + observation}); 
-        }
-        else if(t.type==='SURVEY'){ c.intelRevealed=true; tr.push({n:c.name, tx:`市場調査により${VENDORS[c.vendor].name}の動向を特定。`}); }
-        else if(t.type==='SPECIN'){ c.specIn=true; tr.push({n:c.name, tx:'スペックイン成功。RFP要件に自社仕様が組み込まれました。'}); }
-        else if(t.type==='CXO'){ c.cxoProtect=4; tr.push({n:c.name, tx:'CXO合意を獲得。以後3ヶ月間、他社の介入をシャットアウト。'}); }
-        else if(t.type==='PROPOSAL'){
-            if(Math.random()*100<getWR(c)){ SFX.win(); c.vendor='H'; c.mo=55; state.sales+=c.budget; tr.push({n:c.name, tx:'【受注】覇権を奪還しました！構築フェーズへ移行。'}); }
-            else { SFX.lost(); tr.push({n:c.name, tx:'【失注】競合のロジックに押し切られました。'}); }
-        }
-    });
-
-    // --- RIVAL DYNAMIC MH LOGIC ---
-    state.vendorList.filter(v => v !== 'H').forEach(rid => {
-        let rmh = Math.floor(Math.random() * 11) + 15; // 15-25 MH
-        while (rmh >= 6) {
-            const targets = state.customers.filter(c => c.vendor !== rid && c.cxoProtect <= 0 && c.mo < 50);
-            if (!targets.length) break;
-            const tgt = targets[Math.floor(Math.random() * targets.length)];
-            
-            if (rmh >= 12 && (tgt.mo >= 48 || activeCids.includes(tgt.id))) {
-                rmh -= 12;
-                if (Math.random() * 100 < (tgt.mo >= 48 ? 35 : 12)) {
-                    tgt.vendor = rid; tgt.mo = 1; tgt.vc = 0; tgt.specIn = false;
-                    tr.push({ n: tgt.name, tx: `【急報】${VENDORS[rid].name}のリソース集中投下によりベンダーが交代。` });
-                }
-            } else {
-                rmh -= 6; 
-            }
-        }
-    });
-
-    state.month++; state.tasks=[]; state.mh=MAX_MH; state.selId=null;
-    state.customers.forEach(c=>{ c.mo=c.mo>=60?1:c.mo+1; if(c.cxoProtect>0) c.cxoProtect--; });
-    
-    const rl=document.getElementById('res-list'); rl.innerHTML='';
-    tr.forEach(r=>{ rl.innerHTML+=`<div class="res-block"><div class="res-bname">${r.n}</div><div class="res-txt">${r.tx}</div></div>`; });
-    
-    setTimeout(() => {
-        SFX.report();
-        document.getElementById('result-ov').classList.remove('hidden');
-    }, 300);
-    render();
-}
-
-function closeResult() { 
-    SFX.select();
-    document.getElementById('result-ov').classList.add('hidden'); 
-    if(state.month>12) { 
-        document.getElementById('final-score').textContent=`¥${state.sales}M`; 
-        document.getElementById('final-modal').classList.remove('hidden'); 
-    } 
-}
-
-document.getElementById('sp-close').onclick=()=>{ SFX.select(); state.selId=null; render(); };
-</script>
-</body>
-</html>
+        } else el.style.backgroundColor=VENDORS.NONE.
