@@ -55,11 +55,11 @@
         }
         .mode-title { font-family: var(--D); font-size: 42px; color: #fff; letter-spacing: 0.15em; margin-bottom: 8px; }
         .mode-sub { font-size: 11px; color: var(--gold); margin-bottom: 40px; letter-spacing: 0.4em; font-weight: 900; }
-        .mode-btns { display: flex; flex-direction: column; gap: 15px; width: 100%; max-width: 280px; }
+        .mode-btns { display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 280px; }
         .mode-btn {
             background: rgba(255,255,255,0.03); border: 1px solid var(--bdr);
-            color: #fff; border-radius: 16px; padding: 24px;
-            font-family: var(--D); font-size: 22px; letter-spacing: 0.2em;
+            color: #fff; border-radius: 16px; padding: 18px;
+            font-family: var(--D); font-size: 20px; letter-spacing: 0.2em;
             cursor: pointer; transition: all 0.25s;
         }
         .mode-btn:hover { background: rgba(255,255,255,0.08); border-color: var(--gold); color: var(--gold); transform: translateY(-2px); }
@@ -114,12 +114,12 @@
             display: grid;
             grid-template-columns: repeat(var(--grid-size), 1fr);
             grid-template-rows: repeat(var(--grid-size), 1fr);
-            gap: 5px;
+            gap: 4px;
             width: 100%; max-width: 380px;
             aspect-ratio: 1;
         }
         .tile {
-            aspect-ratio: 1; border-radius: 7px;
+            aspect-ratio: 1; border-radius: 5px;
             border: 1.5px solid rgba(255,255,255,.05);
             cursor: pointer; display: flex; align-items: center; justify-content: center;
             position: relative; user-select: none;
@@ -131,7 +131,7 @@
             box-shadow: 0 0 14px rgba(255,255,255,.35), inset 0 0 6px rgba(255,255,255,.05);
             transform: scale(1.07); z-index: 5;
         }
-        .t-lbl { font-family: var(--M); font-size: 14px; color: rgba(255,255,255,.8); pointer-events: none; font-weight: 600; } 
+        .t-lbl { font-family: var(--M); font-size: 12px; color: rgba(255,255,255,.8); pointer-events: none; font-weight: 600; } 
 
         /* ── ANIMATIONS ── */
         @keyframes rfp  { 0%,100%{box-shadow:0 0 8px var(--gold);border-color:var(--gold)} 50%{box-shadow:0 0 16px var(--gold);border-color:#ffe88a} }
@@ -236,6 +236,7 @@
     <div class="mode-btns">
         <button class="mode-btn" onclick="startApp(6)">Standard (6×6)</button>
         <button class="mode-btn" onclick="startApp(8)">Large (8×8)</button>
+        <button class="mode-btn" onclick="startApp(10)">Ultra (10×10)</button>
     </div>
 </div>
 
@@ -354,7 +355,7 @@ const SFX = {
 const MAX_MH = 20;
 const VENDORS = {
     H: { name:'H社(SELF)', bg:'#00D68F' }, 
-    I: { name:'D社',        bg:'#1E40AF' },
+    I: { name:'D社',        bg:'#60A5FA' }, // D社カラーを統一
     A: { name:'A社',        bg:'#7C3AED' },
     S: { name:'S社',        bg:'#B45309' },
     E: { name:'E社',        bg:'#DB2777' }, 
@@ -364,16 +365,16 @@ const VENDORS = {
 };
 
 const CUSTOMER_POOL_BASE = [
-    { id:101, name:'北海テクノロジー', budget:120, tiles6:6, tiles8:10 },
-    { id:102, name:'札幌ロジスティクス', budget:80,  tiles6:5, tiles8:9 },
-    { id:201, name:'エゾ・ネットワーク',  budget:70,  tiles6:5, tiles8:9 },
-    { id:202, name:'道央システム開発',  budget:65,  tiles6:3, tiles8:5 },
-    { id:401, name:'北海道教育支援',  budget:110, tiles6:5, tiles8:9 },
-    { id:501, name:'北日本通商',   budget:80,  tiles6:4, tiles8:7 },
-    { id:701, name:'北海アグリ連合', budget:60,  tiles6:3, tiles8:5 },
-    { id:901, name:'札幌セキュリティ',  budget:50,  tiles6:2, tiles8:4 },
-    { id:1001,name:'道央流通システム',  budget:40,  tiles6:2, tiles8:4 },
-    { id:1201,name:'北海道プラント保安',  budget:25,  tiles6:1, tiles8:2 },
+    { id:101, name:'北海テクノロジー', budget:120, tiles6:6, tiles8:10, tiles10:15 },
+    { id:102, name:'札幌ロジスティクス', budget:80,  tiles6:5, tiles8:9,  tiles10:14 },
+    { id:201, name:'エゾ・ネットワーク',  budget:70,  tiles6:5, tiles8:9,  tiles10:14 },
+    { id:202, name:'道央システム開発',  budget:65,  tiles6:3, tiles8:5,  tiles10:8  },
+    { id:401, name:'北海道教育支援',  budget:110, tiles6:5, tiles8:9,  tiles10:14 },
+    { id:501, name:'北日本通商',   budget:80,  tiles6:4, tiles8:7,  tiles10:11 },
+    { id:701, name:'北海アグリ連合', budget:60,  tiles6:3, tiles8:5,  tiles10:8  },
+    { id:901, name:'札幌セキュリティ',  budget:50,  tiles6:2, tiles8:4,  tiles10:6  },
+    { id:1001,name:'道央流通システム',  budget:40,  tiles6:2, tiles8:4,  tiles10:6  },
+    { id:1201,name:'北海道プラント保安',  budget:25,  tiles6:1, tiles8:2,  tiles10:3  },
 ];
 
 let state = {
@@ -433,9 +434,13 @@ function startApp(size) {
 function init() {
     state.customers = CUSTOMER_POOL_BASE.map(b => {
         const vendor = state.vendorList[Math.floor(Math.random()*state.vendorList.length)];
+        let tCount = b.tiles6;
+        if(state.gridSize === 8) tCount = b.tiles8;
+        if(state.gridSize === 10) tCount = b.tiles10;
+
         return {
             ...b,
-            tiles: state.gridSize === 6 ? b.tiles6 : b.tiles8,
+            tiles: tCount,
             vendor: vendor,
             mo: Math.floor(Math.random()*45)+1,
             vc:0, specIn:false, cxoProtect:0, intelRevealed:false,
@@ -713,12 +718,10 @@ function executeStrategy() {
     state.customers.forEach(c=>{ c.mo=c.mo>=60?1:c.mo+1; if(c.cxoProtect>0) c.cxoProtect--; });
     const rl=document.getElementById('res-list'); rl.innerHTML='';
     tr.forEach(r=>{ 
-        // 青色のベンダーは文字が見にくいため、テキスト表示時のみ明るく調整
-        const displayClr = r.vClr === '#1E40AF' ? '#60A5FA' : r.vClr;
         rl.innerHTML+=`<div class="res-block" style="border-left: 3px solid ${r.clr}; padding-left: 10px; margin-bottom: 15px;">
             <div class="res-bname" style="color: ${r.clr}; display: flex; justify-content: space-between; align-items: center;">
                 <span>${r.n}</span>
-                <span style="font-size: 9px; color: ${displayClr}; font-weight: 700;">既存：${r.vName}</span>
+                <span style="font-size: 9px; color: ${r.vClr}; font-weight: 700;">既存：${r.vName}</span>
             </div>
             <div class="res-txt" style="color: ${r.clr}; font-weight: 900; margin-bottom: 4px;">${r.tx}</div>
             <div style="font-size: 11px; color: #ffffff; font-style: italic; opacity: 0.9;">満足度：${r.sat}</div>
