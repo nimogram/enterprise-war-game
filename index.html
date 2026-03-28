@@ -301,19 +301,22 @@
 
 <script>
 // --- AUDIO ENGINE ---
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+let audioCtx = null;
 function playSound(freq, type, duration, vol = 0.1) {
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.type = type;
-    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-    gain.gain.setValueAtTime(vol, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    osc.start();
-    osc.stop(audioCtx.currentTime + duration);
+    try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+    } catch(e) { console.warn("Audio disabled."); }
 }
 
 const SFX = {
@@ -324,7 +327,6 @@ const SFX = {
         setTimeout(() => playSound(400, 'sawtooth', 0.2, 0.1), 100);
     },
     win: () => {
-        const now = audioCtx.currentTime;
         [523, 659, 784, 1046].forEach((f, i) => {
             setTimeout(() => playSound(f, 'sine', 0.6, 0.08), i * 120);
         });
@@ -365,13 +367,15 @@ let state = {
 };
 
 function startApp(size) {
-    SFX.select();
-    state.gridSize = size;
-    state.vendorList = size === 6 ? ['H','I','A','S'] : ['H','I','A','S','E','F'];
-    document.documentElement.style.setProperty('--grid-size', size);
-    document.getElementById('mode-select-ov').classList.add('hidden');
-    document.getElementById('app').classList.add('visible');
-    init();
+    try {
+        SFX.select();
+        state.gridSize = size;
+        state.vendorList = size === 6 ? ['H','I','A','S'] : ['H','I','A','S','E','F'];
+        document.documentElement.style.setProperty('--grid-size', size);
+        document.getElementById('mode-select-ov').classList.add('hidden');
+        document.getElementById('app').classList.add('visible');
+        init();
+    } catch(e) { console.error("Start failed: ", e); }
 }
 
 function init() {
@@ -380,7 +384,8 @@ function init() {
         tiles: state.gridSize === 6 ? b.tiles6 : b.tiles8,
         vendor: state.vendorList[Math.floor(Math.random()*state.vendorList.length)],
         mo: Math.floor(Math.random()*45)+1,
-        vc:0, specIn:false, cxoProtect:0, intelRevealed:false
+        vc:0, specIn:false, cxoProtect:0, intelRevealed:false,
+        affinity: Math.floor(Math.random()*21)
     }));
     buildGrid();
     render();
@@ -411,21 +416,16 @@ function buildGrid() {
     state.grid = grid;
 }
 
-/** * 信頼度（Win Prob）計算ロジック 
- * vIdを指定することで他社の信頼度も算出可能
- */
 function getWR(c, vId = 'H') {
     if (!c) return 0;
     let r = 5;
-    // 自社のみ訪問(vc)をカウント。他社は個体値(affinity)で代用
     if (vId === 'H') r += (c.vc * 5); 
     else r += (c.affinity || 0);
 
     if (c.vendor === vId) r += 40;
     if (c.mo >= 48 && c.mo < 50) r += 40; else if (c.mo >= 50) r -= 20;
-    if (vId === 'H' && c.specIn) r += 30; // 自社のスペックイン効果
+    if (vId === 'H' && c.specIn) r += 30;
 
-    // 予約中のタスク（自社のみ）を反映
     if (vId === 'H') {
         state.tasks.filter(t=>t.cid===c.id).forEach(t=>{ 
             if(t.type==='VISIT') r+=5; 
@@ -455,7 +455,7 @@ function render() {
     const gEl = document.getElementById('grid'); gEl.innerHTML='';
     state.grid.forEach(t=>{
         const el=document.createElement('div'); el.className='tile';
-        if (t.cid) {
+        if (t && t.cid) {
             const c=state.customers.find(x=>x.id===t.cid);
             const kn=c.vc>0||c.vendor==='H';
             el.style.backgroundColor=VENDORS[kn?c.vendor:'UNK'].bg;
@@ -465,4 +465,110 @@ function render() {
             else if(kn && c.mo>=50) el.classList.add('bld-a');
             const sp=document.createElement('span'); sp.className='t-lbl'; sp.textContent=kn?Math.ceil(c.mo/12):'?'; el.appendChild(sp);
             el.onclick=()=>{ SFX.select(); state.selId=c.id; render(); };
-        } else el.style.backgroundColor=VENDORS.NONE.
+        } else el.style.backgroundColor=VENDORS.NONE.bg;
+        gEl.appendChild(el);
+    });
+
+    const sp=document.getElementById('sp');
+    if (state.selId) {
+        const c=state.customers.find(x=>x.id===state.selId);
+        sp.classList.add('open');
+        document.getElementById('sp-name').textContent=c.name;
+        document.getElementById('sp-vc').textContent=c.vc;
+        document.getElementById('sp-win').textContent=`${getWR(c)}%`;
+        const kn=c.vc>0||c.vendor==='H';
+        document.getElementById('sp-vendor').textContent= (kn || c.intelRevealed) ? VENDORS[c.vendor].name : '？';
+        const st=document.getElementById('sp-status');
+        if(c.cxoProtect>0){ st.textContent=`🛡 CXO防衛中 (${c.cxoProtect})`; st.style.color='var(--sky)'; }
+        else if(c.mo>=50){ st.textContent='運用/構築中'; st.style.color=''; }
+        else if(c.mo>=48){ st.textContent='📄 RFP放出中'; st.style.color='var(--amber)'; }
+        else{ st.textContent='稼働中'; st.style.color=''; }
+        
+        document.getElementById('sp-prop-btn').disabled=!(kn && c.mo>=48 && c.mo<50);
+        document.getElementById('sp-spec-btn').disabled=(c.mo>=48 || c.specIn || getWR(c) < 75);
+    } else sp.classList.remove('open');
+
+    const ts=document.getElementById('task-strip'); ts.innerHTML='';
+    state.tasks.forEach((t,i)=>{
+        const c=document.createElement('div'); c.className='t-chip';
+        c.innerHTML=`<span class="t-chip-name">${t.cname}</span><span>${t.label}</span><button class="t-chip-rm" onclick="removeTask(${i})">✕</button>`;
+        ts.appendChild(c);
+    });
+    document.getElementById('exec-btn').disabled=state.tasks.length===0;
+    document.getElementById('exec-btn').className='exec-btn'+(state.tasks.length?' on':'');
+}
+
+function addTask(type,cost,label) {
+    if(!state.selId || state.mh<cost) { SFX.error(); return; }
+    SFX.add();
+    const c=state.customers.find(x=>x.id===state.selId);
+    state.tasks.push({cid:c.id,cname:c.name,type,cost,label});
+    state.mh-=cost; state.selId=null; render();
+}
+function removeTask(i) { SFX.select(); state.mh+=state.tasks[i].cost; state.tasks.splice(i,1); render(); }
+
+function executeStrategy() {
+    SFX.exec();
+    let tr = [];
+    const activeCids = [...new Set(state.tasks.map(t => t.cid))];
+
+    state.tasks.forEach(t=>{
+        const c=state.customers.find(x=>x.id===t.cid);
+        if(t.type==='VISIT'){ 
+            c.vc++; 
+            const otherRivals = state.vendorList.filter(v => v !== 'H' && v !== c.vendor);
+            let observation = "";
+            if (Math.random() > 0.4) {
+                const observedVendor = VENDORS[otherRivals[Math.floor(Math.random() * otherRivals.length)]].name;
+                observation = ` 受付で${observedVendor}の担当者とすれ違いました。`;
+            } else {
+                observation = " 他社の出入りは確認されず、現在は自社が先行しているようです。";
+            }
+            tr.push({n:c.name, tx:'訪問によりキーマン接触。' + observation}); 
+        }
+        else if(t.type==='SURVEY'){ c.intelRevealed=true; tr.push({n:c.name, tx:`市場調査により${VENDORS[c.vendor].name}の動向を特定。`}); }
+        else if(t.type==='SPECIN'){ c.specIn=true; tr.push({n:c.name, tx:'スペックイン成功。RFP要件に自社仕様が組み込まれました。'}); }
+        else if(t.type==='CXO'){ c.cxoProtect=4; tr.push({n:c.name, tx:'CXO合意を獲得。以後3ヶ月間、他社の介入をシャットアウト。'}); }
+        else if(t.type==='PROPOSAL'){
+            if(Math.random()*100<getWR(c)){ SFX.win(); c.vendor='H'; c.mo=55; state.sales+=c.budget; tr.push({n:c.name, tx:'【受注】覇権を奪還しました！構築フェーズへ移行。'}); }
+            else { SFX.lost(); tr.push({n:c.name, tx:'【失注】競合のロジックに押し切られました。'}); }
+        }
+    });
+
+    state.vendorList.filter(v => v !== 'H').forEach(rid => {
+        let rmh = Math.floor(Math.random() * 11) + 15; 
+        while (rmh >= 6) {
+            const targets = state.customers.filter(c => c.vendor !== rid && c.cxoProtect <= 0 && c.mo < 50);
+            if (!targets.length) break;
+            const tgt = targets[Math.floor(Math.random() * targets.length)];
+            if (rmh >= 12 && getWR(tgt, rid) >= 75 && (tgt.mo >= 48 || activeCids.includes(tgt.id))) {
+                rmh -= 12;
+                if (Math.random() * 100 < (tgt.mo >= 48 ? 35 : 12)) {
+                    tgt.vendor = rid; tgt.mo = 1; tgt.vc = 0; tgt.specIn = false;
+                    tr.push({ n: tgt.name, tx: `【急報】${VENDORS[rid].name}のリソース集中投下によりベンダーが交代。` });
+                }
+            } else { rmh -= 6; }
+        }
+    });
+
+    state.month++; state.tasks=[]; state.mh=MAX_MH; state.selId=null;
+    state.customers.forEach(c=>{ c.mo=c.mo>=60?1:c.mo+1; if(c.cxoProtect>0) c.cxoProtect--; });
+    const rl=document.getElementById('res-list'); rl.innerHTML='';
+    tr.forEach(r=>{ rl.innerHTML+=`<div class="res-block"><div class="res-bname">${r.n}</div><div class="res-txt">${r.tx}</div></div>`; });
+    setTimeout(() => { SFX.report(); document.getElementById('result-ov').classList.remove('hidden'); }, 300);
+    render();
+}
+
+function closeResult() { 
+    SFX.select();
+    document.getElementById('result-ov').classList.add('hidden'); 
+    if(state.month>12) { 
+        document.getElementById('final-score').textContent=`¥${state.sales}M`; 
+        document.getElementById('final-modal').classList.remove('hidden'); 
+    } 
+}
+
+document.getElementById('sp-close').onclick=()=>{ SFX.select(); state.selId=null; render(); };
+</script>
+</body>
+</html>
