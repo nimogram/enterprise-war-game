@@ -267,8 +267,10 @@
                     <button class="sp-btn" style="flex:1;" onclick="addTask('VISIT',5,'訪問')">Visit(-5)</button>
                     <button class="sp-btn" style="flex:1;" onclick="addTask('SURVEY',3,'調査')">Survey(-3)</button>
                 </div>
+                <!-- 勉強会を追加 -->
+                <button class="sp-btn" style="width:100%;" onclick="addTask('STUDY',8,'勉強会')">Study (-8 MH)</button>
                 <button class="sp-btn" id="sp-spec-btn" onclick="addTask('SPECIN',12,'スペックイン')">Spec-in (-12 MH)</button>
-                <button class="sp-btn alt" onclick="addTask('CXO',15,'トップ面談')">CXO Meeting (-15 MH)</button>
+                <button class="sp-btn alt" id="sp-cxo-btn" onclick="addTask('CXO',15,'トップ面談')">CXO Meeting (-15 MH)</button>
                 <button class="sp-btn pri" id="sp-prop-btn" onclick="addTask('PROPOSAL',10,'提案')" disabled>Submit Proposal (-10 MH)</button>
             </div>
         </aside>
@@ -422,13 +424,17 @@ function getWR(c, vId = 'H') {
     if (vId === 'H') r += (c.vc * 5); 
     else r += (c.affinity || 0);
 
-    if (c.vendor === vId) r += 40;
+    if (c.vendor === vId) {
+        r += (vId === 'H') ? 50 : 40;
+    }
+    
     if (c.mo >= 48 && c.mo < 50) r += 40; else if (c.mo >= 50) r -= 20;
     if (vId === 'H' && c.specIn) r += 30;
 
     if (vId === 'H') {
         state.tasks.filter(t=>t.cid===c.id).forEach(t=>{ 
             if(t.type==='VISIT') r+=5; 
+            if(t.type==='STUDY') r+=10; // 勉強会予約ボーナス
             if(t.type==='CXO') r+=50; 
         });
     }
@@ -486,6 +492,7 @@ function render() {
         
         document.getElementById('sp-prop-btn').disabled=!(kn && c.mo>=48 && c.mo<50);
         document.getElementById('sp-spec-btn').disabled=(c.mo>=48 || c.specIn || getWR(c) < 75);
+        document.getElementById('sp-cxo-btn').disabled=(getWR(c) < 75);
     } else sp.classList.remove('open');
 
     const ts=document.getElementById('task-strip'); ts.innerHTML='';
@@ -525,6 +532,10 @@ function executeStrategy() {
                 observation = " 他社の出入りは確認されず、現在は自社が先行しているようです。";
             }
             tr.push({n:c.name, tx:'訪問によりキーマン接触。' + observation}); 
+        }
+        else if(t.type==='STUDY'){ 
+            c.vc += 2; // 信頼度を大幅アップ (+10%)
+            tr.push({n:c.name, tx:'勉強会（Workshop）を実施。製品への理解と技術的信頼を獲得しました。'});
         }
         else if(t.type==='SURVEY'){ c.intelRevealed=true; tr.push({n:c.name, tx:`市場調査により${VENDORS[c.vendor].name}の動向を特定。`}); }
         else if(t.type==='SPECIN'){ c.specIn=true; tr.push({n:c.name, tx:'スペックイン成功。RFP要件に自社仕様が組み込まれました。'}); }
