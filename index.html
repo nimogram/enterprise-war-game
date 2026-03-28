@@ -12,6 +12,7 @@
             --rose:    #FF4D6D;
             --sky:     #38BDF8;
             --amber:   #F59E0B;
+            --purple:  #A855F7;
             --bg:      #060A11;
             --surf:    #0C1221;
             --bdr:     rgba(255,255,255,0.07);
@@ -170,7 +171,9 @@
         .sp-rl { font-size: 6px; font-weight: 700; letter-spacing: .35em; color: var(--muted); text-transform: uppercase; margin-bottom: 2px; }
         .sp-rv { font-family: var(--D); font-size: 14px; color: var(--gold); letter-spacing: .1em; }
         .sp-status { font-size: 11px; font-weight: 600; color: #fff; }
-        .sp-btns { margin-top: auto; display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
+
+        .sp-sec-title { font-size: 8px; font-weight: 900; letter-spacing: .3em; color: var(--muted); text-transform: uppercase; margin-top: 10px; border-top: 1px solid var(--bdr); padding-top: 10px; }
+        .sp-btns { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
         .sp-btn {
             background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2);
             color: #fff; border-radius: 10px; padding: 8px 8px;
@@ -181,6 +184,7 @@
         .sp-btn:hover:not(:disabled) { background: rgba(255,255,255,.25); border-color: rgba(255,255,255,.4); opacity: 1; }
         .sp-btn.pri { background: rgba(0,214,143,.18); border-color: var(--emerald); color: var(--emerald); }
         .sp-btn.alt { background: rgba(201,168,76,.12); border-color: var(--gold); color: var(--gold); }
+        .sp-btn.mkt { background: rgba(168,85,247,.12); border-color: var(--purple); color: var(--purple); }
         .sp-btn:disabled { opacity: 0.1; cursor: not-allowed; }
 
         /* ── LOWER UI ── */
@@ -263,6 +267,8 @@
             </div>
             <div class="sp-row"><div class="sp-rl">Provider</div><div class="sp-rv" id="sp-vendor">—</div></div>
             <div class="sp-row"><div class="sp-rl">Phase</div><div class="sp-status" id="sp-status">—</div></div>
+            
+            <div class="sp-sec-title">Sales Actions</div>
             <div class="sp-btns">
                 <div style="display:flex; gap:4px;">
                     <button class="sp-btn" style="flex:1;" onclick="addTask('VISIT',5,'訪問')">Visit(-5)</button>
@@ -272,6 +278,12 @@
                 <button class="sp-btn" id="sp-spec-btn" onclick="addTask('SPECIN',12,'スペックイン')">Spec-in (-12 MH)</button>
                 <button class="sp-btn alt" id="sp-cxo-btn" onclick="addTask('CXO',15,'トップ面談')">CXO Meeting (-15 MH)</button>
                 <button class="sp-btn pri" id="sp-prop-btn" onclick="addTask('PROPOSAL',10,'提案')" disabled>Submit Proposal (-10 MH)</button>
+            </div>
+
+            <div class="sp-sec-title">Marketing Actions</div>
+            <div class="sp-btns">
+                <button class="sp-btn mkt" onclick="addTask('EVENT',15,'イベント開催',true)">Host Event (-15 MH)</button>
+                <button class="sp-btn mkt" onclick="addTask('MAILNEWS',5,'MAIL NEWS',true)">Mail News (-5 MH)</button>
             </div>
         </aside>
     </section>
@@ -538,63 +550,115 @@ function render() {
     const ts=document.getElementById('task-strip'); ts.innerHTML='';
     state.tasks.forEach((t,i)=>{
         const c=document.createElement('div'); c.className='t-chip';
-        c.innerHTML=`<span class="t-chip-name">${t.cname}</span><span>${t.label}</span><button class="t-chip-rm" onclick="removeTask(${i})">✕</button>`;
+        const chipName = t.global ? 'MARKETING' : t.cname;
+        c.innerHTML=`<span class="t-chip-name">${chipName}</span><span>${t.label}</span><button class="t-chip-rm" onclick="removeTask(${i})">✕</button>`;
         ts.appendChild(c);
     });
     document.getElementById('exec-btn').disabled=state.tasks.length===0;
     document.getElementById('exec-btn').className='exec-btn'+(state.tasks.length?' on':'');
 }
 
-function addTask(type,cost,label) {
-    if(!state.selId || state.mh<cost) { SFX.error(); return; }
+function addTask(type,cost,label,isGlobal=false) {
+    if(!isGlobal && !state.selId) { SFX.error(); return; }
+    if(state.mh < cost) { SFX.error(); return; }
+    
     SFX.add();
-    const c=state.customers.find(x=>x.id===state.selId);
-    state.tasks.push({cid:c.id,cname:c.name,type,cost,label});
-    state.mh-=cost; state.selId=null; render();
+    if (isGlobal) {
+        state.tasks.push({cid:null, cname:'全体', type, cost, label, global:true});
+    } else {
+        const c=state.customers.find(x=>x.id===state.selId);
+        state.tasks.push({cid:c.id, cname:c.name, type, cost, label, global:false});
+    }
+    state.mh -= cost; 
+    if(!isGlobal) state.selId = null; 
+    render();
 }
+
 function removeTask(i) { SFX.select(); state.mh+=state.tasks[i].cost; state.tasks.splice(i,1); render(); }
 
 function executeStrategy() {
     SFX.exec();
     let tr = [];
-    const activeCids = [...new Set(state.tasks.map(t => t.cid))];
+    const activeCids = [...new Set(state.tasks.map(t => t.cid).filter(id => id !== null))];
 
-    state.tasks.forEach(t=>{
-        const c=state.customers.find(x=>x.id===t.cid);
-        const wr = getWR(c);
-        const getDynamicMsg = (type, currentWr) => {
-            const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
-            const otherRivals = state.vendorList.filter(v => v !== 'H' && v !== c.vendor);
-            const rName = VENDORS[pick(otherRivals)].name;
-            if (type === 'VISIT') {
-                if (currentWr >= 75) return pick([`担当者と密談。${rName}の提案に不信感を持っているようです。`, "温かい歓迎。他社のカタログはすべて片付けられていました。", "キーマンと意気投合。次回のRFP要件について内密に相談を受けました。"]);
-                if (currentWr >= 40) return pick(["世間話に終執しましたが、こちらの新製品には興味を示しています。", `受付で${rName}の担当者とすれ違いました。競争が激化しています。`, "担当者は多忙そうでしたが、短い面談でポジティブな感触を得ました。"]);
-                return pick(["受付での対応は冷ややか。他社のカタログが山積みになっています。", `${rName}の製品が現場に深く浸透しており、切り込みが難しい状況です。`, "門前払い一歩手前。信頼構築にはまだ時間がかかりそうです。"]);
-            }
-            if (type === 'STUDY') {
-                if (currentWr >= 75) return pick(["現場エンジニアと深い技術交流。自社仕様への完全な理解を得ました。", "「これなら他社から乗り換える価値がある」との評価を頂きました。", "質疑応答が活発に行われ、現場の支持を完全に掌握しました。"]);
-                return pick(["勉強会は盛況。製品への理解度が一段階上がったようです。", "他社比較の質問が多く出ましたが、概ねこちらの優位性をアピールできました。", "出席者の反応は上々。次なるアクションへの橋渡しが完了しました。"]);
-            }
-            if (type === 'SURVEY') return `市場調査により${VENDORS[c.vendor].name}の動向を特定。`;
-            if (type === 'SPECIN') return pick(["スペックイン成功。RFP要件に自社仕様がガッチリ組み込まれました。", "要件定義に潜り込み完了。他社が追随できない仕様を仕込みました。"]);
-            if (type === 'CXO') return pick(["CXOと合意。以後3ヶ月間、他社の介入を完全にシャットアウトします。", "トップダウンでの自社採用方針が固まりました。鉄壁の防衛。 "]);
-            return "";
-        };
-
-        if(t.type==='VISIT'){ c.vc++; tr.push({n:c.name, tx: getDynamicMsg('VISIT', wr)}); }
-        else if(t.type==='STUDY'){ c.vc += 2; tr.push({n:c.name, tx: getDynamicMsg('STUDY', wr)}); }
-        else if(t.type==='SURVEY'){ c.intelRevealed=true; tr.push({n:c.name, tx: getDynamicMsg('SURVEY', wr)}); }
-        else if(t.type==='SPECIN'){ c.specIn=true; tr.push({n:c.name, tx: getDynamicMsg('SPECIN', wr)}); }
-        else if(t.type==='CXO'){ c.cxoProtect=4; tr.push({n:c.name, tx: getDynamicMsg('CXO', wr)}); }
-        else if(t.type==='PROPOSAL'){
-            const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
-            if(Math.random()*100 < wr){ 
-                SFX.win(); c.vendor='H'; c.mo=55; state.sales+=c.budget; 
-                tr.push({n:c.name, tx: pick(['【受注】覇権を奪還しました！構築フェーズへ。', '【受注】満場一致で採用決定。圧倒的な勝利です。'])}); 
-            } else { SFX.lost(); tr.push({n:c.name, tx: pick(['【失注】競合のロジックに押し切られました。', '【失注】最後の最後でリリースのタイミングが合わず。'])}); }
+    // ── 1. 【障害発生チェック】 ──
+    state.vendorList.forEach(vId => {
+        if (Math.random() < 0.08) { // 年に1回程度の確率(約8%)
+            const vName = VENDORS[vId].name;
+            tr.push({n: vName, tx: `【障害発生】致命的なバグが露見。既存顧客の信頼度が10%低下しました。`});
+            state.customers.forEach(c => {
+                if (c.vendor === vId) {
+                    c.baseRapport = Math.max(0, c.baseRapport - 10);
+                }
+            });
+            SFX.lost();
         }
     });
 
+    // ── 2. 【タスク実行】 ──
+    state.tasks.forEach(t=>{
+        if (t.global) {
+            const getParticipants = (minProb, minCount, maxCount) => {
+                const candidates = state.customers.filter(c => getWR(c) >= minProb);
+                const shuffled = candidates.sort(() => Math.random() - 0.5);
+                return shuffled.slice(0, Math.floor(Math.random() * (maxCount - minCount + 1)) + minCount);
+            };
+
+            if (t.type === 'EVENT') {
+                const parts = getParticipants(30, 2, 4);
+                if (parts.length > 0) {
+                    parts.forEach(c => { c.baseRapport += 15; });
+                    tr.push({n:'イベント開催', tx:`参加企業（${parts.map(p=>p.name).join('、')}）の興味度が大幅に向上(+15%)しました。`});
+                } else {
+                    tr.push({n:'イベント開催', tx:'集客が振るわず、目立った成果は得られませんでした。'});
+                }
+            } else if (t.type === 'MAILNEWS') {
+                const parts = getParticipants(30, 3, 6);
+                if (parts.length > 0) {
+                    parts.forEach(c => { c.baseRapport += 5; });
+                    tr.push({n:'MAIL NEWS', tx:`配信先（${parts.map(p=>p.name).join('、')}）に好意的に受け入れられました(+5%)。`});
+                } else {
+                    tr.push({n:'MAIL NEWS', tx:'配信しましたが、多くの開封には至りませんでした。'});
+                }
+            }
+        } else {
+            const c=state.customers.find(x=>x.id===t.cid);
+            const wr = getWR(c);
+            const getDynamicMsg = (type, currentWr) => {
+                const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+                const otherRivals = state.vendorList.filter(v => v !== 'H' && v !== c.vendor);
+                const rName = VENDORS[pick(otherRivals)].name;
+                if (type === 'VISIT') {
+                    if (currentWr >= 75) return pick([`担当者と密談。${rName}の提案に不信感を持っているようです。`, "温かい歓迎。他社のカタログはすべて片付けられていました。", "キーマンと意気投合。次回のRFP要件について内密に相談を受けました。"]);
+                    if (currentWr >= 40) return pick(["世間話に終執しましたが、こちらの新製品には興味を示しています。", `受付で${rName}の担当者とすれ違いました。競争が激化しています。`, "担当者は多忙そうでしたが、短い面談でポジティブな感触を得ました。"]);
+                    return pick(["受付での対応は冷ややか。他社のカタログが山積みになっています。", `${rName}の製品が現場に深く浸透しており、切り込みが難しい状況です。`, "門前払い一歩手前。信頼構築にはまだ時間がかかりそうです。"]);
+                }
+                if (type === 'STUDY') {
+                    if (currentWr >= 75) return pick(["現場エンジニアと深い技術交流。自社仕様への完全な理解を得ました。", "「これなら他社から乗り換える価値がある」との評価を頂きました。", "質疑応答が活発に行われ、現場の支持を完全に掌握しました。"]);
+                    return pick(["勉強会は盛況。製品への理解度が一段階上がったようです。", "他社比較の質問が多く出ましたが、概ねこちらの優位性をアピールできました。", "出席者の反応は上々。次なるアクションへの橋渡しが完了しました。"]);
+                }
+                if (type === 'SURVEY') return `市場調査により${VENDORS[c.vendor].name}の動向を特定。`;
+                if (type === 'SPECIN') return pick(["スペックイン成功。RFP要件に自社仕様がガッチリ組み込まれました。", "要件定義に潜り込み完了。他社が追随できない仕様を仕込みました。"]);
+                if (type === 'CXO') return pick(["CXOと合意。以後3ヶ月間、他社の介入を完全にシャットアウトします。", "トップダウンでの自社採用方針が固まりました。鉄壁の防衛。 "]);
+                return "";
+            };
+
+            if(t.type==='VISIT'){ c.vc++; tr.push({n:c.name, tx: getDynamicMsg('VISIT', wr)}); }
+            else if(t.type==='STUDY'){ c.vc += 2; tr.push({n:c.name, tx: getDynamicMsg('STUDY', wr)}); }
+            else if(t.type==='SURVEY'){ c.intelRevealed=true; tr.push({n:c.name, tx: getDynamicMsg('SURVEY', wr)}); }
+            else if(t.type==='SPECIN'){ c.specIn=true; tr.push({n:c.name, tx: getDynamicMsg('SPECIN', wr)}); }
+            else if(t.type==='CXO'){ c.cxoProtect=4; tr.push({n:c.name, tx: getDynamicMsg('CXO', wr)}); }
+            else if(t.type==='PROPOSAL'){
+                const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+                if(Math.random()*100 < wr){ 
+                    SFX.win(); c.vendor='H'; c.mo=55; state.sales+=c.budget; 
+                    tr.push({n:c.name, tx: pick(['【受注】覇権を奪還しました！構築フェーズへ。', '【受注】満場一致で採用決定。圧倒的な勝利です。'])}); 
+                } else { SFX.lost(); tr.push({n:c.name, tx: pick(['【失注】競合のロジックに押し切られました。', '【失注】最後の最後でリリースのタイミングが合わず。'])}); }
+            }
+        }
+    });
+
+    // ── 3. 【競合他社の動き】 ──
     state.vendorList.filter(v => v !== 'H').forEach(rid => {
         let rmh = Math.floor(Math.random() * 11) + 15; 
         while (rmh >= 6) {
