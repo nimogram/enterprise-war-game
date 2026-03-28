@@ -164,7 +164,7 @@
         .sp-stats { display: flex; gap: 6px; flex-shrink: 0; }
         .sp-stat { flex: 1; background: rgba(255,255,255,.02); border: 1px solid var(--bdr); border-radius: 9px; padding: 8px; }
         .sp-sl { font-size: 6px; font-weight: 700; letter-spacing: .4em; color: var(--muted); text-transform: uppercase; margin-bottom: 3px; }
-        .sp-sv { font-family: var(--D); font-size: 22px; color: #fff; }
+        .sp-sv { font-family: var(--D); font-size: 18px; color: #fff; } 
         .sp-win { font-family: var(--D); font-size: 44px; color: #002b5c; -webkit-text-stroke: 1px #fff; line-height: 1; flex-shrink: 0; }
         .sp-row { flex-shrink: 0; }
         .sp-rl { font-size: 6px; font-weight: 700; letter-spacing: .35em; color: var(--muted); text-transform: uppercase; margin-bottom: 2px; }
@@ -258,6 +258,7 @@
             <div class="sp-full" id="sp-full">領域システム情報を確認中...</div>
             <div class="sp-stats">
                 <div class="sp-stat"><div class="sp-sl">Visit</div><div class="sp-sv" id="sp-vc">0</div></div>
+                <div class="sp-stat"><div class="sp-sl">Scale</div><div class="sp-sv" id="sp-budget">¥0M</div></div>
                 <div class="sp-stat"><div class="sp-sl">Win Prob.</div><div class="sp-sv" id="sp-win">0%</div></div>
             </div>
             <div class="sp-row"><div class="sp-rl">Provider</div><div class="sp-rv" id="sp-vendor">—</div></div>
@@ -267,7 +268,6 @@
                     <button class="sp-btn" style="flex:1;" onclick="addTask('VISIT',5,'訪問')">Visit(-5)</button>
                     <button class="sp-btn" style="flex:1;" onclick="addTask('SURVEY',3,'調査')">Survey(-3)</button>
                 </div>
-                <!-- 勉強会を追加 -->
                 <button class="sp-btn" style="width:100%;" onclick="addTask('STUDY',8,'勉強会')">Study (-8 MH)</button>
                 <button class="sp-btn" id="sp-spec-btn" onclick="addTask('SPECIN',12,'スペックイン')">Spec-in (-12 MH)</button>
                 <button class="sp-btn alt" id="sp-cxo-btn" onclick="addTask('CXO',15,'トップ面談')">CXO Meeting (-15 MH)</button>
@@ -297,7 +297,7 @@
     <div class="final-box">
         <div class="res-hdr"><span class="res-title">ANNUAL RESULT</span></div>
         <div class="final-score" id="final-score">¥0M</div>
-        <button class="final-btn" onclick="location.reload()">Reset System</button>
+        <button class="final-btn" onclick="resetGame()">Reset System</button>
     </div>
 </div>
 
@@ -350,22 +350,60 @@ const VENDORS = {
     NONE:{ name:'未開拓', bg:'#060A11' },
     UNK: { name:'情報未取得', bg:'#111926' },
 };
+
 const CUSTOMER_POOL_BASE = [
-    { id:101, name:'NIT-Core', budget:120, tiles6:6, tiles8:10 },
-    { id:102, name:'NIT-Logi', budget:80,  tiles6:5, tiles8:9 },
-    { id:201, name:'SAP-Net',  budget:70,  tiles6:5, tiles8:9 },
-    { id:202, name:'SAP-Win',  budget:65,  tiles6:3, tiles8:5 },
-    { id:401, name:'HOU-Edu',  budget:110, tiles6:5, tiles8:9 },
-    { id:501, name:'TSU-EC',   budget:80,  tiles6:4, tiles8:7 },
-    { id:701, name:'HKL-Agri', budget:60,  tiles6:3, tiles8:5 },
-    { id:901, name:'HBA-Sec',  budget:50,  tiles6:2, tiles8:4 },
-    { id:1001,name:'SAT-POS',  budget:40,  tiles6:2, tiles8:4 },
-    { id:1201,name:'HPP-Sec',  budget:25,  tiles6:1, tiles8:2 },
+    { id:101, name:'北海テクノロジー', budget:120, tiles6:6, tiles8:10 },
+    { id:102, name:'札幌ロジスティクス', budget:80,  tiles6:5, tiles8:9 },
+    { id:201, name:'エゾ・ネットワーク',  budget:70,  tiles6:5, tiles8:9 },
+    { id:202, name:'道央システム開発',  budget:65,  tiles6:3, tiles8:5 },
+    { id:401, name:'北海道教育支援',  budget:110, tiles6:5, tiles8:9 },
+    { id:501, name:'北日本通商',   budget:80,  tiles6:4, tiles8:7 },
+    { id:701, name:'北海アグリ連合', budget:60,  tiles6:3, tiles8:5 },
+    { id:901, name:'札幌セキュリティ',  budget:50,  tiles6:2, tiles8:4 },
+    { id:1001,name:'道央流通システム',  budget:40,  tiles6:2, tiles8:4 },
+    { id:1201,name:'北海道プラント保安',  budget:25,  tiles6:1, tiles8:2 },
 ];
 
 let state = {
     month:1, mh:MAX_MH, sales:0, selId:null, tasks:[], 
     logs:[], customers:[], grid:[], gridSize: 6, vendorList: []
+};
+
+// --- DATA PERSISTENCE (LOCAL STORAGE) ---
+const SAVE_KEY = 'enterprise_v2_save';
+
+function saveGame() {
+    try {
+        localStorage.setItem(SAVE_KEY, JSON.stringify(state));
+    } catch (e) { console.error("Local save failed:", e); }
+}
+
+function loadGame() {
+    try {
+        const saved = localStorage.getItem(SAVE_KEY);
+        if (saved) return JSON.parse(saved);
+    } catch (e) { console.error("Local load failed:", e); }
+    return null;
+}
+
+function resetGame() {
+    SFX.select();
+    localStorage.removeItem(SAVE_KEY);
+    location.reload();
+}
+
+// --- APP STARTUP ---
+window.onload = () => {
+    const savedState = loadGame();
+    if (savedState) {
+        state = savedState;
+        document.documentElement.style.setProperty('--grid-size', state.gridSize);
+        document.getElementById('mode-select-ov').classList.add('hidden');
+        document.getElementById('app').classList.add('visible');
+        render();
+    } else {
+        document.getElementById('mode-select-ov').classList.remove('hidden');
+    }
 };
 
 function startApp(size) {
@@ -381,16 +419,23 @@ function startApp(size) {
 }
 
 function init() {
-    state.customers = CUSTOMER_POOL_BASE.map(b => ({
-        ...b,
-        tiles: state.gridSize === 6 ? b.tiles6 : b.tiles8,
-        vendor: state.vendorList[Math.floor(Math.random()*state.vendorList.length)],
-        mo: Math.floor(Math.random()*45)+1,
-        vc:0, specIn:false, cxoProtect:0, intelRevealed:false,
-        affinity: Math.floor(Math.random()*21)
-    }));
+    state.customers = CUSTOMER_POOL_BASE.map(b => {
+        const vendor = state.vendorList[Math.floor(Math.random()*state.vendorList.length)];
+        return {
+            ...b,
+            tiles: state.gridSize === 6 ? b.tiles6 : b.tiles8,
+            vendor: vendor,
+            mo: Math.floor(Math.random()*45)+1,
+            vc:0, specIn:false, cxoProtect:0, intelRevealed:false,
+            affinity: Math.floor(Math.random()*21),
+            baseRapport: (vendor === 'H') ? 
+                Math.floor(Math.random() * 36) + 5 : 
+                Math.floor(Math.random() * 31) + 10 
+        };
+    });
     buildGrid();
     render();
+    saveGame();
 }
 
 function buildGrid() {
@@ -420,21 +465,16 @@ function buildGrid() {
 
 function getWR(c, vId = 'H') {
     if (!c) return 0;
-    let r = 5;
+    let r = (vId === 'H') ? (c.baseRapport || 5) : 5;
     if (vId === 'H') r += (c.vc * 5); 
     else r += (c.affinity || 0);
-
-    if (c.vendor === vId) {
-        r += (vId === 'H') ? 50 : 40;
-    }
-    
+    if (c.vendor === vId) r += (vId === 'H') ? 50 : 40;
     if (c.mo >= 48 && c.mo < 50) r += 40; else if (c.mo >= 50) r -= 20;
     if (vId === 'H' && c.specIn) r += 30;
-
     if (vId === 'H') {
         state.tasks.filter(t=>t.cid===c.id).forEach(t=>{ 
             if(t.type==='VISIT') r+=5; 
-            if(t.type==='STUDY') r+=10; // 勉強会予約ボーナス
+            if(t.type==='STUDY') r+=10; 
             if(t.type==='CXO') r+=50; 
         });
     }
@@ -482,6 +522,7 @@ function render() {
         document.getElementById('sp-name').textContent=c.name;
         document.getElementById('sp-vc').textContent=c.vc;
         document.getElementById('sp-win').textContent=`${getWR(c)}%`;
+        document.getElementById('sp-budget').textContent = `¥${c.budget}M`;
         const kn=c.vc>0||c.vendor==='H';
         document.getElementById('sp-vendor').textContent= (kn || c.intelRevealed) ? VENDORS[c.vendor].name : '？';
         const st=document.getElementById('sp-status');
@@ -489,7 +530,6 @@ function render() {
         else if(c.mo>=50){ st.textContent='運用/構築中'; st.style.color=''; }
         else if(c.mo>=48){ st.textContent='📄 RFP放出中'; st.style.color='var(--amber)'; }
         else{ st.textContent='稼働中'; st.style.color=''; }
-        
         document.getElementById('sp-prop-btn').disabled=!(kn && c.mo>=48 && c.mo<50);
         document.getElementById('sp-spec-btn').disabled=(c.mo>=48 || c.specIn || getWR(c) < 75);
         document.getElementById('sp-cxo-btn').disabled=(getWR(c) < 75);
@@ -521,28 +561,37 @@ function executeStrategy() {
 
     state.tasks.forEach(t=>{
         const c=state.customers.find(x=>x.id===t.cid);
-        if(t.type==='VISIT'){ 
-            c.vc++; 
+        const wr = getWR(c);
+        const getDynamicMsg = (type, currentWr) => {
+            const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
             const otherRivals = state.vendorList.filter(v => v !== 'H' && v !== c.vendor);
-            let observation = "";
-            if (Math.random() > 0.4) {
-                const observedVendor = VENDORS[otherRivals[Math.floor(Math.random() * otherRivals.length)]].name;
-                observation = ` 受付で${observedVendor}の担当者とすれ違いました。`;
-            } else {
-                observation = " 他社の出入りは確認されず、現在は自社が先行しているようです。";
+            const rName = VENDORS[pick(otherRivals)].name;
+            if (type === 'VISIT') {
+                if (currentWr >= 75) return pick([`担当者と密談。${rName}の提案に不信感を持っているようです。`, "温かい歓迎。他社のカタログはすべて片付けられていました。", "キーマンと意気投合。次回のRFP要件について内密に相談を受けました。"]);
+                if (currentWr >= 40) return pick(["世間話に終執しましたが、こちらの新製品には興味を示しています。", `受付で${rName}の担当者とすれ違いました。競争が激化しています。`, "担当者は多忙そうでしたが、短い面談でポジティブな感触を得ました。"]);
+                return pick(["受付での対応は冷ややか。他社のカタログが山積みになっています。", `${rName}の製品が現場に深く浸透しており、切り込みが難しい状況です。`, "門前払い一歩手前。信頼構築にはまだ時間がかかりそうです。"]);
             }
-            tr.push({n:c.name, tx:'訪問によりキーマン接触。' + observation}); 
-        }
-        else if(t.type==='STUDY'){ 
-            c.vc += 2; // 信頼度を大幅アップ (+10%)
-            tr.push({n:c.name, tx:'勉強会（Workshop）を実施。製品への理解と技術的信頼を獲得しました。'});
-        }
-        else if(t.type==='SURVEY'){ c.intelRevealed=true; tr.push({n:c.name, tx:`市場調査により${VENDORS[c.vendor].name}の動向を特定。`}); }
-        else if(t.type==='SPECIN'){ c.specIn=true; tr.push({n:c.name, tx:'スペックイン成功。RFP要件に自社仕様が組み込まれました。'}); }
-        else if(t.type==='CXO'){ c.cxoProtect=4; tr.push({n:c.name, tx:'CXO合意を獲得。以後3ヶ月間、他社の介入をシャットアウト。'}); }
+            if (type === 'STUDY') {
+                if (currentWr >= 75) return pick(["現場エンジニアと深い技術交流。自社仕様への完全な理解を得ました。", "「これなら他社から乗り換える価値がある」との評価を頂きました。", "質疑応答が活発に行われ、現場の支持を完全に掌握しました。"]);
+                return pick(["勉強会は盛況。製品への理解度が一段階上がったようです。", "他社比較の質問が多く出ましたが、概ねこちらの優位性をアピールできました。", "出席者の反応は上々。次なるアクションへの橋渡しが完了しました。"]);
+            }
+            if (type === 'SURVEY') return `市場調査により${VENDORS[c.vendor].name}の動向を特定。`;
+            if (type === 'SPECIN') return pick(["スペックイン成功。RFP要件に自社仕様がガッチリ組み込まれました。", "要件定義に潜り込み完了。他社が追随できない仕様を仕込みました。"]);
+            if (type === 'CXO') return pick(["CXOと合意。以後3ヶ月間、他社の介入を完全にシャットアウトします。", "トップダウンでの自社採用方針が固まりました。鉄壁の防衛。 "]);
+            return "";
+        };
+
+        if(t.type==='VISIT'){ c.vc++; tr.push({n:c.name, tx: getDynamicMsg('VISIT', wr)}); }
+        else if(t.type==='STUDY'){ c.vc += 2; tr.push({n:c.name, tx: getDynamicMsg('STUDY', wr)}); }
+        else if(t.type==='SURVEY'){ c.intelRevealed=true; tr.push({n:c.name, tx: getDynamicMsg('SURVEY', wr)}); }
+        else if(t.type==='SPECIN'){ c.specIn=true; tr.push({n:c.name, tx: getDynamicMsg('SPECIN', wr)}); }
+        else if(t.type==='CXO'){ c.cxoProtect=4; tr.push({n:c.name, tx: getDynamicMsg('CXO', wr)}); }
         else if(t.type==='PROPOSAL'){
-            if(Math.random()*100<getWR(c)){ SFX.win(); c.vendor='H'; c.mo=55; state.sales+=c.budget; tr.push({n:c.name, tx:'【受注】覇権を奪還しました！構築フェーズへ移行。'}); }
-            else { SFX.lost(); tr.push({n:c.name, tx:'【失注】競合のロジックに押し切られました。'}); }
+            const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+            if(Math.random()*100 < wr){ 
+                SFX.win(); c.vendor='H'; c.mo=55; state.sales+=c.budget; 
+                tr.push({n:c.name, tx: pick(['【受注】覇権を奪還しました！構築フェーズへ。', '【受注】満場一致で採用決定。圧倒的な勝利です。'])}); 
+            } else { SFX.lost(); tr.push({n:c.name, tx: pick(['【失注】競合のロジックに押し切られました。', '【失注】最後の最後でリリースのタイミングが合わず。'])}); }
         }
     });
 
@@ -568,6 +617,7 @@ function executeStrategy() {
     tr.forEach(r=>{ rl.innerHTML+=`<div class="res-block"><div class="res-bname">${r.n}</div><div class="res-txt">${r.tx}</div></div>`; });
     setTimeout(() => { SFX.report(); document.getElementById('result-ov').classList.remove('hidden'); }, 300);
     render();
+    saveGame();
 }
 
 function closeResult() { 
