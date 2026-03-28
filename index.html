@@ -542,7 +542,7 @@ function render() {
         else if(c.mo>=50){ st.textContent='運用/構築中'; st.style.color=''; }
         else if(c.mo>=48){ st.textContent='📄 RFP放出中'; st.style.color='var(--amber)'; }
         else{ st.textContent='稼働中'; st.style.color=''; }
-        document.getElementById('sp-prop-btn').disabled=!(kn && c.mo>=48 && c.mo<50);
+        document.getElementById('sp-prop-btn').disabled=!(kn && c.mo>=48 && c.mo < 50);
         document.getElementById('sp-spec-btn').disabled=(c.mo>=48 || c.specIn || getWR(c) < 75);
         document.getElementById('sp-cxo-btn').disabled=(getWR(c) < 75);
     } else sp.classList.remove('open');
@@ -576,6 +576,20 @@ function addTask(type,cost,label,isGlobal=false) {
 
 function removeTask(i) { SFX.select(); state.mh+=state.tasks[i].cost; state.tasks.splice(i,1); render(); }
 
+// 満足度コメントの生成ロジック
+function getSatisfactionComment(c, wr) {
+    const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+    if (c.vendor === 'H') {
+        if (wr > 80) return pick(["ニモさんの迅速なサポートに全幅の信頼を寄せています。", "システムは安定稼働しており、満足度は極めて高いです。"]);
+        if (wr < 50) return pick(["度重なる不具合の懸念から、他社へのリプレイス検討が始まっています。", "サポート体制への不満が漏れ聞こえており、危険な状態です。"]);
+        return pick(["概ね順調ですが、さらなる新機能の提案を待望されています。", "現状に大きな不満はありませんが、他社の営業も活発なようです。"]);
+    } else {
+        if (wr > 45) return pick(["現行ベンダーへの不満が限界に達しており、交代の機が熟しています。", "保守コストの高騰に嫌気が差しており、リプレイスに前向きです。"]);
+        if (wr < 25) return pick(["現行ベンダーとの関係は鉄壁。入り込む隙がほとんどありません。", "「現状で完璧」という認識が強く、変化を拒んでいます。"]);
+        return pick(["標準的な満足度。他社を圧倒するスペック提示が求められます。", "現行ベンダーに慣れてはいますが、比較検討の余地はあります。"]);
+    }
+}
+
 function executeStrategy() {
     SFX.exec();
     let tr = [];
@@ -583,9 +597,17 @@ function executeStrategy() {
 
     // ── 1. 【障害発生チェック】 ──
     state.vendorList.forEach(vId => {
-        if (Math.random() < 0.08) { // 年に1回程度の確率(約8%)
+        if (Math.random() < 0.08) { 
             const vName = VENDORS[vId].name;
-            tr.push({n: vName, tx: `【障害発生】致命的なバグが露見。既存顧客の信頼度が10%低下しました。`});
+            const vColor = VENDORS[vId].bg;
+            tr.push({
+                n: vName, 
+                tx: `【障害発生】致命的なバグが露見。既存顧客の信頼度が10%低下しました。`, 
+                clr: vColor,
+                vName: vName,
+                vClr: vColor,
+                sat: "障害発生により、サポートへの不信感が爆発しています。"
+            });
             state.customers.forEach(c => {
                 if (c.vendor === vId) {
                     c.baseRapport = Math.max(0, c.baseRapport - 10);
@@ -608,17 +630,17 @@ function executeStrategy() {
                 const parts = getParticipants(30, 2, 4);
                 if (parts.length > 0) {
                     parts.forEach(c => { c.baseRapport += 15; });
-                    tr.push({n:'イベント開催', tx:`参加企業（${parts.map(p=>p.name).join('、')}）の興味度が大幅に向上(+15%)しました。`});
+                    tr.push({n:'イベント開催', tx:`参加企業（${parts.map(p=>p.name).join('、')}）の興味度が大幅に向上(+15%)しました。`, clr: VENDORS.H.bg, vName: '全体施策', vClr: '#7a8fa8', sat: 'マーケティング活動により、ブランドへの期待が高まっています。'});
                 } else {
-                    tr.push({n:'イベント開催', tx:'集客が振るわず、目立った成果は得られませんでした。'});
+                    tr.push({n:'イベント開催', tx:'集客が振るわず、目立った成果は得られませんでした。', clr: VENDORS.H.bg, vName: '全体施策', vClr: '#7a8fa8', sat: '顧客の関心を惹くには、別のフックが必要です。'});
                 }
             } else if (t.type === 'MAILNEWS') {
                 const parts = getParticipants(30, 3, 6);
                 if (parts.length > 0) {
                     parts.forEach(c => { c.baseRapport += 5; });
-                    tr.push({n:'MAIL NEWS', tx:`配信先（${parts.map(p=>p.name).join('、')}）に好意的に受け入れられました(+5%)。`});
+                    tr.push({n:'MAIL NEWS', tx:`配信先（${parts.map(p=>p.name).join('、')}）に好意的に受け入れられました(+5%)。`, clr: VENDORS.H.bg, vName: '全体施策', vClr: '#7a8fa8', sat: '継続的な情報提供が、信頼の土壌を作っています。'});
                 } else {
-                    tr.push({n:'MAIL NEWS', tx:'配信しましたが、多くの開封には至りませんでした。'});
+                    tr.push({n:'MAIL NEWS', tx:'配信しましたが、多くの開封には至りませんでした。', clr: VENDORS.H.bg, vName: '全体施策', vClr: '#7a8fa8', sat: 'コンテンツのブラッシュアップが必要です。'});
                 }
             }
         } else {
@@ -643,17 +665,26 @@ function executeStrategy() {
                 return "";
             };
 
-            if(t.type==='VISIT'){ c.vc++; tr.push({n:c.name, tx: getDynamicMsg('VISIT', wr)}); }
-            else if(t.type==='STUDY'){ c.vc += 2; tr.push({n:c.name, tx: getDynamicMsg('STUDY', wr)}); }
-            else if(t.type==='SURVEY'){ c.intelRevealed=true; tr.push({n:c.name, tx: getDynamicMsg('SURVEY', wr)}); }
-            else if(t.type==='SPECIN'){ c.specIn=true; tr.push({n:c.name, tx: getDynamicMsg('SPECIN', wr)}); }
-            else if(t.type==='CXO'){ c.cxoProtect=4; tr.push({n:c.name, tx: getDynamicMsg('CXO', wr)}); }
+            const satComment = getSatisfactionComment(c, wr);
+            const vName = VENDORS[c.vendor].name;
+            const vClr = VENDORS[c.vendor].bg;
+
+            if(t.type==='VISIT'){ c.vc++; tr.push({n:c.name, tx: getDynamicMsg('VISIT', wr), clr: VENDORS.H.bg, vName, vClr, sat: satComment}); }
+            else if(t.type==='STUDY'){ c.vc += 2; tr.push({n:c.name, tx: getDynamicMsg('STUDY', wr), clr: VENDORS.H.bg, vName, vClr, sat: satComment}); }
+            else if(t.type==='SURVEY'){ c.intelRevealed=true; tr.push({n:c.name, tx: getDynamicMsg('SURVEY', wr), clr: VENDORS.H.bg, vName, vClr, sat: satComment}); }
+            else if(t.type==='SPECIN'){ c.specIn=true; tr.push({n:c.name, tx: getDynamicMsg('SPECIN', wr), clr: VENDORS.H.bg, vName, vClr, sat: satComment}); }
+            else if(t.type==='CXO'){ c.cxoProtect=4; tr.push({n:c.name, tx: getDynamicMsg('CXO', wr), clr: VENDORS.H.bg, vName, vClr, sat: satComment}); }
             else if(t.type==='PROPOSAL'){
                 const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
                 if(Math.random()*100 < wr){ 
-                    SFX.win(); c.vendor='H'; c.mo=55; state.sales+=c.budget; 
-                    tr.push({n:c.name, tx: pick(['【受注】覇権を奪還しました！構築フェーズへ。', '【受注】満場一致で採用決定。圧倒的な勝利です。'])}); 
-                } else { SFX.lost(); tr.push({n:c.name, tx: pick(['【失注】競合のロジックに押し切られました。', '【失注】最後の最後でリリースのタイミングが合わず。'])}); }
+                    SFX.win(); 
+                    const res = {n:c.name, tx: pick(['【受注】覇権を奪還しました！構築フェーズへ。', '【受注】満場一致で採用決定。圧倒的な勝利です。']), clr: VENDORS.H.bg, vName, vClr, sat: "ニモさんの提案力に圧倒され、新体制に期待が膨らんでいます。"};
+                    c.vendor='H'; c.mo=55; state.sales+=c.budget; 
+                    tr.push(res);
+                } else { 
+                    SFX.lost(); 
+                    tr.push({n:c.name, tx: pick(['【失注】競合のロジックに押し切られました。', '【失注】最後の最後でリリースのタイミングが合わず。']), clr: VENDORS.H.bg, vName, vClr, sat: "現行ベンダーが土俵際で粘りを見せ、信頼を繋ぎ止めました。"}); 
+                }
             }
         }
     });
@@ -665,11 +696,14 @@ function executeStrategy() {
             const targets = state.customers.filter(c => c.vendor !== rid && c.cxoProtect <= 0 && c.mo < 50);
             if (!targets.length) break;
             const tgt = targets[Math.floor(Math.random() * targets.length)];
-            if (rmh >= 12 && getWR(tgt, rid) >= 75 && (tgt.mo >= 48 || activeCids.includes(tgt.id))) {
+            const wrRival = getWR(tgt, rid);
+            if (rmh >= 12 && wrRival >= 75 && (tgt.mo >= 48 || activeCids.includes(tgt.id))) {
                 rmh -= 12;
                 if (Math.random() * 100 < (tgt.mo >= 48 ? 35 : 12)) {
+                    const oldV = VENDORS[tgt.vendor].name;
+                    const oldVClr = VENDORS[tgt.vendor].bg;
                     tgt.vendor = rid; tgt.mo = 1; tgt.vc = 0; tgt.specIn = false;
-                    tr.push({ n: tgt.name, tx: `【急報】${VENDORS[rid].name}のリソース集中投下によりベンダーが交代。` });
+                    tr.push({ n: tgt.name, tx: `【急報】${VENDORS[rid].name}のリソース集中投下によりベンダーが交代。`, clr: VENDORS[rid].bg, vName: oldV, vClr: oldVClr, sat: `${VENDORS[rid].name}の強気な提案が刺さり、既存環境への不満が表面化しました。` });
                 }
             } else { rmh -= 6; }
         }
@@ -678,7 +712,18 @@ function executeStrategy() {
     state.month++; state.tasks=[]; state.mh=MAX_MH; state.selId=null;
     state.customers.forEach(c=>{ c.mo=c.mo>=60?1:c.mo+1; if(c.cxoProtect>0) c.cxoProtect--; });
     const rl=document.getElementById('res-list'); rl.innerHTML='';
-    tr.forEach(r=>{ rl.innerHTML+=`<div class="res-block"><div class="res-bname">${r.n}</div><div class="res-txt">${r.tx}</div></div>`; });
+    tr.forEach(r=>{ 
+        // 青色のベンダーは文字が見にくいため、テキスト表示時のみ明るく調整
+        const displayClr = r.vClr === '#1E40AF' ? '#60A5FA' : r.vClr;
+        rl.innerHTML+=`<div class="res-block" style="border-left: 3px solid ${r.clr}; padding-left: 10px; margin-bottom: 15px;">
+            <div class="res-bname" style="color: ${r.clr}; display: flex; justify-content: space-between; align-items: center;">
+                <span>${r.n}</span>
+                <span style="font-size: 9px; color: ${displayClr}; font-weight: 700;">既存：${r.vName}</span>
+            </div>
+            <div class="res-txt" style="color: ${r.clr}; font-weight: 900; margin-bottom: 4px;">${r.tx}</div>
+            <div style="font-size: 11px; color: #ffffff; font-style: italic; opacity: 0.9;">満足度：${r.sat}</div>
+        </div>`; 
+    });
     setTimeout(() => { SFX.report(); document.getElementById('result-ov').classList.remove('hidden'); }, 300);
     render();
     saveGame();
