@@ -376,16 +376,16 @@ const VENDORS = {
 };
 
 const CUSTOMER_POOL_BASE = [
-    { id:101, name:'北海テクノロジー', budget:120, tiles6:6, tiles8:10, tiles10:15 },
-    { id:102, name:'札幌ロジスティクス', budget:80,  tiles6:5, tiles8:9,  tiles10:14 },
-    { id:201, name:'エゾ・ネットワーク',  budget:70,  tiles6:5, tiles8:9,  tiles10:14 },
-    { id:202, name:'道央システム開発',  budget:65,  tiles6:3, tiles8:5,  tiles10:8  },
-    { id:401, name:'北海道教育支援',  budget:110, tiles6:5, tiles8:9,  tiles10:14 },
-    { id:501, name:'北日本通商',   budget:80,  tiles6:4, tiles8:7,  tiles10:11 },
-    { id:701, name:'北海アグリ連合', budget:60,  tiles6:3, tiles8:5,  tiles10:8  },
-    { id:901, name:'札幌セキュリティ',  budget:50,  tiles6:2, tiles8:4,  tiles10:6  },
-    { id:1001,name:'道央流通システム',  budget:40,  tiles6:2, tiles8:4,  tiles10:6  },
-    { id:1201,name:'北海道プラント保安',  budget:25,  tiles6:1, tiles8:2,  tiles10:4  },
+    { id:101, name:'北海テクノロジー', tiles6:6, tiles8:10, tiles10:15 },
+    { id:102, name:'札幌ロジスティクス', tiles6:5, tiles8:9,  tiles10:14 },
+    { id:201, name:'エゾ・ネットワーク',  tiles6:5, tiles8:9,  tiles10:14 },
+    { id:202, name:'道央システム開発',  tiles6:3, tiles8:5,  tiles10:8  },
+    { id:401, name:'北海道教育支援',  tiles6:5, tiles8:9,  tiles10:14 },
+    { id:501, name:'北日本通商',   tiles6:4, tiles8:7,  tiles10:11 },
+    { id:701, name:'北海アグリ連合', tiles6:3, tiles8:5,  tiles10:8  },
+    { id:901, name:'札幌セキュリティ',  tiles6:2, tiles8:4,  tiles10:6  },
+    { id:1001,name:'道央流通システム',  tiles6:2, tiles8:4,  tiles10:6  },
+    { id:1201,name:'北海道プラント保安',  tiles6:1, tiles8:2,  tiles10:4  },
 ];
 
 let state = {
@@ -463,6 +463,7 @@ function init() {
         return {
             ...b,
             tiles: tCount,
+            budget: tCount * 10, // 1マス = ¥10Mで予算を連動
             vendor: vendor,
             mo: Math.floor(Math.random()*45)+1,
             vc:0, specIn:false, cxoProtect:0, intelRevealed:false,
