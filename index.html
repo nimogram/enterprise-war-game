@@ -211,7 +211,7 @@
         }
         .res-box, .final-box { 
             width: 93%; max-height: 88dvh; border: 1px solid rgba(255,255,255,.12); 
-            border-radius: 24px; background: rgba(12,18,33,.6); 
+            border-radius: 24px; background: rgba(12,18,33,.9); 
             display: flex; flex-direction: column; overflow: hidden; 
         }
         .res-hdr { padding: 20px; border-bottom: 1px solid var(--bdr); }
@@ -220,10 +220,17 @@
         .res-block { padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
         .res-bname { font-family: var(--D); color: var(--gold); font-size: 14px; letter-spacing: .2em; border-left: 3px solid var(--gold); padding-left: 8px; margin-bottom: 8px; }
         .res-txt { font-size: 14.5px; color: #aabbcc; }
-        .res-next, .final-btn { height: 52px; border: none; background: #fff; color: var(--bg); font-family: var(--D); font-size: 15px; letter-spacing: .5em; text-transform: uppercase; cursor: pointer; }
-        
+        .res-next, .final-btn { height: 52px; border: none; background: #fff; color: var(--bg); font-family: var(--D); font-size: 15px; letter-spacing: .5em; text-transform: uppercase; cursor: pointer; flex-shrink: 0; }
+        .final-btn.alt { background: rgba(0,214,143,0.1); border: 1px solid var(--emerald); color: var(--emerald); }
+
         #final-modal .final-box { text-align: center; padding: 30px 20px; }
-        .final-score { font-family: var(--D); font-size: 64px; color: var(--emerald); margin: 20px 0; }
+        .final-score { font-family: var(--D); font-size: 64px; color: var(--emerald); margin: 10px 0; }
+        
+        /* Ranking Table */
+        .rank-wrap { margin: 20px 0; width: 100%; border-top: 1px solid var(--bdr); padding-top: 15px; }
+        .rank-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; background: rgba(255,255,255,0.03); border-radius: 12px; margin-bottom: 8px; }
+        .rank-name { font-family: var(--D); font-size: 18px; letter-spacing: 0.1em; }
+        .rank-val { font-family: var(--M); font-size: 14px; font-weight: 700; }
 
         .hidden { display: none !important; }
     </style>
@@ -310,7 +317,11 @@
     <div class="final-box">
         <div class="res-hdr"><span class="res-title">ANNUAL RESULT</span></div>
         <div class="final-score" id="final-score">¥0M</div>
-        <button class="final-btn" onclick="resetGame()">Reset System</button>
+        <div class="rank-wrap" id="vendor-ranking"></div>
+        <div style="display:flex; flex-direction:column; gap:10px; margin-top: auto;">
+            <button class="final-btn alt" onclick="continueGame()">Continue Operations (Next Year)</button>
+            <button class="final-btn" onclick="resetGame()">Reset System</button>
+        </div>
     </div>
 </div>
 
@@ -355,7 +366,7 @@ const SFX = {
 const MAX_MH = 20;
 const VENDORS = {
     H: { name:'H社(SELF)', bg:'#00D68F' }, 
-    I: { name:'D社',        bg:'#60A5FA' }, // D社カラーを統一
+    I: { name:'D社',        bg:'#60A5FA' }, // 視認性の高い色に統一
     A: { name:'A社',        bg:'#7C3AED' },
     S: { name:'S社',        bg:'#B45309' },
     E: { name:'E社',        bg:'#DB2777' }, 
@@ -374,11 +385,11 @@ const CUSTOMER_POOL_BASE = [
     { id:701, name:'北海アグリ連合', budget:60,  tiles6:3, tiles8:5,  tiles10:8  },
     { id:901, name:'札幌セキュリティ',  budget:50,  tiles6:2, tiles8:4,  tiles10:6  },
     { id:1001,name:'道央流通システム',  budget:40,  tiles6:2, tiles8:4,  tiles10:6  },
-    { id:1201,name:'北海道プラント保安',  budget:25,  tiles6:1, tiles8:2,  tiles10:4  }, // 10x10時に空白を埋めるため3から4へ修正
+    { id:1201,name:'北海道プラント保安',  budget:25,  tiles6:1, tiles8:2,  tiles10:4  },
 ];
 
 let state = {
-    month:1, mh:MAX_MH, sales:0, selId:null, tasks:[], 
+    month:1, year: 26, mh:MAX_MH, sales:0, selId:null, tasks:[], 
     logs:[], customers:[], grid:[], gridSize: 6, vendorList: []
 };
 
@@ -403,6 +414,17 @@ function resetGame() {
     SFX.select();
     localStorage.removeItem(SAVE_KEY);
     location.reload();
+}
+
+function continueGame() {
+    SFX.win();
+    state.month = 1;
+    state.year++;
+    state.tasks = [];
+    state.mh = MAX_MH;
+    document.getElementById('final-modal').classList.add('hidden');
+    render();
+    saveGame();
 }
 
 // --- APP STARTUP ---
@@ -499,7 +521,7 @@ function getWR(c, vId = 'H') {
 }
 
 function render() {
-    document.getElementById('phase-disp').textContent = `FY26M${state.month}`;
+    document.getElementById('phase-disp').textContent = `FY${state.year}M${state.month > 12 ? 12 : state.month}`;
     document.getElementById('mh-disp').textContent = state.mh;
     document.getElementById('score-v').innerHTML = `¥${state.sales}<span>M</span>`;
 
@@ -599,6 +621,7 @@ function executeStrategy() {
     SFX.exec();
     let tr = [];
     const activeCids = [...new Set(state.tasks.map(t => t.cid).filter(id => id !== null))];
+    const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
     // ── 1. 【障害発生チェック】 ──
     state.vendorList.forEach(vId => {
@@ -651,10 +674,12 @@ function executeStrategy() {
         } else {
             const c=state.customers.find(x=>x.id===t.cid);
             const wr = getWR(c);
+            
+            const rName = (c.vendor === 'H') 
+                ? VENDORS[pick(state.vendorList.filter(v => v !== 'H'))].name 
+                : VENDORS[c.vendor].name;
+
             const getDynamicMsg = (type, currentWr) => {
-                const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
-                const otherRivals = state.vendorList.filter(v => v !== 'H' && v !== c.vendor);
-                const rName = VENDORS[pick(otherRivals)].name;
                 if (type === 'VISIT') {
                     if (currentWr >= 75) return pick([`担当者と密談。${rName}の提案に不信感を持っているようです。`, "温かい歓迎。他社のカタログはすべて片付けられていました。", "キーマンと意気投合。次回のRFP要件について内密に相談を受けました。"]);
                     if (currentWr >= 40) return pick(["世間話に終執しましたが、こちらの新製品には興味を示しています。", `受付で${rName}の担当者とすれ違いました。競争が激化しています。`, "担当者は多忙そうでしたが、短い面談でポジティブな感触を得ました。"]);
@@ -664,7 +689,7 @@ function executeStrategy() {
                     if (currentWr >= 75) return pick(["現場エンジニアと深い技術交流。自社仕様への完全な理解を得ました。", "「これなら他社から乗り換える価値がある」との評価を頂きました。", "質疑応答が活発に行われ、現場の支持を完全に掌握しました。"]);
                     return pick(["勉強会は盛況。製品への理解度が一段階上がったようです。", "他社比較の質問が多く出ましたが、概ねこちらの優位性をアピールできました。", "出席者の反応は上々。次なるアクションへの橋渡しが完了しました。"]);
                 }
-                if (type === 'SURVEY') return `市場調査により${VENDORS[c.vendor].name}の動向を特定。`;
+                if (type === 'SURVEY') return `市場調査により${rName}の動向を特定。`;
                 if (type === 'SPECIN') return pick(["スペックイン成功。RFP要件に自社仕様がガッチリ組み込まれました。", "要件定義に潜り込み完了。他社が追随できない仕様を仕込みました。"]);
                 if (type === 'CXO') return pick(["CXOと合意。以後3ヶ月間、他社の介入を完全にシャットアウトします。", "トップダウンでの自社採用方針が固まりました。鉄壁の防衛。 "]);
                 return "";
@@ -680,7 +705,6 @@ function executeStrategy() {
             else if(t.type==='SPECIN'){ c.specIn=true; tr.push({n:c.name, tx: getDynamicMsg('SPECIN', wr), clr: VENDORS.H.bg, vName, vClr, sat: satComment}); }
             else if(t.type==='CXO'){ c.cxoProtect=4; tr.push({n:c.name, tx: getDynamicMsg('CXO', wr), clr: VENDORS.H.bg, vName, vClr, sat: satComment}); }
             else if(t.type==='PROPOSAL'){
-                const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
                 if(Math.random()*100 < wr){ 
                     SFX.win(); 
                     const res = {n:c.name, tx: pick(['【受注】覇権を奪還しました！構築フェーズへ。', '【受注】満場一致で採用決定。圧倒的な勝利です。']), clr: VENDORS.H.bg, vName, vClr, sat: "ニモさんの提案力に圧倒され、新体制に期待が膨らんでいます。"};
@@ -735,7 +759,24 @@ function executeStrategy() {
 function closeResult() { 
     SFX.select();
     document.getElementById('result-ov').classList.add('hidden'); 
-    if(state.month>12) { 
+    if(state.month > 12) { 
+        // 年度末ランキング集計
+        const ranking = state.vendorList.map(v => {
+            const sum = state.customers.filter(c => c.vendor === v).reduce((acc, curr) => acc + curr.budget, 0);
+            return { id: v, name: VENDORS[v].name, total: sum, color: VENDORS[v].bg };
+        }).sort((a, b) => b.total - a.total);
+
+        const rw = document.getElementById('vendor-ranking');
+        rw.innerHTML = '<div style="font-family: var(--D); font-size: 14px; color: var(--gold); margin-bottom: 10px; text-align: left; letter-spacing: 0.2em;">VENDOR PERFORMANCE RANKING</div>';
+        ranking.forEach((r, idx) => {
+            rw.innerHTML += `
+                <div class="rank-row">
+                    <span class="rank-name" style="color: ${r.color};">${idx + 1}. ${r.name}</span>
+                    <span class="rank-val" style="color: #fff;">¥${r.total}M</span>
+                </div>
+            `;
+        });
+
         document.getElementById('final-score').textContent=`¥${state.sales}M`; 
         document.getElementById('final-modal').classList.remove('hidden'); 
     } 
