@@ -24,17 +24,16 @@
         }
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
-        html, body { height: 100%; overflow: hidden; }
+        html, body { height: 100%; overflow: hidden; background: var(--bg); }
         body {
             font-family: var(--B);
-            background: var(--bg);
             color: #7a8fa8;
             display: flex; align-items: center; justify-content: center;
         }
-        /* Scanline */
         body::after {
             content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 9998;
             background: repeating-linear-gradient(180deg, transparent 0px, transparent 3px, rgba(0,0,0,0.06) 3px, rgba(0,0,0,0.06) 4px);
+            opacity: 0.5;
         }
 
         #app {
@@ -43,7 +42,7 @@
             display: flex; flex-direction: column;
             position: relative; overflow: hidden;
             background: var(--bg);
-            opacity: 0; transition: opacity 0.5s;
+            opacity: 0; transition: opacity 0.8s ease-out;
         }
         #app.visible { opacity: 1; }
 
@@ -53,21 +52,21 @@
             background: var(--bg); display: flex; flex-direction: column;
             align-items: center; justify-content: center; padding: 20px; text-align: center;
         }
-        .mode-title { font-family: var(--D); font-size: 42px; color: #fff; letter-spacing: 0.15em; margin-bottom: 8px; }
+        .mode-title { font-family: var(--D); font-size: 48px; color: #fff; letter-spacing: 0.15em; margin-bottom: 8px; text-shadow: 0 0 20px rgba(201,168,76,0.3); }
         .mode-sub { font-size: 11px; color: var(--gold); margin-bottom: 40px; letter-spacing: 0.4em; font-weight: 900; }
         .mode-btns { display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 280px; }
         .mode-btn {
             background: rgba(255,255,255,0.03); border: 1px solid var(--bdr);
             color: #fff; border-radius: 16px; padding: 18px;
             font-family: var(--D); font-size: 20px; letter-spacing: 0.2em;
-            cursor: pointer; transition: all 0.25s;
+            cursor: pointer; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        .mode-btn:hover { background: rgba(255,255,255,0.08); border-color: var(--gold); color: var(--gold); transform: translateY(-2px); }
+        .mode-btn:hover { background: rgba(255,255,255,0.08); border-color: var(--gold); color: var(--gold); transform: translateY(-3px) scale(1.02); box-shadow: 0 10px 20px rgba(0,0,0,0.4); }
 
         /* ── HEADER ── */
         .hdr {
             flex: 0 0 auto;
-            padding: 14px 18px 0;
+            padding: 16px 18px 0;
             background: var(--bg);
             border-bottom: 1px solid var(--bdr);
             z-index: 10;
@@ -75,26 +74,26 @@
         .hdr-row { display: flex; justify-content: space-between; align-items: flex-end; }
         .hdr-tag {
             font-family: var(--D); font-size: 8px; letter-spacing: .65em;
-            color: var(--gold); line-height: 1; margin-bottom: 3px;
+            color: var(--gold); line-height: 1; margin-bottom: 4px;
             display: flex; align-items: center; gap: 5px;
         }
         .hdr-tag::before {
-            content: ''; width: 5px; height: 5px; border-radius: 50%;
+            content: ''; width: 6px; height: 6px; border-radius: 50%;
             background: var(--gold); flex-shrink: 0;
             animation: blink 2s infinite;
         }
-        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
-        .hdr-phase { font-family: var(--D); font-size: 32px; color: #fff; line-height: 1; letter-spacing: .04em; }
+        @keyframes blink { 0%,100%{opacity:1; transform: scale(1)} 50%{opacity:.2; transform: scale(0.8)} }
+        .hdr-phase { font-family: var(--D); font-size: 36px; color: #fff; line-height: 1; letter-spacing: .04em; }
         .hdr-mh { text-align: right; padding-bottom: 3px; }
         .hdr-mh-lbl { font-size: 7px; font-weight: 700; letter-spacing: .4em; color: var(--muted); text-transform: uppercase; margin-bottom: 1px; }
-        .hdr-mh-val { font-family: var(--D); font-size: 36px; color: var(--emerald); line-height: 1; }
+        .hdr-mh-val { font-family: var(--D); font-size: 40px; color: var(--emerald); line-height: 1; transition: color 0.3s; }
 
         .share-bar {
-            margin: 8px 0 0; height: 18px; display: flex; border-radius: 3px;
+            margin: 10px 0 0; height: 16px; display: flex; border-radius: 4px;
             overflow: hidden; border: 1px solid var(--bdr);
         }
         .share-seg {
-            height: 100%; transition: width .7s ease;
+            height: 100%; transition: width 1.2s cubic-bezier(0.16, 1, 0.3, 1);
             display: flex; align-items: center; justify-content: center;
             font-family: var(--D); font-size: 11px; color: rgba(255,255,255,.9); 
             white-space: nowrap; overflow: hidden;
@@ -106,7 +105,7 @@
             flex: 1 1 0;
             min-height: 0;
             display: flex; align-items: center; justify-content: center;
-            padding: 8px 14px;
+            padding: 10px 14px;
             position: relative;
             overflow: hidden;
         }
@@ -117,120 +116,150 @@
             gap: 4px;
             width: 100%; max-width: 380px;
             aspect-ratio: 1;
+            transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
         }
         .tile {
-            aspect-ratio: 1; border-radius: 5px;
-            border: 1.5px solid rgba(255,255,255,.05);
+            aspect-ratio: 1; border-radius: 6px;
+            border: 1px solid rgba(255,255,255,.05);
             cursor: pointer; display: flex; align-items: center; justify-content: center;
             position: relative; user-select: none;
-            transition: transform .12s, box-shadow .12s, border-color .12s;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        .tile:active { transform: scale(.88); }
+        .tile:active { transform: scale(0.9) !important; }
+        .tile:hover { filter: brightness(1.2); }
         .tile.sel {
             border-color: #fff !important;
-            box-shadow: 0 0 14px rgba(255,255,255,.35), inset 0 0 6px rgba(255,255,255,.05);
-            transform: scale(1.07); z-index: 5;
+            box-shadow: 0 0 20px rgba(255,255,255,.4), inset 0 0 10px rgba(255,255,255,0.1);
+            transform: scale(1.1); z-index: 5;
         }
-        .t-lbl { font-family: var(--M); font-size: 12px; color: rgba(255,255,255,.8); pointer-events: none; font-weight: 600; } 
+        .t-lbl { font-family: var(--M); font-size: 11px; color: rgba(255,255,255,.9); pointer-events: none; font-weight: 600; text-shadow: 0 1px 2px rgba(0,0,0,0.5); } 
 
         /* ── ANIMATIONS ── */
-        @keyframes rfp  { 0%,100%{box-shadow:0 0 8px var(--gold);border-color:var(--gold)} 50%{box-shadow:0 0 16px var(--gold);border-color:#ffe88a} }
-        @keyframes bld  { 0%,100%{box-shadow:0 0 6px rgba(255,255,255,0.2);border-color:rgba(255,255,255,0.35)} 50%{box-shadow:0 0 14px rgba(255,255,255,0.5);border-color:#fff} }
-        @keyframes cxo  { 0%,100%{box-shadow:0 0 10px var(--sky);border-color:var(--sky)} 50%{box-shadow:0 0 20px var(--sky);border-color:#93e2ff} }
-        .rfp-a  { animation: rfp  1.3s infinite ease-in-out; }
-        .bld-a  { animation: bld  1.7s infinite ease-in-out; }
-        .cxo-a  { animation: cxo  1.5s infinite ease-in-out; border-width: 2.2px !important; }
+        @keyframes pulse-rfp  { 0% { box-shadow:0 0 0px var(--gold); } 50% { box-shadow:0 0 15px var(--gold); } 100% { box-shadow:0 0 0px var(--gold); } }
+        @keyframes pulse-bld  { 0% { box-shadow:0 0 0px rgba(255,255,255,0.2); } 50% { box-shadow:0 0 10px rgba(255,255,255,0.5); } 100% { box-shadow:0 0 0px rgba(255,255,255,0.2); } }
+        @keyframes pulse-cxo  { 0% { box-shadow:0 0 0px var(--sky); border-width: 2px; } 50% { box-shadow:0 0 20px var(--sky); border-width: 2.5px; } 100% { box-shadow:0 0 0px var(--sky); border-width: 2px; } }
+        .rfp-a  { animation: pulse-rfp 1.5s infinite; border-color: var(--gold) !important; }
+        .bld-a  { animation: pulse-bld 2s infinite; border-color: #fff !important; }
+        .cxo-a  { animation: pulse-cxo 1.2s infinite; border-color: var(--sky) !important; border-width: 2px !important; }
 
         /* ── SIDE PANEL ── */
         .sp {
             position: absolute; top: 0; right: 0; bottom: 0;
             width: 78%;
-            background: rgba(6,10,17,0.1); 
-            backdrop-filter: blur(25px) saturate(1.4);
-            border-left: 1px solid rgba(255,255,255,.1);
-            display: flex; flex-direction: column; gap: 10px;
-            padding: 16px 15px 14px;
+            background: rgba(6,12,25,0.6); 
+            backdrop-filter: blur(30px) saturate(1.8);
+            border-left: 1px solid rgba(255,255,255,.15);
+            display: flex; flex-direction: column; gap: 12px;
+            padding: 20px 18px;
             z-index: 50;
             transform: translateX(100%);
-            transition: transform .35s cubic-bezier(.16,1,.3,1);
+            transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
             overflow-y: auto; overflow-x: hidden;
+            box-shadow: -10px 0 30px rgba(0,0,0,0.5);
         }
         .sp::-webkit-scrollbar { display: none; }
         .sp.open { transform: translateX(0); }
-        .sp-hdr { display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
-        .sp-tag { font-size: 7px; font-weight: 700; letter-spacing: .5em; color: var(--emerald); text-transform: uppercase; }
-        .sp-close { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 18px; line-height: 1; padding: 2px 4px; transition: color .15s; }
-        .sp-name { font-family: var(--D); font-size: 22px; color: #fff; letter-spacing: .04em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex-shrink: 0; }
-        .sp-full { font-size: 10px; color: #4a5f78; line-height: 1.45; border-left: 3px solid var(--gold); padding-left: 7px; flex-shrink: 0; }
-        .sp-stats { display: flex; gap: 6px; flex-shrink: 0; }
-        .sp-stat { flex: 1; background: rgba(255,255,255,.02); border: 1px solid var(--bdr); border-radius: 9px; padding: 8px; }
-        .sp-sl { font-size: 6px; font-weight: 700; letter-spacing: .4em; color: var(--muted); text-transform: uppercase; margin-bottom: 3px; }
-        .sp-sv { font-family: var(--D); font-size: 18px; color: #fff; } 
-        .sp-win { font-family: var(--D); font-size: 44px; color: #002b5c; -webkit-text-stroke: 1px #fff; line-height: 1; flex-shrink: 0; }
-        .sp-row { flex-shrink: 0; }
-        .sp-rl { font-size: 6px; font-weight: 700; letter-spacing: .35em; color: var(--muted); text-transform: uppercase; margin-bottom: 2px; }
-        .sp-rv { font-family: var(--D); font-size: 14px; color: var(--gold); letter-spacing: .1em; }
-        .sp-status { font-size: 11px; font-weight: 600; color: #fff; }
+        .sp-hdr { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+        .sp-tag { font-size: 8px; font-weight: 900; letter-spacing: .4em; color: var(--emerald); text-transform: uppercase; }
+        .sp-close { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 20px; transition: color .2s; }
+        .sp-close:hover { color: #fff; }
+        .sp-name { font-family: var(--D); font-size: 26px; color: #fff; letter-spacing: .02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .sp-full { font-size: 11px; color: #a0b0c5; line-height: 1.5; border-left: 3px solid var(--gold); padding-left: 10px; }
+        .sp-stats { display: flex; gap: 8px; }
+        .sp-stat { flex: 1; background: rgba(255,255,255,.03); border: 1px solid var(--bdr); border-radius: 12px; padding: 10px; transition: transform 0.2s; }
+        .sp-stat:hover { transform: translateY(-2px); border-color: var(--gold); }
+        .sp-sl { font-size: 7px; font-weight: 800; letter-spacing: .3em; color: var(--muted); text-transform: uppercase; margin-bottom: 4px; }
+        .sp-sv { font-family: var(--D); font-size: 20px; color: #fff; } 
+        .sp-row { border-bottom: 1px solid var(--bdr); padding-bottom: 8px; }
+        .sp-rl { font-size: 7px; font-weight: 800; letter-spacing: .3em; color: var(--muted); text-transform: uppercase; margin-bottom: 4px; }
+        .sp-rv { font-family: var(--D); font-size: 15px; color: var(--gold); letter-spacing: .05em; }
+        .sp-status { font-size: 12px; font-weight: 600; color: #fff; }
 
-        .sp-sec-title { font-size: 8px; font-weight: 900; letter-spacing: .3em; color: var(--muted); text-transform: uppercase; margin-top: 10px; border-top: 1px solid var(--bdr); padding-top: 10px; }
-        .sp-btns { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
+        .sp-sec-title { font-size: 9px; font-weight: 900; letter-spacing: .3em; color: var(--muted); text-transform: uppercase; margin-top: 15px; border-top: 1px solid var(--bdr); padding-top: 15px; }
+        .sp-btns { display: flex; flex-direction: column; gap: 8px; }
         .sp-btn {
-            background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2);
-            color: #fff; border-radius: 10px; padding: 8px 8px;
-            font-family: var(--D); font-size: 13px; letter-spacing: .12em;
-            cursor: pointer; transition: all .18s; text-transform: uppercase;
-            opacity: 1; 
+            background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+            color: #fff; border-radius: 12px; padding: 10px;
+            font-family: var(--D); font-size: 15px; letter-spacing: .12em;
+            cursor: pointer; transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            text-transform: uppercase;
         }
-        .sp-btn:hover:not(:disabled) { background: rgba(255,255,255,.25); border-color: rgba(255,255,255,.4); opacity: 1; }
+        .sp-btn:hover:not(:disabled) { background: rgba(255,255,255,.15); border-color: rgba(255,255,255,.3); transform: scale(1.02); }
+        .sp-btn:active:not(:disabled) { transform: scale(0.98); }
         .sp-btn.pri { background: rgba(0,214,143,.18); border-color: var(--emerald); color: var(--emerald); }
         .sp-btn.alt { background: rgba(201,168,76,.12); border-color: var(--gold); color: var(--gold); }
         .sp-btn.mkt { background: rgba(168,85,247,.12); border-color: var(--purple); color: var(--purple); }
-        .sp-btn:disabled { opacity: 0.1; cursor: not-allowed; }
+        .sp-btn:disabled { opacity: 0.15; cursor: not-allowed; transform: none !important; }
 
         /* ── LOWER UI ── */
-        .task-strip { flex: 0 0 50px; min-height: 50px; display: flex; align-items: center; gap: 6px; padding: 0 14px; overflow-x: auto; border-top: 1px solid var(--bdr); background: var(--bg); z-index: 10; }
-        .t-chip { flex-shrink: 0; display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.1); border-radius: 18px; padding: 3px 9px 3px 11px; font-size: 9.5px; font-weight: 600; color: #c0cee0; }
-        .t-chip-name { color: var(--emerald); font-family: var(--M); font-size: 8.5px; }
-        .t-chip-rm { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 13px; padding: 0; }
+        .task-strip { flex: 0 0 55px; min-height: 55px; display: flex; align-items: center; gap: 8px; padding: 0 14px; overflow-x: auto; border-top: 1px solid var(--bdr); background: var(--bg); z-index: 10; scroll-behavior: smooth; }
+        .task-strip::-webkit-scrollbar { height: 0; }
+        .t-chip { 
+            flex-shrink: 0; display: flex; align-items: center; gap: 6px; 
+            background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1); 
+            border-radius: 20px; padding: 5px 12px; font-size: 10px; font-weight: 700; color: #fff;
+            animation: chip-in 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes chip-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .t-chip-name { color: var(--emerald); font-family: var(--M); font-size: 8px; }
+        .t-chip-rm { background: none; border: none; color: rgba(255,255,255,0.4); cursor: pointer; font-size: 14px; padding: 0 0 0 4px; transition: color 0.2s; }
+        .t-chip-rm:hover { color: var(--rose); }
 
-        .exec-btn { flex: 0 0 50px; min-height: 50px; border: none; border-top: 1px solid var(--bdr); background: rgba(255,255,255,.03); color: var(--muted); font-family: var(--D); font-size: 17px; letter-spacing: .55em; text-transform: uppercase; cursor: not-allowed; opacity: .4; transition: all .25s; z-index: 10; }
-        .exec-btn.on { background: #fff; color: var(--bg); cursor: pointer; opacity: 1; box-shadow: 0 -8px 24px rgba(255,255,255,.12); }
+        .exec-btn { 
+            flex: 0 0 60px; min-height: 60px; border: none; border-top: 1px solid var(--bdr); 
+            background: rgba(255,255,255,.03); color: var(--muted); font-family: var(--D); font-size: 20px; letter-spacing: .5em; 
+            text-transform: uppercase; cursor: not-allowed; opacity: .4; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); z-index: 10; 
+        }
+        .exec-btn.on { background: #fff; color: var(--bg); cursor: pointer; opacity: 1; box-shadow: 0 -10px 40px rgba(255,255,255,.15); }
+        .exec-btn.on:hover { letter-spacing: 0.6em; background: var(--emerald); color: #fff; }
 
-        .log-area { flex: 0 0 40px; min-height: 40px; overflow: hidden; padding: 5px 15px; border-top: 1px solid var(--bdr); background: var(--bg); z-index: 10; }
-        .log-ln { font-family: var(--M); font-size: 8.5px; color: var(--muted); line-height: 1.55; }
+        .log-area { flex: 0 0 40px; min-height: 40px; padding: 6px 18px; border-top: 1px solid var(--bdr); background: var(--bg); display: flex; align-items: center; }
+        .log-ln { font-family: var(--M); font-size: 9px; color: var(--muted); line-height: 1.5; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        .score-bar { flex: 0 0 48px; min-height: 48px; display: flex; justify-content: space-between; align-items: center; padding: 0 18px; border-top: 1px solid var(--bdr); background: var(--bg); z-index: 10; }
-        .score-v { font-family: var(--D); font-size: 30px; color: #fff; }
+        .score-bar { flex: 0 0 54px; min-height: 54px; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; border-top: 1px solid var(--bdr); background: var(--bg); z-index: 10; }
+        .score-v { font-family: var(--D); font-size: 34px; color: #fff; letter-spacing: 0.05em; }
+        .score-v span { font-size: 18px; color: var(--gold); margin-left: 2px; }
 
         /* ── OVERLAYS ── */
         #result-ov, #final-modal { 
             position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; 
-            background: rgba(6,10,17,.4); 
-            backdrop-filter: blur(8px); 
+            background: rgba(4,8,15,.7); 
+            backdrop-filter: blur(12px); 
             z-index: 800; 
+            animation: fade-in 0.5s ease-out;
         }
+        @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+        
         .res-box, .final-box { 
-            width: 93%; max-height: 88dvh; border: 1px solid rgba(255,255,255,.12); 
-            border-radius: 24px; background: rgba(12,18,33,.9); 
+            width: 93%; max-height: 88dvh; border: 1px solid rgba(255,255,255,.15); 
+            border-radius: 28px; background: rgba(12,18,33,.95); 
             display: flex; flex-direction: column; overflow: hidden; 
+            box-shadow: 0 30px 60px rgba(0,0,0,0.8);
+            transform: scale(1); transition: transform 0.3s;
         }
-        .res-hdr { padding: 20px; border-bottom: 1px solid var(--bdr); }
-        .res-title { font-family: var(--D); font-size: 20px; letter-spacing: .45em; color: var(--gold); }
-        .res-list { flex: 1; overflow-y: auto; padding: 10px 18px; }
-        .res-block { padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
-        .res-bname { font-family: var(--D); color: var(--gold); font-size: 14px; letter-spacing: .2em; border-left: 3px solid var(--gold); padding-left: 8px; margin-bottom: 8px; }
-        .res-txt { font-size: 14.5px; color: #aabbcc; }
-        .res-next, .final-btn { height: 52px; border: none; background: #fff; color: var(--bg); font-family: var(--D); font-size: 15px; letter-spacing: .5em; text-transform: uppercase; cursor: pointer; flex-shrink: 0; }
+        .res-hdr { padding: 22px 20px; border-bottom: 1px solid var(--bdr); text-align: center; }
+        .res-title { font-family: var(--D); font-size: 24px; letter-spacing: .5em; color: var(--gold); }
+        .res-list { flex: 1; overflow-y: auto; padding: 15px 20px; scroll-behavior: smooth; }
+        .res-block { 
+            padding: 16px 0; border-bottom: 1px solid rgba(255,255,255,0.06); 
+            animation: slide-up 0.5s both;
+        }
+        @keyframes slide-up { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .res-bname { font-family: var(--D); color: var(--gold); font-size: 16px; letter-spacing: .2em; margin-bottom: 10px; }
+        .res-txt { font-size: 15px; color: #fff; margin-bottom: 6px; line-height: 1.4; }
+        .res-sat { font-size: 12px; color: #fff; font-style: italic; opacity: 0.9; line-height: 1.4; }
+        .res-next, .final-btn { height: 56px; border: none; background: #fff; color: var(--bg); font-family: var(--D); font-size: 18px; letter-spacing: .5em; text-transform: uppercase; cursor: pointer; transition: all 0.3s; }
+        .res-next:hover, .final-btn:hover { background: var(--emerald); color: #fff; }
         .final-btn.alt { background: rgba(0,214,143,0.1); border: 1px solid var(--emerald); color: var(--emerald); }
 
-        #final-modal .final-box { text-align: center; padding: 30px 20px; }
-        .final-score { font-family: var(--D); font-size: 64px; color: var(--emerald); margin: 10px 0; }
+        #final-modal .final-box { padding: 30px 20px; align-items: stretch; }
+        .final-score-label { font-size: 10px; font-weight: 900; letter-spacing: 0.5em; color: var(--gold); text-align: center; }
+        .final-score { font-family: var(--D); font-size: 72px; color: var(--emerald); margin: 10px 0 25px; text-align: center; text-shadow: 0 0 30px rgba(0,214,143,0.3); }
         
-        /* Ranking Table */
-        .rank-wrap { margin: 20px 0; width: 100%; border-top: 1px solid var(--bdr); padding-top: 15px; }
-        .rank-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; background: rgba(255,255,255,0.03); border-radius: 12px; margin-bottom: 8px; }
-        .rank-name { font-family: var(--D); font-size: 18px; letter-spacing: 0.1em; }
-        .rank-val { font-family: var(--M); font-size: 14px; font-weight: 700; }
+        .rank-wrap { margin-bottom: 25px; display: flex; flex-direction: column; gap: 8px; }
+        .rank-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 18px; background: rgba(255,255,255,0.04); border-radius: 14px; border: 1px solid rgba(255,255,255,0.05); }
+        .rank-name { font-family: var(--D); font-size: 20px; letter-spacing: 0.08em; }
+        .rank-val { font-family: var(--M); font-size: 15px; font-weight: 700; color: #fff; }
 
         .hidden { display: none !important; }
     </style>
@@ -270,35 +299,36 @@
             <div class="sp-full" id="sp-full">領域システム情報を確認中...</div>
             <div class="sp-stats">
                 <div class="sp-stat"><div class="sp-sl">Visit</div><div class="sp-sv" id="sp-vc">0</div></div>
-                <div class="sp-stat"><div class="sp-sl">Scale</div><div class="sp-sv" id="sp-budget">¥0M</div></div>
+                <div class="sp-stat"><div class="sp-sl">Tiles</div><div class="sp-sv" id="sp-tiles">0</div></div>
                 <div class="sp-stat"><div class="sp-sl">Win Prob.</div><div class="sp-sv" id="sp-win">0%</div></div>
             </div>
-            <div class="sp-row"><div class="sp-rl">Provider</div><div class="sp-rv" id="sp-vendor">—</div></div>
+            <div class="sp-row"><div class="sp-rl">Current Provider</div><div class="sp-rv" id="sp-vendor">—</div></div>
+            <div class="sp-row"><div class="sp-rl">Strategic Value</div><div class="sp-rv" id="sp-budget">¥0M</div></div>
             <div class="sp-row"><div class="sp-rl">Phase</div><div class="sp-status" id="sp-status">—</div></div>
             
-            <div class="sp-sec-title">Sales Actions</div>
+            <div class="sp-sec-title">Sales Operations</div>
             <div class="sp-btns">
-                <div style="display:flex; gap:4px;">
-                    <button class="sp-btn" style="flex:1;" onclick="addTask('VISIT',5,'訪問')">Visit(-5)</button>
-                    <button class="sp-btn" style="flex:1;" onclick="addTask('SURVEY',3,'調査')">Survey(-3)</button>
+                <div style="display:flex; gap:6px;">
+                    <button class="sp-btn" style="flex:1;" onclick="addTask('VISIT',5,'訪問')">Visit (-5)</button>
+                    <button class="sp-btn" style="flex:1;" onclick="addTask('SURVEY',3,'調査')">Survey (-3)</button>
                 </div>
-                <button class="sp-btn" style="width:100%;" onclick="addTask('STUDY',8,'勉強会')">Study (-8 MH)</button>
-                <button class="sp-btn" id="sp-spec-btn" onclick="addTask('SPECIN',12,'スペックイン')">Spec-in (-12 MH)</button>
-                <button class="sp-btn alt" id="sp-cxo-btn" onclick="addTask('CXO',15,'トップ面談')">CXO Meeting (-15 MH)</button>
-                <button class="sp-btn pri" id="sp-prop-btn" onclick="addTask('PROPOSAL',10,'提案')" disabled>Submit Proposal (-10 MH)</button>
+                <button class="sp-btn" style="width:100%;" onclick="addTask('STUDY',8,'勉強会')">Technical Study (-8)</button>
+                <button class="sp-btn" id="sp-spec-btn" onclick="addTask('SPECIN',12,'スペックイン')">Spec-in (-12)</button>
+                <button class="sp-btn alt" id="sp-cxo-btn" onclick="addTask('CXO',15,'トップ面談')">CXO Meeting (-15)</button>
+                <button class="sp-btn pri" id="sp-prop-btn" onclick="addTask('PROPOSAL',10,'提案')" disabled>Submit Proposal (-10)</button>
             </div>
 
-            <div class="sp-sec-title">Marketing Actions</div>
+            <div class="sp-sec-title">Marketing Intelligence</div>
             <div class="sp-btns">
-                <button class="sp-btn mkt" onclick="addTask('EVENT',15,'イベント開催',true)">Host Event (-15 MH)</button>
-                <button class="sp-btn mkt" onclick="addTask('MAILNEWS',5,'MAIL NEWS',true)">Mail News (-5 MH)</button>
+                <button class="sp-btn mkt" onclick="addTask('EVENT',15,'イベント開催',true)">Host Event (-15)</button>
+                <button class="sp-btn mkt" onclick="addTask('MAILNEWS',5,'MAIL NEWS',true)">Mail News (-5)</button>
             </div>
         </aside>
     </section>
 
     <div class="task-strip" id="task-strip"></div>
     <button class="exec-btn" id="exec-btn" disabled onclick="executeStrategy()">Launch Mission</button>
-    <div class="log-area" id="log-area"></div>
+    <div class="log-area" id="log-area"><div class="log-ln" id="log-ln">SYSTEM READY... STANDBY FOR COMMAND.</div></div>
 
     <footer class="score-bar">
         <div class="score-v" id="score-v">¥0<span>M</span></div>
@@ -309,64 +339,117 @@
     <div class="res-box">
         <div class="res-hdr"><span class="res-title">CALL REPORT</span></div>
         <div class="res-list" id="res-list"></div>
-        <button class="res-next" onclick="closeResult()">Next Cycle ›</button>
+        <button class="res-next" onclick="closeResult()">Acknowledge ›</button>
     </div>
 </div>
 
 <div id="final-modal" class="hidden">
     <div class="final-box">
         <div class="res-hdr"><span class="res-title">ANNUAL RESULT</span></div>
+        <div class="final-score-label">TOTAL ACQUISITION</div>
         <div class="final-score" id="final-score">¥0M</div>
         <div class="rank-wrap" id="vendor-ranking"></div>
         <div style="display:flex; flex-direction:column; gap:10px; margin-top: auto;">
-            <button class="final-btn alt" onclick="continueGame()">Continue Operations (Next Year)</button>
-            <button class="final-btn" onclick="resetGame()">Reset System</button>
+            <button class="final-btn alt" onclick="continueGame()">Initiate Next Year</button>
+            <button class="final-btn" onclick="resetGame()">System Reset</button>
         </div>
     </div>
 </div>
 
 <script>
-// --- AUDIO ENGINE ---
+// --- AUDIO ENGINE (WITH ACTION-SPECIFIC VARIATION) ---
 let audioCtx = null;
-function playSound(freq, type, duration, vol = 0.1) {
-    try {
-        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = type;
-        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-        gain.gain.setValueAtTime(vol, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start();
-        osc.stop(audioCtx.currentTime + duration);
-    } catch(e) { console.warn("Audio disabled."); }
+
+const rnd = (base, range) => base + (Math.random() * range * 2 - range);
+
+function createTone(freq, type, duration, vol, rampType = 'exp') {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+    gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+    if (rampType === 'exp') gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+    else gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + duration);
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.start(); osc.stop(audioCtx.currentTime + duration);
 }
 
 const SFX = {
-    select: () => playSound(600, 'sine', 0.1),
-    add: () => playSound(800, 'square', 0.05, 0.05),
+    // 汎用UI音
+    select: () => createTone(rnd(660, 30), 'sine', rnd(0.1, 0.02), 0.05),
+    remove: () => createTone(rnd(440, 20), 'sine', 0.1, 0.05),
+    
+    // アクション別・固有サウンド
+    action: (type) => {
+        switch(type) {
+            case 'VISIT': // Soft & Friendly
+                createTone(rnd(523.25, 20), 'sine', 0.15, 0.06);
+                setTimeout(() => createTone(rnd(659.25, 20), 'sine', 0.1, 0.04), 80);
+                break;
+            case 'SURVEY': // Digital Scan
+                for(let i=0; i<4; i++) setTimeout(() => createTone(rnd(1500 + i*100, 50), 'sine', 0.03, 0.03), i*30);
+                break;
+            case 'STUDY': // Rising Triangle
+                createTone(rnd(440, 10), 'triangle', 0.3, 0.07);
+                createTone(rnd(880, 10), 'triangle', 0.3, 0.04);
+                break;
+            case 'SPECIN': // Metallic Clank
+                createTone(rnd(200, 10), 'square', 0.1, 0.08);
+                createTone(rnd(600, 50), 'square', 0.05, 0.04);
+                break;
+            case 'CXO': // Prestige Bell
+                createTone(rnd(1046.5, 5), 'sine', 0.8, 0.1);
+                createTone(rnd(523.25, 5), 'sine', 0.8, 0.05);
+                break;
+            case 'PROPOSAL': // Decisive Power
+                createTone(rnd(110, 5), 'sawtooth', 0.4, 0.1);
+                createTone(rnd(220, 10), 'sawtooth', 0.3, 0.06);
+                break;
+            case 'EVENT':
+            case 'MAILNEWS': // Marketing Ripple
+                createTone(rnd(880, 100), 'sine', 0.5, 0.04);
+                setTimeout(() => createTone(rnd(1100, 100), 'sine', 0.4, 0.02), 100);
+                break;
+            default:
+                createTone(rnd(880, 50), 'sine', 0.05, 0.05);
+        }
+    },
+    
     exec: () => {
-        playSound(200, 'sawtooth', 0.3, 0.1);
-        setTimeout(() => playSound(400, 'sawtooth', 0.2, 0.1), 100);
+        const base = rnd(220, 10);
+        createTone(base, 'sawtooth', 0.2, 0.08);
+        setTimeout(() => createTone(base * 1.5, 'sawtooth', 0.15, 0.06), rnd(100, 15));
+        setTimeout(() => createTone(base * 2.0, 'sawtooth', 0.1, 0.04), rnd(200, 20));
     },
+    
     win: () => {
-        [523, 659, 784, 1046].forEach((f, i) => {
-            setTimeout(() => playSound(f, 'sine', 0.6, 0.08), i * 120);
-        });
+        const notes = [523.25, 659.25, 784, 1046.5, 1318.5];
+        const offset = rnd(1, 0.02);
+        notes.forEach((f, i) => setTimeout(() => createTone(f * offset, 'sine', rnd(0.6, 0.1), 0.1), i * rnd(100, 15)));
     },
-    lost: () => playSound(100, 'sawtooth', 0.8, 0.15),
-    report: () => playSound(523.25, 'sine', 0.5, 0.1),
-    error: () => playSound(150, 'triangle', 0.3, 0.2)
+    
+    lost: () => {
+        const f = rnd(196, 10);
+        createTone(f, 'sawtooth', 0.6, 0.1, 'linear');
+        createTone(f * 0.94, 'sawtooth', 0.6, 0.1, 'linear');
+    },
+    
+    score: () => {
+        const start = rnd(1200, 100);
+        for(let i=0; i<2; i++) setTimeout(() => createTone(start + i * rnd(300, 50), 'sine', 0.08, 0.03), i * rnd(40, 5));
+    },
+    
+    report: () => createTone(rnd(440, 20), 'triangle', 0.4, 0.1),
+    error: () => createTone(rnd(110, 5), 'square', 0.2, 0.1)
 };
 
 // --- GAME LOGIC ---
 const MAX_MH = 20;
 const VENDORS = {
     H: { name:'H社(SELF)', bg:'#00D68F' }, 
-    I: { name:'D社',        bg:'#60A5FA' }, // 視認性の高い色に統一
+    I: { name:'D社',        bg:'#60A5FA' },
     A: { name:'A社',        bg:'#7C3AED' },
     S: { name:'S社',        bg:'#B45309' },
     E: { name:'E社',        bg:'#DB2777' }, 
@@ -389,49 +472,26 @@ const CUSTOMER_POOL_BASE = [
 ];
 
 let state = {
-    month:1, year: 26, mh:MAX_MH, sales:0, selId:null, tasks:[], 
+    month:1, year: 26, mh:MAX_MH, sales:0, displaySales: 0, selId:null, tasks:[], 
     logs:[], customers:[], grid:[], gridSize: 6, vendorList: []
 };
 
-// --- DATA PERSISTENCE (LOCAL STORAGE) ---
 const SAVE_KEY = 'enterprise_v2_save';
-
-function saveGame() {
-    try {
-        localStorage.setItem(SAVE_KEY, JSON.stringify(state));
-    } catch (e) { console.error("Local save failed:", e); }
-}
-
-function loadGame() {
-    try {
-        const saved = localStorage.getItem(SAVE_KEY);
-        if (saved) return JSON.parse(saved);
-    } catch (e) { console.error("Local load failed:", e); }
-    return null;
-}
-
-function resetGame() {
-    SFX.select();
-    localStorage.removeItem(SAVE_KEY);
-    location.reload();
-}
+function saveGame() { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); }
+function loadGame() { try { return JSON.parse(localStorage.getItem(SAVE_KEY)); } catch(e){return null;} }
+function resetGame() { SFX.select(); localStorage.removeItem(SAVE_KEY); location.reload(); }
 
 function continueGame() {
     SFX.win();
-    state.month = 1;
-    state.year++;
-    state.tasks = [];
-    state.mh = MAX_MH;
+    state.month = 1; state.year++; state.tasks = []; state.mh = MAX_MH;
     document.getElementById('final-modal').classList.add('hidden');
-    render();
-    saveGame();
+    render(); saveGame();
 }
 
-// --- APP STARTUP ---
 window.onload = () => {
-    const savedState = loadGame();
-    if (savedState) {
-        state = savedState;
+    const saved = loadGame();
+    if (saved) {
+        state = saved;
         document.documentElement.style.setProperty('--grid-size', state.gridSize);
         document.getElementById('mode-select-ov').classList.add('hidden');
         document.getElementById('app').classList.add('visible');
@@ -442,52 +502,35 @@ window.onload = () => {
 };
 
 function startApp(size) {
-    try {
-        SFX.select();
-        state.gridSize = size;
-        state.vendorList = size === 6 ? ['H','I','A','S'] : ['H','I','A','S','E','F'];
-        document.documentElement.style.setProperty('--grid-size', size);
-        document.getElementById('mode-select-ov').classList.add('hidden');
-        document.getElementById('app').classList.add('visible');
-        init();
-    } catch(e) { console.error("Start failed: ", e); }
+    SFX.select();
+    state.gridSize = size;
+    state.vendorList = size === 6 ? ['H','I','A','S'] : ['H','I','A','S','E','F'];
+    document.documentElement.style.setProperty('--grid-size', size);
+    document.getElementById('mode-select-ov').classList.add('hidden');
+    document.getElementById('app').classList.add('visible');
+    init();
 }
 
 function init() {
     state.customers = CUSTOMER_POOL_BASE.map(b => {
         const vendor = state.vendorList[Math.floor(Math.random()*state.vendorList.length)];
-        let tCount = b.tiles6;
-        if(state.gridSize === 8) tCount = b.tiles8;
-        if(state.gridSize === 10) tCount = b.tiles10;
-
+        let tCount = state.gridSize === 6 ? b.tiles6 : (state.gridSize === 8 ? b.tiles8 : b.tiles10);
         return {
-            ...b,
-            tiles: tCount,
-            budget: tCount * 10, // 1マス = ¥10Mで予算を連動
-            vendor: vendor,
-            mo: Math.floor(Math.random()*45)+1,
-            vc:0, specIn:false, cxoProtect:0, intelRevealed:false,
-            affinity: Math.floor(Math.random()*21),
-            baseRapport: (vendor === 'H') ? 
-                Math.floor(Math.random() * 36) + 5 : 
-                Math.floor(Math.random() * 31) + 10 
+            ...b, tiles: tCount, budget: tCount * 10, vendor,
+            mo: Math.floor(Math.random()*45)+1, vc:0, specIn:false, cxoProtect:0,
+            intelRevealed:false, baseRapport: vendor === 'H' ? 40 : Math.floor(Math.random()*25)+10
         };
     });
-    buildGrid();
-    render();
-    saveGame();
+    buildGrid(); render(); saveGame();
 }
 
 function buildGrid() {
-    const size = state.gridSize;
-    const totalCells = size * size;
-    const grid = Array(totalCells).fill(null);
+    const size = state.gridSize; const totalCells = size * size; const grid = Array(totalCells).fill(null);
     const shuffled = [...state.customers].sort(() => Math.random() - 0.5);
     shuffled.forEach(c => {
         let placed = 0;
         while (placed < c.tiles) {
-            let options = [];
-            let empties = [];
+            let options = [], empties = [];
             for (let i = 0; i < totalCells; i++) {
                 if (grid[i] === null) {
                     empties.push(i);
@@ -505,31 +548,36 @@ function buildGrid() {
 
 function getWR(c, vId = 'H') {
     if (!c) return 0;
-    let r = (vId === 'H') ? (c.baseRapport || 5) : 5;
+    let r = (vId === 'H') ? (c.baseRapport || 5) : 15;
     if (vId === 'H') r += (c.vc * 5); 
-    else r += (c.affinity || 0);
-    if (c.vendor === vId) r += (vId === 'H') ? 50 : 40;
-    if (c.mo >= 48 && c.mo < 50) r += 40; else if (c.mo >= 50) r -= 20;
-    if (vId === 'H' && c.specIn) r += 30;
-    if (vId === 'H') {
-        state.tasks.filter(t=>t.cid===c.id).forEach(t=>{ 
-            if(t.type==='VISIT') r+=5; 
-            if(t.type==='STUDY') r+=10; 
-            if(t.type==='CXO') r+=50; 
-        });
-    }
+    if (c.vendor === vId) r += (vId === 'H') ? 50 : 35;
+    if (c.mo >= 48 && c.mo < 50) r += 35; else if (c.mo >= 50) r -= 20;
+    if (vId === 'H' && c.specIn) r += 25;
+    state.tasks.filter(t=>t.cid===c.id).forEach(t=>{ 
+        if(t.type==='VISIT') r+=5; if(t.type==='STUDY') r+=10; if(t.type==='CXO') r+=40; 
+    });
     return Math.min(99, Math.max(5, Math.round(r)));
+}
+
+function animateScore() {
+    if (state.displaySales < state.sales) {
+        state.displaySales += Math.ceil((state.sales - state.displaySales) / 10);
+        document.getElementById('score-v').innerHTML = `¥${state.displaySales}<span>M</span>`;
+        SFX.score();
+        requestAnimationFrame(animateScore);
+    } else {
+        state.displaySales = state.sales;
+        document.getElementById('score-v').innerHTML = `¥${state.sales}<span>M</span>`;
+    }
 }
 
 function render() {
     document.getElementById('phase-disp').textContent = `FY${state.year}M${state.month > 12 ? 12 : state.month}`;
     document.getElementById('mh-disp').textContent = state.mh;
-    document.getElementById('score-v').innerHTML = `¥${state.sales}<span>M</span>`;
+    animateScore();
 
-    const s={};
-    state.vendorList.forEach(v => s[v] = 0);
+    const s={}; state.vendorList.forEach(v => s[v] = 0);
     state.customers.forEach(c=>{ if(s[c.vendor]!==undefined) s[c.vendor]+=c.budget; });
-    
     const bar = document.getElementById('share-bar'); bar.innerHTML='';
     const total = Object.values(s).reduce((a,b)=>a+b,0)||1;
     state.vendorList.forEach(v=>{
@@ -537,7 +585,6 @@ function render() {
         if(p>0){ const d=document.createElement('div'); d.className='share-seg'; d.style.cssText=`width:${p}%;background:${VENDORS[v].bg}`; d.textContent=p>10?Math.round(p)+'%':''; bar.appendChild(d); }
     });
 
-    const size = state.gridSize;
     const gEl = document.getElementById('grid'); gEl.innerHTML='';
     state.grid.forEach(t=>{
         const el=document.createElement('div'); el.className='tile';
@@ -561,25 +608,25 @@ function render() {
         sp.classList.add('open');
         document.getElementById('sp-name').textContent=c.name;
         document.getElementById('sp-vc').textContent=c.vc;
+        document.getElementById('sp-tiles').textContent=c.tiles;
         document.getElementById('sp-win').textContent=`${getWR(c)}%`;
         document.getElementById('sp-budget').textContent = `¥${c.budget}M`;
         const kn=c.vc>0||c.vendor==='H';
         document.getElementById('sp-vendor').textContent= (kn || c.intelRevealed) ? VENDORS[c.vendor].name : '？';
         const st=document.getElementById('sp-status');
-        if(c.cxoProtect>0){ st.textContent=`🛡 CXO防衛中 (${c.cxoProtect})`; st.style.color='var(--sky)'; }
-        else if(c.mo>=50){ st.textContent='運用/構築中'; st.style.color=''; }
-        else if(c.mo>=48){ st.textContent='📄 RFP放出中'; st.style.color='var(--amber)'; }
-        else{ st.textContent='稼働中'; st.style.color=''; }
+        if(c.cxoProtect>0){ st.textContent=`🛡 CXO SECURE (${c.cxoProtect} Mo)`; st.style.color='var(--sky)'; }
+        else if(c.mo>=50){ st.textContent='OPERATION / STEADY'; st.style.color=''; }
+        else if(c.mo>=48){ st.textContent='📄 RFP RELEASED'; st.style.color='var(--amber)'; }
+        else{ st.textContent='ACTIVE / UTILIZED'; st.style.color=''; }
         document.getElementById('sp-prop-btn').disabled=!(kn && c.mo>=48 && c.mo < 50);
-        document.getElementById('sp-spec-btn').disabled=(c.mo>=48 || c.specIn || getWR(c) < 75);
-        document.getElementById('sp-cxo-btn').disabled=(getWR(c) < 75);
+        document.getElementById('sp-spec-btn').disabled=(c.mo>=48 || c.specIn || getWR(c) < 70);
+        document.getElementById('sp-cxo-btn').disabled=(getWR(c) < 70);
     } else sp.classList.remove('open');
 
     const ts=document.getElementById('task-strip'); ts.innerHTML='';
     state.tasks.forEach((t,i)=>{
         const c=document.createElement('div'); c.className='t-chip';
-        const chipName = t.global ? 'MARKETING' : t.cname;
-        c.innerHTML=`<span class="t-chip-name">${chipName}</span><span>${t.label}</span><button class="t-chip-rm" onclick="removeTask(${i})">✕</button>`;
+        c.innerHTML=`<span class="t-chip-name">${t.global?'MKT':t.cname}</span><span>${t.label}</span><button class="t-chip-rm" onclick="removeTask(${i})">✕</button>`;
         ts.appendChild(c);
     });
     document.getElementById('exec-btn').disabled=state.tasks.length===0;
@@ -590,199 +637,101 @@ function addTask(type,cost,label,isGlobal=false) {
     if(!isGlobal && !state.selId) { SFX.error(); return; }
     if(state.mh < cost) { SFX.error(); return; }
     
-    SFX.add();
-    if (isGlobal) {
-        state.tasks.push({cid:null, cname:'全体', type, cost, label, global:true});
-    } else {
+    // アクション別の固有サウンドを再生
+    SFX.action(type);
+    
+    if (isGlobal) state.tasks.push({cid:null, cname:'GLOBAL', type, cost, label, global:true});
+    else {
         const c=state.customers.find(x=>x.id===state.selId);
         state.tasks.push({cid:c.id, cname:c.name, type, cost, label, global:false});
     }
-    state.mh -= cost; 
-    if(!isGlobal) state.selId = null; 
-    render();
+    state.mh -= cost; state.selId = null; render();
 }
-
-function removeTask(i) { SFX.select(); state.mh+=state.tasks[i].cost; state.tasks.splice(i,1); render(); }
-
-// 満足度コメントの生成ロジック
-function getSatisfactionComment(c, wr) {
-    const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
-    if (c.vendor === 'H') {
-        if (wr > 80) return pick(["ニモさんの迅速なサポートに全幅の信頼を寄せています。", "システムは安定稼働しており、満足度は極めて高いです。"]);
-        if (wr < 50) return pick(["度重なる不具合の懸念から、他社へのリプレイス検討が始まっています。", "サポート体制への不満が漏れ聞こえており、危険な状態です。"]);
-        return pick(["概ね順調ですが、さらなる新機能の提案を待望されています。", "現状に大きな不満はありませんが、他社の営業も活発なようです。"]);
-    } else {
-        if (wr > 45) return pick(["現行ベンダーへの不満が限界に達しており、交代の機が熟しています。", "保守コストの高騰に嫌気が差しており、リプレイスに前向きです。"]);
-        if (wr < 25) return pick(["現行ベンダーとの関係は鉄壁。入り込む隙がほとんどありません。", "「現状で完璧」という認識が強く、変化を拒んでいます。"]);
-        return pick(["標準的な満足度。他社を圧倒するスペック提示が求められます。", "現行ベンダーに慣れてはいますが、比較検討の余地はあります。"]);
-    }
-}
+function removeTask(i) { SFX.remove(); state.mh+=state.tasks[i].cost; state.tasks.splice(i,1); render(); }
 
 function executeStrategy() {
     SFX.exec();
-    let tr = [];
+    let tr = []; const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
     const activeCids = [...new Set(state.tasks.map(t => t.cid).filter(id => id !== null))];
-    const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
-    // ── 1. 【障害発生チェック】 ──
     state.vendorList.forEach(vId => {
         if (Math.random() < 0.08) { 
-            const vName = VENDORS[vId].name;
-            const vColor = VENDORS[vId].bg;
-            tr.push({
-                n: vName, 
-                tx: `【障害発生】致命的なバグが露見。既存顧客の信頼度が10%低下しました。`, 
-                clr: vColor,
-                vName: vName,
-                vClr: vColor,
-                sat: "障害発生により、サポートへの不信感が爆発しています。"
-            });
-            state.customers.forEach(c => {
-                if (c.vendor === vId) {
-                    c.baseRapport = Math.max(0, c.baseRapport - 10);
-                }
-            });
+            const v = VENDORS[vId];
+            tr.push({ n: v.name, tx: `【障害発生】致命的なバグが露見。信頼度が低下しました。`, clr: v.bg, vName: v.name, vClr: v.bg, sat: "障害発生により、サポートへの不信感が爆発しています。" });
+            state.customers.forEach(c => { if (c.vendor === vId) c.baseRapport = Math.max(0, c.baseRapport - 10); });
             SFX.lost();
         }
     });
 
-    // ── 2. 【タスク実行】 ──
     state.tasks.forEach(t=>{
         if (t.global) {
-            const getParticipants = (minProb, minCount, maxCount) => {
-                const candidates = state.customers.filter(c => getWR(c) >= minProb);
-                const shuffled = candidates.sort(() => Math.random() - 0.5);
-                return shuffled.slice(0, Math.floor(Math.random() * (maxCount - minCount + 1)) + minCount);
-            };
-
-            if (t.type === 'EVENT') {
-                const parts = getParticipants(30, 2, 4);
-                if (parts.length > 0) {
-                    parts.forEach(c => { c.baseRapport += 15; });
-                    tr.push({n:'イベント開催', tx:`参加企業（${parts.map(p=>p.name).join('、')}）の興味度が大幅に向上(+15%)しました。`, clr: VENDORS.H.bg, vName: '全体施策', vClr: '#7a8fa8', sat: 'マーケティング活動により、ブランドへの期待が高まっています。'});
-                } else {
-                    tr.push({n:'イベント開催', tx:'集客が振るわず、目立った成果は得られませんでした。', clr: VENDORS.H.bg, vName: '全体施策', vClr: '#7a8fa8', sat: '顧客の関心を惹くには、別のフックが必要です。'});
-                }
-            } else if (t.type === 'MAILNEWS') {
-                const parts = getParticipants(30, 3, 6);
-                if (parts.length > 0) {
-                    parts.forEach(c => { c.baseRapport += 5; });
-                    tr.push({n:'MAIL NEWS', tx:`配信先（${parts.map(p=>p.name).join('、')}）に好意的に受け入れられました(+5%)。`, clr: VENDORS.H.bg, vName: '全体施策', vClr: '#7a8fa8', sat: '継続的な情報提供が、信頼の土壌を作っています。'});
-                } else {
-                    tr.push({n:'MAIL NEWS', tx:'配信しましたが、多くの開封には至りませんでした。', clr: VENDORS.H.bg, vName: '全体施策', vClr: '#7a8fa8', sat: 'コンテンツのブラッシュアップが必要です。'});
-                }
-            }
+            const parts = state.customers.filter(c => getWR(c) >= 30).sort(() => 0.5 - Math.random()).slice(0, t.type==='EVENT'?3:5);
+            if (parts.length) {
+                parts.forEach(c => { c.baseRapport += t.type==='EVENT'?15:5; });
+                tr.push({n:t.label, tx:`${parts.map(p=>p.name).join('、')}の興味度が向上しました。`, clr: VENDORS.H.bg, vName: 'MARKETING', vClr: '#7a8fa8', sat: '全体施策が各企業の期待値を底上げしています。'});
+            } else tr.push({n:t.label, tx:'目立った成果は得られませんでした。', clr: VENDORS.H.bg, vName: 'MARKETING', vClr: '#7a8fa8', sat: 'アプローチ手法の再考が必要です。'});
         } else {
-            const c=state.customers.find(x=>x.id===t.cid);
-            const wr = getWR(c);
+            const c=state.customers.find(x=>x.id===t.cid); const wr = getWR(c);
+            const rName = (c.vendor === 'H') ? VENDORS[pick(state.vendorList.filter(v => v !== 'H'))].name : VENDORS[c.vendor].name;
+            const sat = (c.vendor === 'H') ? (wr>80?"信頼は絶大です。":"不満が漏れ聞こえます。") : (wr>45?"現行への不満が限界です。":"関係は依然として鉄壁です。");
             
-            const rName = (c.vendor === 'H') 
-                ? VENDORS[pick(state.vendorList.filter(v => v !== 'H'))].name 
-                : VENDORS[c.vendor].name;
-
-            const getDynamicMsg = (type, currentWr) => {
-                if (type === 'VISIT') {
-                    if (currentWr >= 75) return pick([`担当者と密談。${rName}の提案に不信感を持っているようです。`, "温かい歓迎。他社のカタログはすべて片付けられていました。", "キーマンと意気投合。次回のRFP要件について内密に相談を受けました。"]);
-                    if (currentWr >= 40) return pick(["世間話に終執しましたが、こちらの新製品には興味を示しています。", `受付で${rName}の担当者とすれ違いました。競争が激化しています。`, "担当者は多忙そうでしたが、短い面談でポジティブな感触を得ました。"]);
-                    return pick(["受付での対応は冷ややか。他社のカタログが山積みになっています。", `${rName}の製品が現場に深く浸透しており、切り込みが難しい状況です。`, "門前払い一歩手前。信頼構築にはまだ時間がかかりそうです。"]);
-                }
-                if (type === 'STUDY') {
-                    if (currentWr >= 75) return pick(["現場エンジニアと深い技術交流。自社仕様への完全な理解を得ました。", "「これなら他社から乗り換える価値がある」との評価を頂きました。", "質疑応答が活発に行われ、現場の支持を完全に掌握しました。"]);
-                    return pick(["勉強会は盛況。製品への理解度が一段階上がったようです。", "他社比較の質問が多く出ましたが、概ねこちらの優位性をアピールできました。", "出席者の反応は上々。次なるアクションへの橋渡しが完了しました。"]);
-                }
-                if (type === 'SURVEY') return `市場調査により${rName}の動向を特定。`;
-                if (type === 'SPECIN') return pick(["スペックイン成功。RFP要件に自社仕様がガッチリ組み込まれました。", "要件定義に潜り込み完了。他社が追随できない仕様を仕込みました。"]);
-                if (type === 'CXO') return pick(["CXOと合意。以後3ヶ月間、他社の介入を完全にシャットアウトします。", "トップダウンでの自社採用方針が固まりました。鉄壁の防衛。 "]);
-                return "";
-            };
-
-            const satComment = getSatisfactionComment(c, wr);
-            const vName = VENDORS[c.vendor].name;
-            const vClr = VENDORS[c.vendor].bg;
-
-            if(t.type==='VISIT'){ c.vc++; tr.push({n:c.name, tx: getDynamicMsg('VISIT', wr), clr: VENDORS.H.bg, vName, vClr, sat: satComment}); }
-            else if(t.type==='STUDY'){ c.vc += 2; tr.push({n:c.name, tx: getDynamicMsg('STUDY', wr), clr: VENDORS.H.bg, vName, vClr, sat: satComment}); }
-            else if(t.type==='SURVEY'){ c.intelRevealed=true; tr.push({n:c.name, tx: getDynamicMsg('SURVEY', wr), clr: VENDORS.H.bg, vName, vClr, sat: satComment}); }
-            else if(t.type==='SPECIN'){ c.specIn=true; tr.push({n:c.name, tx: getDynamicMsg('SPECIN', wr), clr: VENDORS.H.bg, vName, vClr, sat: satComment}); }
-            else if(t.type==='CXO'){ c.cxoProtect=4; tr.push({n:c.name, tx: getDynamicMsg('CXO', wr), clr: VENDORS.H.bg, vName, vClr, sat: satComment}); }
+            if(t.type==='VISIT'){ c.vc++; tr.push({n:c.name, tx: pick([`${rName}の提案を静観しているようです。`, "キーマンから内密な相談を受けました。"]), clr: VENDORS.H.bg, vName: VENDORS[c.vendor].name, vClr: VENDORS[c.vendor].bg, sat}); }
+            else if(t.type==='STUDY'){ c.vc += 2; tr.push({n:c.name, tx: "現場エンジニアと深い技術交流。自社仕様への理解を得ました。", clr: VENDORS.H.bg, vName: VENDORS[c.vendor].name, vClr: VENDORS[c.vendor].bg, sat}); }
+            else if(t.type==='SURVEY'){ c.intelRevealed=true; tr.push({n:c.name, tx: `市場調査により${rName}の動向を特定。`, clr: VENDORS.H.bg, vName: VENDORS[c.vendor].name, vClr: VENDORS[c.vendor].bg, sat}); }
+            else if(t.type==='SPECIN'){ c.specIn=true; tr.push({n:c.name, tx: "RFP要件に自社仕様を組み込むことに成功。", clr: VENDORS.H.bg, vName: VENDORS[c.vendor].name, vClr: VENDORS[c.vendor].bg, sat}); }
+            else if(t.type==='CXO'){ c.cxoProtect=4; tr.push({n:c.name, tx: "CXOと合意。以後3ヶ月間、他社の介入を完全に遮断。", clr: VENDORS.H.bg, vName: VENDORS[c.vendor].name, vClr: VENDORS[c.vendor].bg, sat}); }
             else if(t.type==='PROPOSAL'){
                 if(Math.random()*100 < wr){ 
-                    SFX.win(); 
-                    const res = {n:c.name, tx: pick(['【受注】覇権を奪還しました！構築フェーズへ。', '【受注】満場一致で採用決定。圧倒的な勝利です。']), clr: VENDORS.H.bg, vName, vClr, sat: "ニモさんの提案力に圧倒され、新体制に期待が膨らんでいます。"};
-                    c.vendor='H'; c.mo=55; state.sales+=c.budget; 
-                    tr.push(res);
+                    SFX.win(); c.vendor='H'; c.mo=55; state.sales+=c.budget; 
+                    tr.push({n:c.name, tx: '【受注】覇権を奪還しました！', clr: VENDORS.H.bg, vName: 'SELF', vClr: VENDORS.H.bg, sat: "ニモさんの提案力に圧倒されました。"});
                 } else { 
-                    SFX.lost(); 
-                    tr.push({n:c.name, tx: pick(['【失注】競合のロジックに押し切られました。', '【失注】最後の最後でリリースのタイミングが合わず。']), clr: VENDORS.H.bg, vName, vClr, sat: "現行ベンダーが土俵際で粘りを見せ、信頼を繋ぎ止めました。"}); 
+                    SFX.lost(); tr.push({n:c.name, tx: '【失注】競合のロジックに押し切られました。', clr: VENDORS.H.bg, vName: VENDORS[c.vendor].name, vClr: VENDORS[c.vendor].bg, sat: "現行が土俵際で粘りました。"}); 
                 }
             }
         }
     });
 
-    // ── 3. 【競合他社の動き】 ──
     state.vendorList.filter(v => v !== 'H').forEach(rid => {
-        let rmh = Math.floor(Math.random() * 11) + 15; 
+        let rmh = 20; 
         while (rmh >= 6) {
             const targets = state.customers.filter(c => c.vendor !== rid && c.cxoProtect <= 0 && c.mo < 50);
             if (!targets.length) break;
-            const tgt = targets[Math.floor(Math.random() * targets.length)];
-            const wrRival = getWR(tgt, rid);
-            if (rmh >= 12 && wrRival >= 75 && (tgt.mo >= 48 || activeCids.includes(tgt.id))) {
+            const tgt = targets[pick(targets.map((_,i)=>i))];
+            if (rmh >= 12 && getWR(tgt, rid) >= 75) {
                 rmh -= 12;
-                if (Math.random() * 100 < (tgt.mo >= 48 ? 35 : 12)) {
-                    const oldV = VENDORS[tgt.vendor].name;
-                    const oldVClr = VENDORS[tgt.vendor].bg;
-                    tgt.vendor = rid; tgt.mo = 1; tgt.vc = 0; tgt.specIn = false;
-                    tr.push({ n: tgt.name, tx: `【急報】${VENDORS[rid].name}のリソース集中投下によりベンダーが交代。`, clr: VENDORS[rid].bg, vName: oldV, vClr: oldVClr, sat: `${VENDORS[rid].name}の強気な提案が刺さり、既存環境への不満が表面化しました。` });
+                if (Math.random() < (tgt.mo >= 48 ? 0.4 : 0.15)) {
+                    const oldV = VENDORS[tgt.vendor]; tgt.vendor = rid; tgt.mo = 1; tgt.vc = 0; tgt.specIn = false;
+                    tr.push({ n: tgt.name, tx: `【急報】${VENDORS[rid].name}のリソース投下によりベンダー交代。`, clr: VENDORS[rid].bg, vName: oldV.name, vClr: oldV.bg, sat: `${VENDORS[rid].name}の強襲。` });
                 }
-            } else { rmh -= 6; }
+            } else rmh -= 6;
         }
     });
 
     state.month++; state.tasks=[]; state.mh=MAX_MH; state.selId=null;
     state.customers.forEach(c=>{ c.mo=c.mo>=60?1:c.mo+1; if(c.cxoProtect>0) c.cxoProtect--; });
     const rl=document.getElementById('res-list'); rl.innerHTML='';
-    tr.forEach(r=>{ 
-        rl.innerHTML+=`<div class="res-block" style="border-left: 3px solid ${r.clr}; padding-left: 10px; margin-bottom: 15px;">
-            <div class="res-bname" style="color: ${r.clr}; display: flex; justify-content: space-between; align-items: center;">
-                <span>${r.n}</span>
-                <span style="font-size: 9px; color: ${r.vClr}; font-weight: 700;">既存：${r.vName}</span>
-            </div>
-            <div class="res-txt" style="color: ${r.clr}; font-weight: 900; margin-bottom: 4px;">${r.tx}</div>
-            <div style="font-size: 11px; color: #ffffff; font-style: italic; opacity: 0.9;">満足度：${r.sat}</div>
-        </div>`; 
+    tr.forEach((r, i)=>{ 
+        setTimeout(() => {
+            const d = document.createElement('div'); d.className='res-block'; d.style.borderLeft=`4px solid ${r.clr}`; d.style.paddingLeft='12px';
+            d.innerHTML=`<div class="res-bname" style="color:${r.clr}">${r.n} <span style="font-size:9px; color:${r.vClr}; margin-left:8px">EXISTING: ${r.vName}</span></div>
+                        <div class="res-txt">${r.tx}</div><div class="res-sat">SATISFACTION: ${r.sat}</div>`;
+            rl.appendChild(d);
+            rl.scrollTop = rl.scrollHeight;
+        }, i * 150);
     });
     setTimeout(() => { SFX.report(); document.getElementById('result-ov').classList.remove('hidden'); }, 300);
-    render();
-    saveGame();
+    render(); saveGame();
 }
 
 function closeResult() { 
-    SFX.select();
-    document.getElementById('result-ov').classList.add('hidden'); 
+    SFX.select(); document.getElementById('result-ov').classList.add('hidden'); 
     if(state.month > 12) { 
-        // 年度末ランキング集計
-        const ranking = state.vendorList.map(v => {
-            const sum = state.customers.filter(c => c.vendor === v).reduce((acc, curr) => acc + curr.budget, 0);
-            return { id: v, name: VENDORS[v].name, total: sum, color: VENDORS[v].bg };
-        }).sort((a, b) => b.total - a.total);
-
-        const rw = document.getElementById('vendor-ranking');
-        rw.innerHTML = '<div style="font-family: var(--D); font-size: 14px; color: var(--gold); margin-bottom: 10px; text-align: left; letter-spacing: 0.2em;">VENDOR PERFORMANCE RANKING</div>';
-        ranking.forEach((r, idx) => {
-            rw.innerHTML += `
-                <div class="rank-row">
-                    <span class="rank-name" style="color: ${r.color};">${idx + 1}. ${r.name}</span>
-                    <span class="rank-val" style="color: #fff;">¥${r.total}M</span>
-                </div>
-            `;
-        });
-
-        document.getElementById('final-score').textContent=`¥${state.sales}M`; 
-        document.getElementById('final-modal').classList.remove('hidden'); 
+        const ranking = state.vendorList.map(v => ({ id: v, name: VENDORS[v].name, total: state.customers.filter(c => c.vendor === v).reduce((a, b) => a + b.budget, 0), color: VENDORS[v].bg })).sort((a, b) => b.total - a.total);
+        const rw = document.getElementById('vendor-ranking'); rw.innerHTML = '<div style="font-family:var(--D);font-size:14px;color:var(--gold);margin-bottom:12px;letter-spacing:0.2em">MARKET PERFORMANCE RANKING</div>';
+        ranking.forEach((r, idx) => rw.innerHTML += `<div class="rank-row"><span class="rank-name" style="color:${r.color}">${idx+1}. ${r.name}</span><span class="rank-val">¥${r.total}M</span></div>`);
+        document.getElementById('final-score').textContent=`¥${state.sales}M`; document.getElementById('final-modal').classList.remove('hidden'); 
     } 
 }
-
 document.getElementById('sp-close').onclick=()=>{ SFX.select(); state.selId=null; render(); };
 </script>
 </body>
