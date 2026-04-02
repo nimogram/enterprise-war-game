@@ -116,31 +116,54 @@
             gap: 4px;
             width: 100%; max-width: 380px;
             aspect-ratio: 1;
-            transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
         }
+
+        /* ── TILE 3D ── */
         .tile {
-            aspect-ratio: 1; border-radius: 6px;
-            border: 1px solid rgba(255,255,255,.05);
-            cursor: pointer; display: flex; align-items: center; justify-content: center;
-            position: relative; user-select: none;
-            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            aspect-ratio: 1; perspective: 600px;
+            cursor: pointer; position: relative; user-select: none;
+            transition: transform 0.2s;
         }
-        .tile:active { transform: scale(0.9) !important; }
-        .tile:hover { filter: brightness(1.2); }
-        .tile.sel {
+        .tile-inner {
+            position: relative; width: 100%; height: 100%;
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .tile.sel .tile-inner { transform: scale(1.1); z-index: 5; }
+        
+        .tile-side {
+            position: absolute; inset: 0; backface-visibility: hidden;
+            border-radius: 6px; border: 1px solid rgba(255,255,255,.05);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .side-back { transform: rotateY(180deg); }
+
+        .tile:active { transform: scale(0.9); }
+        .tile:hover .tile-side { border-color: rgba(255,255,255,0.2); }
+        
+        /* 選択中のグロー */
+        .tile.sel .tile-side {
             border-color: #fff !important;
             box-shadow: 0 0 20px rgba(255,255,255,.4), inset 0 0 10px rgba(255,255,255,0.1);
-            transform: scale(1.1); z-index: 5;
         }
+
         .t-lbl { font-family: var(--M); font-size: 11px; color: rgba(255,255,255,.9); pointer-events: none; font-weight: 600; text-shadow: 0 1px 2px rgba(0,0,0,0.5); } 
 
         /* ── ANIMATIONS ── */
         @keyframes pulse-rfp  { 0% { box-shadow:0 0 0px var(--gold); } 50% { box-shadow:0 0 15px var(--gold); } 100% { box-shadow:0 0 0px var(--gold); } }
-        @keyframes pulse-bld  { 0% { box-shadow:0 0 0px rgba(255,255,255,0.2); } 50% { box-shadow:0 0 10px rgba(255,255,255,0.5); } 100% { box-shadow:0 0 0px rgba(255,255,255,0.2); } }
         @keyframes pulse-cxo  { 0% { box-shadow:0 0 0px var(--sky); border-width: 2px; } 50% { box-shadow:0 0 20px var(--sky); border-width: 2.5px; } 100% { box-shadow:0 0 0px var(--sky); border-width: 2px; } }
-        .rfp-a  { animation: pulse-rfp 1.5s infinite; border-color: var(--gold) !important; }
-        .bld-a  { animation: pulse-bld 2s infinite; border-color: #fff !important; }
-        .cxo-a  { animation: pulse-cxo 1.2s infinite; border-color: var(--sky) !important; border-width: 2px !important; }
+        
+        .rfp-a .tile-side { animation: pulse-rfp 1.5s infinite; border-color: var(--gold) !important; }
+        .cxo-a .tile-side { animation: pulse-cxo 1.2s infinite; border-color: var(--sky) !important; border-width: 2px !important; }
+
+        /* 構築中：くるくる回転アニメーション */
+        .bld-a .tile-inner { animation: rotate-flip 4.5s infinite cubic-bezier(0.45, 0, 0.55, 1); }
+        @keyframes rotate-flip {
+            0% { transform: rotateY(0deg); }
+            40% { transform: rotateY(180deg); }
+            60% { transform: rotateY(180deg); }
+            100% { transform: rotateY(360deg); }
+        }
 
         /* ── SIDE PANEL ── */
         .sp {
@@ -235,7 +258,6 @@
             border-radius: 28px; background: rgba(12,18,33,.95); 
             display: flex; flex-direction: column; overflow: hidden; 
             box-shadow: 0 30px 60px rgba(0,0,0,0.8);
-            transform: scale(1); transition: transform 0.3s;
         }
         .res-hdr { padding: 22px 20px; border-bottom: 1px solid var(--bdr); text-align: center; }
         .res-title { font-family: var(--D); font-size: 24px; letter-spacing: .5em; color: var(--gold); }
@@ -248,7 +270,7 @@
         .res-bname { font-family: var(--D); color: var(--gold); font-size: 16px; letter-spacing: .2em; margin-bottom: 10px; }
         .res-txt { font-size: 15px; color: #fff; margin-bottom: 6px; line-height: 1.4; }
         .res-sat { font-size: 12px; color: #fff; font-style: italic; opacity: 0.9; line-height: 1.4; }
-        .res-next, .final-btn { height: 56px; border: none; background: #fff; color: var(--bg); font-family: var(--D); font-size: 18px; letter-spacing: .5em; text-transform: uppercase; cursor: pointer; transition: all 0.3s; }
+        .res-next, .final-btn { height: 56px; border: none; background: #fff; color: var(--bg); font-family: var(--D); font-size: 18px; letter-spacing: .5em; text-transform: uppercase; cursor: pointer; transition: all 0.3s; flex-shrink: 0; }
         .res-next:hover, .final-btn:hover { background: var(--emerald); color: #fff; }
         .final-btn.alt { background: rgba(0,214,143,0.1); border: 1px solid var(--emerald); color: var(--emerald); }
 
@@ -359,7 +381,6 @@
 <script>
 // --- AUDIO ENGINE (WITH ACTION-SPECIFIC VARIATION) ---
 let audioCtx = null;
-
 const rnd = (base, range) => base + (Math.random() * range * 2 - range);
 
 function createTone(freq, type, duration, vol, rampType = 'exp') {
@@ -377,70 +398,37 @@ function createTone(freq, type, duration, vol, rampType = 'exp') {
 }
 
 const SFX = {
-    // 汎用UI音
     select: () => createTone(rnd(660, 30), 'sine', rnd(0.1, 0.02), 0.05),
     remove: () => createTone(rnd(440, 20), 'sine', 0.1, 0.05),
-    
-    // アクション別・固有サウンド
     action: (type) => {
         switch(type) {
-            case 'VISIT': // Soft & Friendly
-                createTone(rnd(523.25, 20), 'sine', 0.15, 0.06);
-                setTimeout(() => createTone(rnd(659.25, 20), 'sine', 0.1, 0.04), 80);
-                break;
-            case 'SURVEY': // Digital Scan
-                for(let i=0; i<4; i++) setTimeout(() => createTone(rnd(1500 + i*100, 50), 'sine', 0.03, 0.03), i*30);
-                break;
-            case 'STUDY': // Rising Triangle
-                createTone(rnd(440, 10), 'triangle', 0.3, 0.07);
-                createTone(rnd(880, 10), 'triangle', 0.3, 0.04);
-                break;
-            case 'SPECIN': // Metallic Clank
-                createTone(rnd(200, 10), 'square', 0.1, 0.08);
-                createTone(rnd(600, 50), 'square', 0.05, 0.04);
-                break;
-            case 'CXO': // Prestige Bell
-                createTone(rnd(1046.5, 5), 'sine', 0.8, 0.1);
-                createTone(rnd(523.25, 5), 'sine', 0.8, 0.05);
-                break;
-            case 'PROPOSAL': // Decisive Power
-                createTone(rnd(110, 5), 'sawtooth', 0.4, 0.1);
-                createTone(rnd(220, 10), 'sawtooth', 0.3, 0.06);
-                break;
+            case 'VISIT': createTone(rnd(523.25, 20), 'sine', 0.15, 0.06); setTimeout(() => createTone(rnd(659.25, 20), 'sine', 0.1, 0.04), 80); break;
+            case 'SURVEY': for(let i=0; i<4; i++) setTimeout(() => createTone(rnd(1500 + i*100, 50), 'sine', 0.03, 0.03), i*30); break;
+            case 'STUDY': createTone(rnd(440, 10), 'triangle', 0.3, 0.07); createTone(rnd(880, 10), 'triangle', 0.3, 0.04); break;
+            case 'SPECIN': createTone(rnd(200, 10), 'square', 0.1, 0.08); createTone(rnd(600, 50), 'square', 0.05, 0.04); break;
+            case 'CXO': createTone(rnd(1046.5, 5), 'sine', 0.8, 0.1); createTone(rnd(523.25, 5), 'sine', 0.8, 0.05); break;
+            case 'PROPOSAL': createTone(rnd(110, 5), 'sawtooth', 0.4, 0.1); createTone(rnd(220, 10), 'sawtooth', 0.3, 0.06); break;
             case 'EVENT':
-            case 'MAILNEWS': // Marketing Ripple
-                createTone(rnd(880, 100), 'sine', 0.5, 0.04);
-                setTimeout(() => createTone(rnd(1100, 100), 'sine', 0.4, 0.02), 100);
-                break;
-            default:
-                createTone(rnd(880, 50), 'sine', 0.05, 0.05);
+            case 'MAILNEWS': createTone(rnd(880, 100), 'sine', 0.5, 0.04); setTimeout(() => createTone(rnd(1100, 100), 'sine', 0.4, 0.02), 100); break;
+            default: createTone(rnd(880, 50), 'sine', 0.05, 0.05);
         }
     },
-    
     exec: () => {
-        const base = rnd(220, 10);
-        createTone(base, 'sawtooth', 0.2, 0.08);
+        const base = rnd(220, 10); createTone(base, 'sawtooth', 0.2, 0.08);
         setTimeout(() => createTone(base * 1.5, 'sawtooth', 0.15, 0.06), rnd(100, 15));
         setTimeout(() => createTone(base * 2.0, 'sawtooth', 0.1, 0.04), rnd(200, 20));
     },
-    
     win: () => {
-        const notes = [523.25, 659.25, 784, 1046.5, 1318.5];
-        const offset = rnd(1, 0.02);
+        const notes = [523.25, 659.25, 784, 1046.5, 1318.5]; const offset = rnd(1, 0.02);
         notes.forEach((f, i) => setTimeout(() => createTone(f * offset, 'sine', rnd(0.6, 0.1), 0.1), i * rnd(100, 15)));
     },
-    
     lost: () => {
-        const f = rnd(196, 10);
-        createTone(f, 'sawtooth', 0.6, 0.1, 'linear');
-        createTone(f * 0.94, 'sawtooth', 0.6, 0.1, 'linear');
+        const f = rnd(196, 10); createTone(f, 'sawtooth', 0.6, 0.1, 'linear'); createTone(f * 0.94, 'sawtooth', 0.6, 0.1, 'linear');
     },
-    
     score: () => {
         const start = rnd(1200, 100);
         for(let i=0; i<2; i++) setTimeout(() => createTone(start + i * rnd(300, 50), 'sine', 0.08, 0.03), i * rnd(40, 5));
     },
-    
     report: () => createTone(rnd(440, 20), 'triangle', 0.4, 0.1),
     error: () => createTone(rnd(110, 5), 'square', 0.2, 0.1)
 };
@@ -473,7 +461,7 @@ const CUSTOMER_POOL_BASE = [
 
 let state = {
     month:1, year: 26, mh:MAX_MH, sales:0, displaySales: 0, selId:null, tasks:[], 
-    logs:[], customers:[], grid:[], gridSize: 6, vendorList: []
+    customers:[], grid:[], gridSize: 6, vendorList: []
 };
 
 const SAVE_KEY = 'enterprise_v2_save';
@@ -516,7 +504,7 @@ function init() {
         const vendor = state.vendorList[Math.floor(Math.random()*state.vendorList.length)];
         let tCount = state.gridSize === 6 ? b.tiles6 : (state.gridSize === 8 ? b.tiles8 : b.tiles10);
         return {
-            ...b, tiles: tCount, budget: tCount * 10, vendor,
+            ...b, tiles: tCount, budget: tCount * 10, vendor, prevVendor: vendor,
             mo: Math.floor(Math.random()*45)+1, vc:0, specIn:false, cxoProtect:0,
             intelRevealed:false, baseRapport: vendor === 'H' ? 40 : Math.floor(Math.random()*25)+10
         };
@@ -553,9 +541,7 @@ function getWR(c, vId = 'H') {
     if (c.vendor === vId) r += (vId === 'H') ? 50 : 35;
     if (c.mo >= 48 && c.mo < 50) r += 35; else if (c.mo >= 50) r -= 20;
     if (vId === 'H' && c.specIn) r += 25;
-    state.tasks.filter(t=>t.cid===c.id).forEach(t=>{ 
-        if(t.type==='VISIT') r+=5; if(t.type==='STUDY') r+=10; if(t.type==='CXO') r+=40; 
-    });
+    state.tasks.filter(t=>t.cid===c.id).forEach(t=>{ if(t.type==='VISIT') r+=5; if(t.type==='STUDY') r+=10; if(t.type==='CXO') r+=40; });
     return Math.min(99, Math.max(5, Math.round(r)));
 }
 
@@ -563,11 +549,9 @@ function animateScore() {
     if (state.displaySales < state.sales) {
         state.displaySales += Math.ceil((state.sales - state.displaySales) / 10);
         document.getElementById('score-v').innerHTML = `¥${state.displaySales}<span>M</span>`;
-        SFX.score();
-        requestAnimationFrame(animateScore);
+        SFX.score(); requestAnimationFrame(animateScore);
     } else {
-        state.displaySales = state.sales;
-        document.getElementById('score-v').innerHTML = `¥${state.sales}<span>M</span>`;
+        state.displaySales = state.sales; document.getElementById('score-v').innerHTML = `¥${state.sales}<span>M</span>`;
     }
 }
 
@@ -587,18 +571,34 @@ function render() {
 
     const gEl = document.getElementById('grid'); gEl.innerHTML='';
     state.grid.forEach(t=>{
-        const el=document.createElement('div'); el.className='tile';
+        const el=document.createElement('div'); 
         if (t && t.cid) {
             const c=state.customers.find(x=>x.id===t.cid);
             const kn=c.vc>0||c.vendor==='H';
-            el.style.backgroundColor=VENDORS[kn?c.vendor:'UNK'].bg;
-            if(state.selId===c.id) el.classList.add('sel');
-            if(c.cxoProtect > 0) el.classList.add('cxo-a');
-            else if(kn && c.mo>=48 && c.mo<50) el.classList.add('rfp-a');
-            else if(kn && c.mo>=50) el.classList.add('bld-a');
-            const sp=document.createElement('span'); sp.className='t-lbl'; sp.textContent=kn?Math.ceil(c.mo/12):'?'; el.appendChild(sp);
+            const selected = state.selId === c.id;
+            
+            el.className = `tile ${selected ? 'sel' : ''} ${c.cxoProtect > 0 ? 'cxo-a' : ''} ${kn && c.mo >= 48 && c.mo < 50 ? 'rfp-a' : ''} ${kn && c.mo >= 50 ? 'bld-a' : ''}`;
+            
+            // 3D Flip Structure
+            const inner = document.createElement('div'); inner.className = 'tile-inner';
+            const front = document.createElement('div'); front.className = 'tile-side side-front';
+            const back = document.createElement('div'); back.className = 'tile-side side-back';
+            
+            front.style.backgroundColor = VENDORS[kn ? c.vendor : 'UNK'].bg;
+            back.style.backgroundColor = VENDORS[kn ? c.prevVendor : 'UNK'].bg;
+            
+            const sp = document.createElement('span'); sp.className='t-lbl'; sp.textContent=kn?Math.ceil(c.mo/12):'?';
+            front.appendChild(sp.cloneNode(true));
+            back.appendChild(sp.cloneNode(true));
+            
+            inner.appendChild(front); inner.appendChild(back);
+            el.appendChild(inner);
+            
             el.onclick=()=>{ SFX.select(); state.selId=c.id; render(); };
-        } else el.style.backgroundColor=VENDORS.NONE.bg;
+        } else {
+            el.className = 'tile';
+            el.innerHTML = `<div class="tile-inner"><div class="tile-side" style="background:${VENDORS.NONE.bg}"></div></div>`;
+        }
         gEl.appendChild(el);
     });
 
@@ -618,7 +618,7 @@ function render() {
         else if(c.mo>=50){ st.textContent='OPERATION / STEADY'; st.style.color=''; }
         else if(c.mo>=48){ st.textContent='📄 RFP RELEASED'; st.style.color='var(--amber)'; }
         else{ st.textContent='ACTIVE / UTILIZED'; st.style.color=''; }
-        document.getElementById('sp-prop-btn').disabled=!(kn && c.mo>=48 && c.mo < 50);
+        document.getElementById('sp-prop-btn').disabled=!(kn && c.mo >= 48 && c.mo < 50);
         document.getElementById('sp-spec-btn').disabled=(c.mo>=48 || c.specIn || getWR(c) < 70);
         document.getElementById('sp-cxo-btn').disabled=(getWR(c) < 70);
     } else sp.classList.remove('open');
@@ -636,10 +636,7 @@ function render() {
 function addTask(type,cost,label,isGlobal=false) {
     if(!isGlobal && !state.selId) { SFX.error(); return; }
     if(state.mh < cost) { SFX.error(); return; }
-    
-    // アクション別の固有サウンドを再生
     SFX.action(type);
-    
     if (isGlobal) state.tasks.push({cid:null, cname:'GLOBAL', type, cost, label, global:true});
     else {
         const c=state.customers.find(x=>x.id===state.selId);
@@ -653,15 +650,6 @@ function executeStrategy() {
     SFX.exec();
     let tr = []; const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
     const activeCids = [...new Set(state.tasks.map(t => t.cid).filter(id => id !== null))];
-
-    state.vendorList.forEach(vId => {
-        if (Math.random() < 0.08) { 
-            const v = VENDORS[vId];
-            tr.push({ n: v.name, tx: `【障害発生】致命的なバグが露見。信頼度が低下しました。`, clr: v.bg, vName: v.name, vClr: v.bg, sat: "障害発生により、サポートへの不信感が爆発しています。" });
-            state.customers.forEach(c => { if (c.vendor === vId) c.baseRapport = Math.max(0, c.baseRapport - 10); });
-            SFX.lost();
-        }
-    });
 
     state.tasks.forEach(t=>{
         if (t.global) {
@@ -682,25 +670,22 @@ function executeStrategy() {
             else if(t.type==='CXO'){ c.cxoProtect=4; tr.push({n:c.name, tx: "CXOと合意。以後3ヶ月間、他社の介入を完全に遮断。", clr: VENDORS.H.bg, vName: VENDORS[c.vendor].name, vClr: VENDORS[c.vendor].bg, sat}); }
             else if(t.type==='PROPOSAL'){
                 if(Math.random()*100 < wr){ 
-                    SFX.win(); c.vendor='H'; c.mo=55; state.sales+=c.budget; 
+                    SFX.win(); c.prevVendor = c.vendor; c.vendor='H'; c.mo=55; state.sales+=c.budget; 
                     tr.push({n:c.name, tx: '【受注】覇権を奪還しました！', clr: VENDORS.H.bg, vName: 'SELF', vClr: VENDORS.H.bg, sat: "ニモさんの提案力に圧倒されました。"});
-                } else { 
-                    SFX.lost(); tr.push({n:c.name, tx: '【失注】競合のロジックに押し切られました。', clr: VENDORS.H.bg, vName: VENDORS[c.vendor].name, vClr: VENDORS[c.vendor].bg, sat: "現行が土俵際で粘りました。"}); 
-                }
+                } else { SFX.lost(); tr.push({n:c.name, tx: '【失注】競合のロジックに押し切られました。', clr: VENDORS.H.bg, vName: VENDORS[c.vendor].name, vClr: VENDORS[c.vendor].bg, sat: "現行が土俵際で粘りました。"}); }
             }
         }
     });
 
     state.vendorList.filter(v => v !== 'H').forEach(rid => {
-        let rmh = 20; 
-        while (rmh >= 6) {
+        let rmh = 20; while (rmh >= 6) {
             const targets = state.customers.filter(c => c.vendor !== rid && c.cxoProtect <= 0 && c.mo < 50);
             if (!targets.length) break;
             const tgt = targets[pick(targets.map((_,i)=>i))];
             if (rmh >= 12 && getWR(tgt, rid) >= 75) {
                 rmh -= 12;
                 if (Math.random() < (tgt.mo >= 48 ? 0.4 : 0.15)) {
-                    const oldV = VENDORS[tgt.vendor]; tgt.vendor = rid; tgt.mo = 1; tgt.vc = 0; tgt.specIn = false;
+                    const oldV = VENDORS[tgt.vendor]; tgt.prevVendor = tgt.vendor; tgt.vendor = rid; tgt.mo = 1; tgt.vc = 0; tgt.specIn = false;
                     tr.push({ n: tgt.name, tx: `【急報】${VENDORS[rid].name}のリソース投下によりベンダー交代。`, clr: VENDORS[rid].bg, vName: oldV.name, vClr: oldV.bg, sat: `${VENDORS[rid].name}の強襲。` });
                 }
             } else rmh -= 6;
@@ -715,8 +700,7 @@ function executeStrategy() {
             const d = document.createElement('div'); d.className='res-block'; d.style.borderLeft=`4px solid ${r.clr}`; d.style.paddingLeft='12px';
             d.innerHTML=`<div class="res-bname" style="color:${r.clr}">${r.n} <span style="font-size:9px; color:${r.vClr}; margin-left:8px">EXISTING: ${r.vName}</span></div>
                         <div class="res-txt">${r.tx}</div><div class="res-sat">SATISFACTION: ${r.sat}</div>`;
-            rl.appendChild(d);
-            rl.scrollTop = rl.scrollHeight;
+            rl.appendChild(d); rl.scrollTop = rl.scrollHeight;
         }, i * 150);
     });
     setTimeout(() => { SFX.report(); document.getElementById('result-ov').classList.remove('hidden'); }, 300);
@@ -736,3 +720,4 @@ document.getElementById('sp-close').onclick=()=>{ SFX.select(); state.selId=null
 </script>
 </body>
 </html>
+
