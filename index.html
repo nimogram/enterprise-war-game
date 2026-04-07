@@ -14,7 +14,7 @@
             --amber:   #F59E0B;
             --purple:  #A855F7;
             --blue:    #3B82F6;
-            --pink:    #71717A; /* グレーに変更 */
+            --pink:    #71717A;
             --bg:      #060A11;
             --surf:    #0C1221;
             --bdr:     rgba(255,255,255,0.07);
@@ -48,7 +48,7 @@
         }
         #app.visible { opacity: 1; }
 
-        /* ── START OVERLAY (RESTORED) ── */
+        /* ── START OVERLAY ── */
         #mode-select-ov {
             position: fixed; inset: 0; z-index: 10000;
             background: var(--bg); display: flex; flex-direction: column;
@@ -59,7 +59,6 @@
         
         .setup-group { width: 100%; max-width: 300px; margin-bottom: 20px; }
         .setup-label { font-size: 10px; font-weight: 900; color: var(--muted); letter-spacing: 0.3em; margin-bottom: 10px; text-align: center; text-transform: uppercase; }
-        
         .setup-row { display: flex; gap: 8px; width: 100%; }
         .mode-btn {
             background: rgba(255,255,255,0.03); border: 1px solid var(--bdr);
@@ -70,116 +69,37 @@
         }
         .mode-btn:hover { background: rgba(255,255,255,0.08); border-color: var(--gold); color: var(--gold); transform: translateY(-2px); }
         .mode-btn.sel { background: var(--gold); color: var(--bg); border-color: var(--gold); }
-        .start-btn { 
-            margin-top: 20px; background: #fff; color: var(--bg); font-weight: 900; 
-            font-size: 20px; padding: 18px; width: 100%; max-width: 300px;
-        }
+        .start-btn { margin-top: 20px; background: #fff; color: var(--bg); font-weight: 900; font-size: 20px; padding: 18px; width: 100%; max-width: 300px; }
 
         /* ── HEADER ── */
-        .hdr {
-            flex: 0 0 auto;
-            padding: 12px 18px 0;
-            background: var(--bg);
-            border-bottom: 1px solid var(--bdr);
-            z-index: 10;
-        }
+        .hdr { flex: 0 0 auto; padding: 12px 18px 0; background: var(--bg); border-bottom: 1px solid var(--bdr); z-index: 10; }
         .hdr-row { display: flex; justify-content: space-between; align-items: flex-end; }
-        .hdr-tag {
-            font-family: var(--D); font-size: 7px; letter-spacing: .65em;
-            color: var(--gold); line-height: 1; margin-bottom: 4px;
-            display: flex; align-items: center; gap: 5px;
-        }
-        .hdr-tag::before {
-            content: ''; width: 5px; height: 5px; border-radius: 50%;
-            background: var(--gold); flex-shrink: 0;
-            animation: blink 2s infinite;
-        }
+        .hdr-tag { font-family: var(--D); font-size: 7px; letter-spacing: .65em; color: var(--gold); line-height: 1; margin-bottom: 4px; display: flex; align-items: center; gap: 5px; }
+        .hdr-tag::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: var(--gold); flex-shrink: 0; animation: blink 2s infinite; }
         @keyframes blink { 0%,100%{opacity:1; transform: scale(1)} 50%{opacity:.2; transform: scale(0.8)} }
         .hdr-phase { font-family: var(--D); font-size: 32px; color: #fff; line-height: 1; letter-spacing: .04em; }
         .hdr-mh { text-align: right; padding-bottom: 2px; }
         .hdr-mh-lbl { font-size: 6px; font-weight: 700; letter-spacing: .4em; color: var(--muted); text-transform: uppercase; margin-bottom: 1px; }
         .hdr-mh-val { font-family: var(--D); font-size: 36px; color: var(--emerald); line-height: 1; transition: color 0.3s; }
-
-        .share-bar {
-            margin: 8px 0 0; height: 14px; display: flex; border-radius: 3px;
-            overflow: hidden; border: 1px solid var(--bdr);
-        }
-        .share-seg {
-            height: 100%; transition: width 1.2s cubic-bezier(0.16, 1, 0.3, 1);
-            display: flex; align-items: center; justify-content: center;
-            font-family: var(--D); font-size: 10px; color: rgba(255,255,255,.9); 
-            white-space: nowrap; overflow: hidden;
-            font-weight: 600;
-        }
-
-        /* ── EVENT BAR ── */
-        .event-banner {
-            flex: 0 0 30px; background: rgba(168,85,247,0.15); 
-            border-bottom: 1px solid var(--purple); display: flex; 
-            align-items: center; padding: 0 18px; gap: 8px;
-            animation: event-slide 0.5s both;
-        }
-        @keyframes event-slide { from { opacity: 0; transform: translateY(-100%); } to { opacity: 1; transform: translateY(0); } }
-        .event-tag { font-family: var(--D); font-size: 9px; color: var(--purple); letter-spacing: 0.2em; border: 1px solid var(--purple); padding: 1px 5px; border-radius: 3px; }
-        .event-txt { font-size: 10px; color: #fff; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .share-bar { margin: 8px 0 0; height: 14px; display: flex; border-radius: 3px; overflow: hidden; border: 1px solid var(--bdr); }
+        .share-seg { height: 100%; transition: width 1.2s cubic-bezier(0.16, 1, 0.3, 1); display: flex; align-items: center; justify-content: center; font-family: var(--D); font-size: 10px; color: rgba(255,255,255,.9); white-space: nowrap; overflow: hidden; font-weight: 600; }
 
         /* ── GRID AREA ── */
-        .grid-wrap {
-            flex: 1 1 0;
-            min-height: 0;
-            display: flex; align-items: center; justify-content: center;
-            padding: 8px 12px;
-            position: relative;
-            overflow: hidden;
-        }
-        #grid {
-            display: grid;
-            grid-template-columns: repeat(var(--grid-size), 1fr);
-            grid-template-rows: repeat(var(--grid-size), 1fr);
-            gap: 2px;
-            width: 100%; max-width: 380px;
-            aspect-ratio: 1;
-        }
+        .grid-wrap { flex: 1 1 0; min-height: 0; display: flex; align-items: center; justify-content: center; padding: 8px 12px; position: relative; overflow: hidden; }
+        #grid { display: grid; grid-template-columns: repeat(var(--grid-size), 1fr); grid-template-rows: repeat(var(--grid-size), 1fr); gap: 2px; width: 100%; max-width: 380px; aspect-ratio: 1; }
 
-        /* ── TILE ── */
-        .tile {
-            aspect-ratio: 1; perspective: 600px;
-            cursor: pointer; position: relative; user-select: none;
-            transition: transform 0.2s;
-        }
-        .tile-inner {
-            position: relative; width: 100%; height: 100%;
-            transform-style: preserve-3d;
-            transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-        }
+        .tile { aspect-ratio: 1; perspective: 600px; cursor: pointer; position: relative; user-select: none; transition: transform 0.2s; }
+        .tile-inner { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
         .tile.sel .tile-inner { transform: scale(1.1); z-index: 5; }
-        .tile-side {
-            position: absolute; inset: 0; backface-visibility: hidden;
-            border-radius: 3px; border: 1px solid rgba(255,255,255,.05);
-            display: flex; align-items: center; justify-content: center;
-        }
+        .tile-side { position: absolute; inset: 0; backface-visibility: hidden; border-radius: 3px; border: 1px solid rgba(255,255,255,.05); display: flex; align-items: center; justify-content: center; }
         .side-back { transform: rotateY(180deg); }
-        .tile:active { transform: scale(0.9); }
-        .tile.sel .tile-side { border-color: #fff !important; box-shadow: 0 0 15px rgba(255,255,255,.4); }
-        
-        /* フォントサイズを拡大調整 (8px -> 11px) */
         .t-lbl { font-family: var(--M); font-size: 11px; color: rgba(255,255,255,.9); pointer-events: none; font-weight: 700; text-shadow: 0 1px 2px rgba(0,0,0,0.5); } 
 
-        /* ── SIDE PANEL (ZERO SCROLL / COMPACT) ── */
-        .sp {
-            position: absolute; top: 0; right: 0; bottom: 0;
-            width: 82%;
-            background: rgba(6,12,25,0.95); 
-            backdrop-filter: blur(50px) saturate(2);
-            border-left: 1px solid rgba(255,255,255,.2);
-            display: flex; flex-direction: column; gap: 3px;
-            padding: 10px;
-            z-index: 50;
-            transform: translateX(100%);
-            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            overflow: hidden;
-            box-shadow: -15px 0 40px rgba(0,0,0,0.8);
-        }
+        @keyframes pulse-rival { 0% { box-shadow: 0 0 0px inset var(--glow); } 50% { box-shadow: 0 0 10px inset var(--glow); border-color: var(--glow); } 100% { box-shadow: 0 0 0px inset var(--glow); } }
+        .rival-pulse { animation: pulse-rival 0.5s ease-out 2; }
+
+        /* ── SIDE PANEL (ZERO SCROLL / FAT BUTTONS) ── */
+        .sp { position: absolute; top: 0; right: 0; bottom: 0; width: 82%; background: rgba(6,12,25,0.95); backdrop-filter: blur(50px) saturate(2); border-left: 1px solid rgba(255,255,255,.2); display: flex; flex-direction: column; gap: 3px; padding: 10px; z-index: 50; transform: translateX(100%); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); overflow: hidden; box-shadow: -15px 0 40px rgba(0,0,0,0.8); }
         .sp.open { transform: translateX(0); }
         .sp-hdr { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; }
         .sp-tag { font-size: 6px; font-weight: 900; letter-spacing: .4em; color: var(--emerald); text-transform: uppercase; }
@@ -190,86 +110,62 @@
         .sp-stat { flex: 1; background: rgba(255,255,255,.03); border: 1px solid var(--bdr); border-radius: 6px; padding: 4px; text-align: center; }
         .sp-sl { font-size: 6px; font-weight: 800; color: var(--muted); text-transform: uppercase; }
         .sp-sv { font-family: var(--D); font-size: 15px; color: #fff; line-height: 1; } 
-        
         .sp-kv-row { display: flex; justify-content: space-between; gap: 8px; border-bottom: 1px solid var(--bdr); padding-bottom: 3px; margin-bottom: 2px; }
         .sp-kv { flex: 1; }
         .sp-rl { font-size: 6px; font-weight: 800; color: var(--muted); text-transform: uppercase; }
         .sp-rv { font-family: var(--D); font-size: 13px; color: var(--gold); line-height: 1; }
         .sp-status { font-size: 9px; font-weight: 600; color: #fff; line-height: 1.2; margin-bottom: 4px; }
-
         .sp-sec-title { font-size: 7px; font-weight: 900; color: var(--muted); text-transform: uppercase; border-top: 1px solid var(--bdr); padding-top: 4px; margin-top: 2px; margin-bottom: 2px; }
         
-        /* ── BUTTON GRID (ENHANCED) ── */
         .sp-btns-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-        .sp-btn {
-            border: 1px solid rgba(255,255,255,0.2);
-            color: #fff; border-radius: 8px; padding: 15px 2px;
-            font-family: var(--D); font-size: 13px; letter-spacing: .05em;
-            cursor: pointer; transition: all 0.2s;
-            text-transform: uppercase; width: 100%; text-align: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-        }
+        .sp-btn { border: 1px solid rgba(255,255,255,0.2); color: #fff; border-radius: 8px; padding: 22px 2px; font-family: var(--D); font-size: 15px; letter-spacing: .05em; cursor: pointer; transition: all 0.2s; text-transform: uppercase; width: 100%; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
         .sp-btn:active:not(:disabled) { transform: scale(0.95); opacity: 0.8; }
-        
+        .sp-btn.btn-visit { background: rgba(56,189,248,0.15); border-color: var(--sky); color: var(--sky); }
+        .sp-btn.btn-survey { background: rgba(245,158,11,0.15); border-color: var(--amber); color: var(--amber); }
+        .sp-btn.btn-study { background: rgba(168,85,247,0.15); border-color: var(--purple); color: var(--purple); }
         .sp-btn.btn-visit { background: rgba(56,189,248,0.15); border-color: var(--sky); color: var(--sky); }
         .sp-btn.btn-survey { background: rgba(245,158,11,0.15); border-color: var(--amber); color: var(--amber); }
         .sp-btn.btn-study { background: rgba(168,85,247,0.15); border-color: var(--purple); color: var(--purple); }
         .sp-btn.btn-spec { background: rgba(255,77,109,0.15); border-color: var(--rose); color: var(--rose); }
-
         .sp-btn.full { grid-column: span 2; }
-        .sp-btn.pri { background: rgba(0,214,143,0.3); border-color: var(--emerald); color: var(--emerald); font-size: 14px; font-weight: 900; padding: 18px 2px; }
-        .sp-btn.alt { background: rgba(56,189,248,0.25); border-color: var(--sky); color: #fff; padding: 16px 2px; font-weight: 700; border-width: 2px; }
-        
-        .sp-btn.btn-event { background: rgba(113,113,122,0.2); border-color: var(--pink); color: #fff; padding: 12px 2px; font-size: 11px; }
-        .sp-btn.btn-news { background: rgba(59,130,246,0.2); border-color: var(--blue); color: #fff; padding: 12px 2px; font-size: 11px; }
-        
+        .sp-btn.pri { background: rgba(0,214,143,0.3); border-color: var(--emerald); color: var(--emerald); font-size: 16px; font-weight: 900; padding: 25px 2px; }
+        .sp-btn.alt { background: rgba(56,189,248,0.25); border-color: var(--sky); color: #fff; padding: 22px 2px; font-weight: 700; border-width: 2px; }
+        .sp-btn.btn-event { background: rgba(113,113,122,0.2); border-color: var(--pink); color: #fff; padding: 14px 2px; font-size: 11px; }
+        .sp-btn.btn-news { background: rgba(59,130,246,0.2); border-color: var(--blue); color: #fff; padding: 14px 2px; font-size: 11px; }
         .sp-btn:disabled { opacity: 0.05; cursor: not-allowed; filter: grayscale(1); }
 
         /* ── LOWER UI ── */
         .task-strip { flex: 0 0 44px; min-height: 44px; display: flex; align-items: center; gap: 6px; padding: 0 14px; overflow-x: auto; border-top: 1px solid var(--bdr); background: var(--bg); z-index: 10; }
-        .t-chip { 
-            flex-shrink: 0; display: flex; align-items: center; gap: 5px; 
-            background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1); 
-            border-radius: 15px; padding: 3px 8px; font-size: 8px; font-weight: 700; color: #fff;
-        }
+        .t-chip { flex-shrink: 0; display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1); border-radius: 15px; padding: 3px 8px; font-size: 8px; font-weight: 700; color: #fff; }
         .t-chip-name { color: var(--emerald); font-family: var(--M); font-size: 7px; }
         .t-chip-rm { background: none; border: none; color: rgba(255,255,255,0.4); cursor: pointer; font-size: 11px; }
-
-        .exec-btn { 
-            flex: 0 0 52px; min-height: 52px; border: none; border-top: 1px solid var(--bdr); 
-            background: rgba(255,255,255,.03); color: var(--muted); font-family: var(--D); font-size: 18px; letter-spacing: .4em; 
-            text-transform: uppercase; cursor: not-allowed; opacity: .4; transition: all 0.3s; z-index: 10; 
-        }
+        .exec-btn { flex: 0 0 52px; min-height: 52px; border: none; border-top: 1px solid var(--bdr); background: rgba(255,255,255,.03); color: var(--muted); font-family: var(--D); font-size: 18px; letter-spacing: .4em; text-transform: uppercase; cursor: not-allowed; opacity: .4; transition: all 0.3s; z-index: 10; }
         .exec-btn.on { background: #fff; color: var(--bg); cursor: pointer; opacity: 1; }
 
-        .log-area { flex: 0 0 32px; min-height: 32px; padding: 2px 18px; border-top: 1px solid var(--bdr); background: var(--bg); display: flex; align-items: center; }
-        .log-ln { font-family: var(--M); font-size: 8px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .log-area { flex: 0 0 38px; min-height: 38px; padding: 2px 18px; border-top: 1px solid var(--bdr); background: var(--bg); display: flex; align-items: center; }
+        .log-ln { font-family: var(--M); font-size: 11px; color: var(--emerald); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; text-transform: uppercase; }
 
         .score-bar { flex: 0 0 46px; min-height: 46px; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; border-top: 1px solid var(--bdr); background: var(--bg); z-index: 10; }
         .score-v { font-family: var(--D); font-size: 28px; color: #fff; letter-spacing: 0.05em; }
         .score-v span { font-size: 14px; color: var(--gold); }
 
-        /* ── RESULT MODALS ── */
-        #result-ov, #final-modal, #perk-ov { 
-            position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; 
-            background: rgba(4,8,15,.8); backdrop-filter: blur(15px); z-index: 800; 
-        }
+        /* ── MODALS (SEMIPARENT BACKGROUNDS) ── */
+        #result-ov, #final-modal, #perk-ov { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(4,8,15,.7); backdrop-filter: blur(15px); z-index: 800; }
+        
+        /* 背景を半透明に調整 (0.98 -> 0.85) */
         .res-box, .final-box, .perk-box { 
             width: 93%; max-height: 85dvh; border: 1px solid rgba(255,255,255,.15); 
-            border-radius: 28px; background: rgba(12,18,33,0.98); display: flex; flex-direction: column; overflow: hidden; 
+            border-radius: 28px; background: rgba(12,18,33,0.85); 
+            display: flex; flex-direction: column; overflow: hidden; 
+            box-shadow: 0 30px 60px rgba(0,0,0,0.8);
         }
+        
         .res-hdr { padding: 20px; border-bottom: 1px solid var(--bdr); text-align: center; }
         .res-title { font-family: var(--D); font-size: 24px; letter-spacing: .5em; color: var(--gold); }
         .res-list { flex: 1; overflow-y: auto; padding: 15px 20px; }
-        .modal-btns-area { padding: 15px 20px 20px; background: rgba(12,18,33,0.95); border-top: 1px solid var(--bdr); display: flex; flex-direction: column; gap: 10px; }
-        .res-next, .final-btn, .perk-btn { 
-            height: 52px; border: none; background: #fff; color: var(--bg); 
-            font-family: var(--D); font-size: 18px; letter-spacing: .4em; 
-            text-transform: uppercase; cursor: pointer; border-radius: 12px;
-            display: flex; align-items: center; justify-content: center;
-        }
+        .modal-btns-area { padding: 15px 20px 20px; background: rgba(12,18,33,0.85); border-top: 1px solid var(--bdr); display: flex; flex-direction: column; gap: 10px; }
+        .res-next, .final-btn, .perk-btn { height: 52px; border: none; background: #fff; color: var(--bg); font-family: var(--D); font-size: 18px; letter-spacing: .4em; text-transform: uppercase; cursor: pointer; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
         .final-btn.alt { background: rgba(0,214,143,0.1); border: 1px solid var(--emerald); color: var(--emerald); }
-
         .hidden { display: none !important; }
         @keyframes slide-up { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
@@ -322,32 +218,26 @@
             <div class="sp-hdr"><span class="sp-tag">Tactical Detail</span><button class="sp-close" id="sp-close">✕</button></div>
             <div class="sp-name" id="sp-name">—</div>
             <div class="sp-full" id="sp-full">領域情報を同期中...</div>
-            
             <div class="sp-stats">
                 <div class="sp-stat"><div class="sp-sl">Visit</div><div class="sp-sv" id="sp-vc">0</div></div>
                 <div class="sp-stat"><div class="sp-sl">Area</div><div class="sp-sv" id="sp-tiles">0</div></div>
                 <div class="sp-stat"><div class="sp-sl">Win %</div><div class="sp-sv" id="sp-win">0%</div></div>
             </div>
-            
             <div class="sp-kv-row">
                 <div class="sp-kv"><div class="sp-rl">Provider</div><div class="sp-rv" id="sp-vendor">—</div></div>
                 <div class="sp-kv"><div class="sp-rl">Budget</div><div class="sp-rv" id="sp-budget">¥0M</div></div>
             </div>
             <div class="sp-status" id="sp-status">—</div>
-            
             <div class="sp-sec-title">Field Operations</div>
             <div class="sp-btns-grid">
                 <button class="sp-btn btn-visit" onclick="addTask('VISIT',5,'訪問')">Visit (-5)</button>
                 <button class="sp-btn btn-survey" onclick="addTask('SURVEY',3,'調査')">Survey (-3)</button>
                 <button class="sp-btn btn-study" onclick="addTask('STUDY',8,'勉強会')">Study (-8)</button>
                 <button class="sp-btn btn-spec" id="sp-spec-btn" onclick="addTask('SPECIN',12,'スペック')">Spec (-12)</button>
-                
                 <button class="sp-btn alt full" id="sp-cxo-btn" onclick="addTask('CXO',15,'CXO MEETING (-15)')">CXO Meeting</button>
-                
                 <button class="sp-btn pri full" id="sp-genbid-btn" onclick="addTask('GEN_BID',10,'一般競争入札 (-10)')" disabled>General Bid</button>
                 <button class="sp-btn pri full" id="sp-propbid-btn" onclick="addTask('PROP_BID',10,'総合評価入札 (-10)')" disabled>Proposal Bid</button>
             </div>
-
             <div class="sp-sec-title">Intelligence</div>
             <div class="sp-btns-grid">
                 <button class="sp-btn btn-event" onclick="addTask('EVENT',15,'イベント開催',true)">Event (-15)</button>
@@ -359,7 +249,6 @@
     <div class="task-strip" id="task-strip"></div>
     <button class="exec-btn" id="exec-btn" disabled onclick="executeStrategy()">Launch Mission</button>
     <div class="log-area"><div class="log-ln" id="log-ln">SYSTEM READY... STANDBY FOR COMMAND.</div></div>
-
     <footer class="score-bar">
         <div class="score-v" id="score-v">¥0<span>M</span></div>
     </footer>
@@ -368,7 +257,8 @@
 <!-- RESULT MODALS -->
 <div id="result-ov" class="hidden">
     <div class="res-box">
-        <div class="res-hdr"><span class="res-title">MISSION REPORT</span></div>
+        <!-- CALL REPORT に名称復元 -->
+        <div class="res-hdr"><span class="res-title">CALL REPORT</span></div>
         <div class="res-list" id="res-list"></div>
         <div class="modal-btns-area">
             <button class="res-next" onclick="closeResult()">Acknowledge ›</button>
@@ -383,10 +273,11 @@
 </div>
 <div id="final-modal" class="hidden">
     <div class="final-box">
+        <!-- RESULT に名称維持 (ANNUAL RESULT) -->
         <div class="res-hdr"><span class="res-title">ANNUAL RESULT</span></div>
         <div class="final-scroll-content">
-            <div class="final-score" id="final-score">¥0M</div>
-            <div class="rank-wrap" id="vendor-ranking"></div>
+            <div id="final-score" style="font-family:var(--D); font-size:64px; color:var(--emerald); text-align:center; margin-top:20px;">¥0M</div>
+            <div class="rank-wrap" id="vendor-ranking" style="padding:20px;"></div>
         </div>
         <div class="modal-btns-area">
             <button class="final-btn alt" onclick="preparePerks()">Next Year</button>
@@ -427,20 +318,9 @@ const VENDORS = {
     H: { name:'H社(SELF)', bg:'#00D68F' }, I: { name:'D社', bg:'#60A5FA' },
     A: { name:'A社', bg:'#7C3AED' }, S: { name:'S社', bg:'#B45309' },
     E: { name:'E社', bg:'#DB2777' }, F: { name:'F社', bg:'#0891B2' }, 
-    G: { name:'G社', bg:'#71717A' }, // グレーに変更
+    G: { name:'G社', bg:'#71717A' },
     NONE:{ name:'未開拓', bg:'#060A11' }, UNK: { name:'情報未取得', bg:'#111926' },
 };
-const MARKET_EVENTS = [
-    { id: 'RECESSION', name: '経済不況', desc: '全予算-20%', effect: (s) => { s.customers.forEach(c => c.budget = Math.max(10, Math.floor(c.budget * 0.8))); } },
-    { id: 'AI_BOOM', name: 'AIブーム', desc: '勉強会コスト半減', effect: (s) => { s.studyCostMod = 0.5; } },
-    { id: 'DX_PUSH', name: 'DX推進令', desc: 'RFP前倒し', effect: (s) => { s.customers.forEach(c => c.mo = Math.min(50, c.mo + 1)); } },
-    { id: 'FISCAL_END', name: '年度末商戦', desc: '受注率+15%', effect: (s) => { s.globalWrMod = 15; } },
-];
-const PERKS = [
-    { id: 'EFFICIENCY', name: '業務効率化', desc: 'MH上限+2', apply: (s) => { s.permanentMaxMhMod += 2; } },
-    { id: 'POLITICS', name: 'エグゼパス', desc: 'CXO継続+2', apply: (s) => { s.cxoDurationMod += 2; } },
-    { id: 'MARKET_DEEP', name: '深層諜報', desc: '調査で勝率+5%', apply: (s) => { s.surveyBuff = 5; } },
-];
 const CUSTOMER_POOL_BASE = [
     { id:101, name:'北海テクノロジー', t:15 }, { id:102, name:'札幌ロジ', t:14 },
     { id:201, name:'エゾ・ネット', t:14 }, { id:202, name:'道央システム', t:8 },
@@ -451,40 +331,81 @@ const CUSTOMER_POOL_BASE = [
 
 let state = {
     month:1, year: 26, mh:20, maxMh: 20, permanentMaxMhMod: 0, sales:0, displaySales: 0, selId:null, tasks:[], 
-    customers:[], grid:[], gridSize: 15, vendorList: [], difficulty: 'Hard', activeEvent: null, 
-    globalWrMod: 0, studyCostMod: 1.0, rivalAggroMod: 1.4, cxoDurationMod: 0, surveyBuff: 0, vendorKillers: []
+    customers:[], grid:[], gridSize: 15, vendorList: [], activeEvent: null, 
+    globalWrMod: 0, studyCostMod: 1.0, rivalAggroMod: 1.6, cxoDurationMod: 0, surveyBuff: 0, isPlaying: false
 };
-let setup = { size: 15, difficulty: 'Hard' };
+let setup = { size: 15 };
 
 function selectSize(s) { SFX.select(); setup.size = s; document.querySelectorAll('[id^="size-"]').forEach(el => el.classList.remove('sel')); document.getElementById(`size-${s}`).classList.add('sel'); }
 
 function startApp() {
-    SFX.select(); state.gridSize = setup.size; state.difficulty = setup.difficulty;
+    SFX.select(); state.gridSize = setup.size; 
     state.vendorList = ['H','I','A','S','E','F'];
-    if (state.gridSize === 15) state.vendorList.push('G'); // 15x15時のみG社追加
+    if (state.gridSize === 15) state.vendorList.push('G');
     document.documentElement.style.setProperty('--grid-size', state.gridSize);
     document.getElementById('mode-select-ov').classList.add('hidden');
     document.getElementById('app').classList.add('visible');
     init();
+    state.isPlaying = true;
+    startRivalSimulation();
+}
+
+// リアルタイム競合アクション：評価に直接反映 & 待機時加速
+function startRivalSimulation() {
+    setInterval(() => {
+        if (!state.isPlaying || document.getElementById('result-ov').offsetParent !== null) return;
+        
+        const rivalList = state.vendorList.filter(v => v !== 'H');
+        const rid = rivalList[Math.floor(Math.random() * rivalList.length)];
+        
+        const aggroChance = state.tasks.length === 0 ? 0.15 : 0.05;
+        
+        // CIOブロック(cxoProtect)が効いているかチェック：ガードあり
+        const targets = state.customers.filter(c => c.vendor !== rid && c.cxoProtect <= 0);
+        if (!targets.length) return;
+        
+        const tgt = targets[Math.floor(Math.random() * targets.length)];
+        const tiles = document.querySelectorAll('.tile');
+        
+        tiles.forEach(tile => {
+            const idx = Array.from(tile.parentNode.children).indexOf(tile);
+            if (state.grid[idx]?.cid === tgt.id) {
+                tile.style.setProperty('--glow', VENDORS[rid].bg);
+                tile.classList.add('rival-pulse');
+                setTimeout(() => tile.classList.remove('rival-pulse'), 1000);
+            }
+        });
+
+        let logMsg = "";
+        if (Math.random() < aggroChance) {
+            const prevV = tgt.vendor;
+            tgt.vendor = rid;
+            tgt.mo = Math.max(1, tgt.mo - 10);
+            tgt.vc = 0;
+            tgt.specIn = false;
+            logMsg = `DETECTED: ${VENDORS[rid].name} が ${tgt.name} を制圧。ベンダーが切り替わりました。`;
+            if (prevV === 'H') SFX.lost();
+        } else {
+            tgt.baseRapport = Math.max(0, tgt.baseRapport - 2);
+            logMsg = `ANALYSIS: ${VENDORS[rid].name} が ${tgt.name} へ攻勢。H社の信頼度が低下中。`;
+        }
+        
+        document.getElementById('log-ln').textContent = logMsg;
+        render(); 
+    }, 1500);
 }
 
 function init() {
     const totalArea = state.gridSize * state.gridSize;
-    const baseSum = 100;
     let currentAllocated = 0;
     state.customers = CUSTOMER_POOL_BASE.map((b, i) => {
         const vendor = state.vendorList[Math.floor(Math.random()*state.vendorList.length)];
-        let tCount = Math.floor(b.t * (totalArea / baseSum));
+        let tCount = Math.floor(b.t * (totalArea / 100));
         if (i === CUSTOMER_POOL_BASE.length - 1) tCount = totalArea - currentAllocated;
         currentAllocated += tCount;
-        return { 
-            ...b, tiles: tCount, budget: tCount * 10, vendor, prevVendor: vendor, 
-            mo: Math.floor(Math.random()*45)+1, vc:0, specIn:false, cxoProtect:0, 
-            intelRevealed:false, baseRapport: vendor === 'H' ? 40 : Math.floor(Math.random()*25)+10,
-            bidType: Math.random() < 0.5 ? 'GEN' : 'PROP'
-        };
+        return { ...b, tiles: tCount, budget: tCount * 10, vendor, prevVendor: vendor, mo: Math.floor(Math.random()*45)+1, vc:0, specIn:false, cxoProtect:0, intelRevealed:false, baseRapport: vendor === 'H' ? 40 : Math.floor(Math.random()*25)+10, bidType: Math.random() < 0.5 ? 'GEN' : 'PROP' };
     });
-    buildGrid(); triggerEvent(); render();
+    buildGrid(); render();
 }
 
 function buildGrid() {
@@ -499,19 +420,6 @@ function buildGrid() {
         }
     });
     state.grid = grid;
-}
-
-function triggerEvent() {
-    state.globalWrMod = 0; state.studyCostMod = 1.0; state.rivalAggroMod = 1.4;
-    state.maxMh = 18 + state.permanentMaxMhMod;
-    if (Math.random() < 0.3) {
-        state.activeEvent = MARKET_EVENTS[Math.floor(Math.random() * MARKET_EVENTS.length)];
-        state.activeEvent.effect(state);
-        document.getElementById('event-banner').classList.remove('hidden');
-        document.getElementById('event-txt').textContent = `${state.activeEvent.name}: ${state.activeEvent.desc}`;
-    } else {
-        state.activeEvent = null; document.getElementById('event-banner').classList.add('hidden');
-    }
 }
 
 function getWR(c, vId = 'H') {
@@ -588,35 +496,51 @@ function addTask(type,cost,label,isGlobal=false) {
 function removeTask(i) { SFX.remove(); state.mh+=state.tasks[i].cost; state.tasks.splice(i,1); render(); }
 
 function executeStrategy() {
-    SFX.exec(); let tr = []; state.customers.forEach(c => {
-        if (c.vendor !== 'H') {
-            c.baseRapport = Math.max(0, c.baseRapport - 3);
-            if (c.cxoProtect <= 0 && c.mo >= 45 && Math.random() < 0.1) {
-                c.baseRapport = Math.max(0, c.baseRapport - 10);
-                tr.push({ n: c.name, tx: '政治的空白期間を突かれ他社の侵食を許しました。', clr: '#FF4D6D', vName:'SELF', sat:'リスク顕在化' });
-            }
-        }
-    });
+    SFX.exec(); let tr = [];
+    const getDetailedLog = (type, cName, vName) => {
+        const d = {
+            VISIT: [
+                `情報システム部のキーマンへ表敬訪問。${vName}の保守体制におけるボトルネックを特定し、自社の優位性をアピール。`,
+                `部長級との会食。${cName}の次期中期経営計画とIT投資の連動性を確認、予算確保の裏付けを取りました。`,
+                `現場担当者へのディープ・ヒアリング。${vName}が提供しているパッチ適用の遅れに対する不満を吸い上げ完了。`
+            ],
+            STUDY: [
+                `「AI駆動型データセンター」勉強会を開催。自社製品のTCO削減効果をデータで実証し、参加した役員を圧倒。`,
+                `若手エンジニア向け技術セッションを実施。現場レベルでの「自社推し」バイアスを形成、将来のリプレイス礎を構築。`,
+                `CIO直下、DX推進室との限定セッション。${vName}では対応不可能なハイブリッドクラウド要件の調整を完遂。`
+            ],
+            SURVEY: [
+                `高度な資産調査。${vName}の保守契約が来期末で満了し、大幅な値上げが予定されているインテルを確保。`,
+                `エンドユーザー満足度調査を潜入実施。リプレイスへの要望が80%を超えていることをデータで裏付けました。`,
+                `購買部門への極秘ヒアリング。${vName}の担当営業に対する不信感が募っていることを確認、攻め時を特定。`
+            ],
+            SPECIN: [`RFP要件定義のドラフト作成支援に成功。自社独自の暗号化技術を「必須要件」としてねじ込み、競合を物理的に排除しました。`],
+            CXO: [`CIO・CTOとの完全クローズド・ミーティング。HPE GreenLakeを経営課題解決の主軸に据えるロードマップで合意、鉄壁の防衛網を敷設。`]
+        };
+        return d[type] ? d[type][Math.floor(Math.random() * d[type].length)] : "戦略的ミッションを完遂しました。";
+    };
+
     state.tasks.forEach(t=>{
         if (t.global) {
             const parts = state.customers.filter(c => getWR(c) >= 30).sort(() => 0.5 - Math.random()).slice(0, t.type==='EVENT'?3:5);
-            if (parts.length) { parts.forEach(c => { c.baseRapport += t.type==='EVENT'?15:5; }); tr.push({n:t.label, tx:`全顧客の興味度が向上。`, clr: VENDORS.H.bg, vName: 'MKT', sat: '底上げ' }); }
+            if (parts.length) { parts.forEach(c => { c.baseRapport += t.type==='EVENT'?15:5; }); tr.push({n:t.label, tx:`「HPE Ezmeral」最新事例公開カンファレンスに ${parts.length} 社の重要顧客を招待。市場のモーメンタムを独占。`, clr: VENDORS.H.bg, vName: 'MKT', sat: '底上げ' }); }
         } else {
             const c=state.customers.find(x=>x.id===t.cid);
-            if(t.type==='VISIT'){ c.vc++; tr.push({n:c.name, tx: "キーマン掌握完了。", clr: VENDORS.H.bg, vName: VENDORS[c.vendor].name, sat:'良好'}); }
-            else if(t.type==='STUDY'){ c.vc += 2; tr.push({n:c.name, tx: "勉強会で信頼を構築。", clr: VENDORS.H.bg, vName: VENDORS[c.vendor].name, sat:'高評価'}); }
-            else if(t.type==='SURVEY'){ c.intelRevealed=true; c.baseRapport += state.surveyBuff; tr.push({n:c.name, tx: `市場調査完了。`, clr: VENDORS.H.bg, vName: VENDORS[c.vendor].name, sat:'精度向上'}); }
-            else if(t.type==='SPECIN'){ c.specIn=true; tr.push({n:c.name, tx: "RFP仕様縛りに成功。", clr: VENDORS.H.bg, vName: VENDORS[c.vendor].name, sat:'独占'}); }
-            else if(t.type==='CXO'){ c.cxoProtect = 4 + state.cxoDurationMod; tr.push({n:c.name, tx: `CXO合意形成。`, clr: VENDORS.H.bg, vName: VENDORS[c.vendor].name, sat:'鉄壁'}); }
+            const vName = VENDORS[c.vendor].name;
+            if(t.type==='VISIT'){ c.vc++; tr.push({n:c.name, tx: getDetailedLog('VISIT', c.name, vName), clr: VENDORS.H.bg, vName, sat:'良好'}); }
+            else if(t.type==='STUDY'){ c.vc += 2; tr.push({n:c.name, tx: getDetailedLog('STUDY', c.name, vName), clr: VENDORS.H.bg, vName, sat:'高評価'}); }
+            else if(t.type==='SURVEY'){ c.intelRevealed=true; c.baseRapport += state.surveyBuff; tr.push({n:c.name, tx: getDetailedLog('SURVEY', c.name, vName), clr: VENDORS.H.bg, vName, sat:'精度向上'}); }
+            else if(t.type==='SPECIN'){ c.specIn=true; tr.push({n:c.name, tx: getDetailedLog('SPECIN', c.name, vName), clr: VENDORS.H.bg, vName, sat:'独占'}); }
+            else if(t.type==='CXO'){ c.cxoProtect = 4; tr.push({n:c.name, tx: getDetailedLog('CXO', c.name, vName), clr: VENDORS.H.bg, vName, sat:'鉄壁'}); }
             else if(t.type==='GEN_BID' || t.type==='PROP_BID'){
                 let win = Math.random() * 100 < (c.specIn ? 100 : (t.type === 'GEN_BID' ? 25 : getWR(c)));
-                let log = win ? "【落札】受注成功。" : "【失注】競合に敗北。";
+                let log = win ? `【落札】${vName}の強固な牙城を崩しました。提案ロジックの完全勝利です。` : `【失注】${vName}の既存保守への固執を崩せませんでした。再度の諜報活動が必要です。`;
                 if(win){ SFX.win(); c.prevVendor = c.vendor; c.vendor='H'; c.mo=55; state.sales+=c.budget; tr.push({n:c.name, tx: log, clr: VENDORS.H.bg, vName: 'SELF', sat: "覇権奪還"}); }
-                else { SFX.lost(); c.baseRapport = Math.max(0, c.baseRapport - 15); tr.push({n:c.name, tx: log, clr: VENDORS.H.bg, vName: VENDORS[c.vendor].name, sat: "再起必要"}); }
+                else { SFX.lost(); c.baseRapport = Math.max(0, c.baseRapport - 15); tr.push({n:c.name, tx: log, clr: VENDORS.H.bg, vName, sat: "再起必要"}); }
             }
         }
     });
-    // Rival logic
+
     state.vendorList.filter(v => v !== 'H').forEach(rid => {
         let rmh = 26 * state.rivalAggroMod; while (rmh >= 6) {
             let targets = state.customers.filter(c => c.vendor !== rid && c.cxoProtect <= 0); targets.sort((a,b) => getWR(b, 'H') - getWR(a, 'H'));
@@ -624,16 +548,13 @@ function executeStrategy() {
             if (rmh >= 12 && getWR(tgt, rid) >= 70) { 
                 rmh -= 12; 
                 if (Math.random() < (tgt.mo >= 48 ? 0.4 : 0.15)) { 
-                    tgt.prevVendor = tgt.vendor; tgt.vendor = rid; tgt.mo = 1; tgt.vc = 0; tgt.specIn = false; tr.push({ n: tgt.name, tx: `他社による強奪。`, clr: VENDORS[rid].bg, vName: VENDORS[rid].name, sat: `強襲` }); 
+                    const prevV = VENDORS[tgt.vendor].name;
+                    tgt.prevVendor = tgt.vendor; tgt.vendor = rid; tgt.mo = 1; tgt.vc = 0; tgt.specIn = false; tr.push({ n: tgt.name, tx: `${VENDORS[rid].name}の強襲。${prevV}が失注し、競合のリプレイスを許してしまいました。`, clr: VENDORS[rid].bg, vName: VENDORS[rid].name, sat: `強襲` }); 
                 } else {
-                    // 攻められたことによるWIN%低下
-                    tgt.baseRapport = Math.max(0, tgt.baseRapport - 3);
-                    tr.push({ n: tgt.name, tx: `${VENDORS[rid].name}の執拗な切り崩し工作。信頼が低下。`, clr: VENDORS[rid].bg, vName: VENDORS[tgt.vendor].name, sat: `防衛・消耗` });
+                    tgt.baseRapport = Math.max(0, tgt.baseRapport - 5);
+                    tr.push({ n: tgt.name, tx: `${VENDORS[rid].name}が執拗に切り崩し。ニモさんの地道な営業努力によって、決定的な陥落は免れました。`, clr: VENDORS[rid].bg, vName: VENDORS[tgt.vendor].name, sat: `防衛成功` });
                 }
-            } else {
-                rmh -= 6;
-                tgt.baseRapport = Math.max(0, tgt.baseRapport - 1);
-            }
+            } else { rmh -= 6; tgt.baseRapport = Math.max(0, tgt.baseRapport - 2); }
         }
     });
     state.month++; state.tasks=[]; state.mh=state.maxMh; state.selId=null;
@@ -642,36 +563,16 @@ function executeStrategy() {
     tr.forEach((r, i)=>{ setTimeout(() => { 
         const d = document.createElement('div'); 
         d.style.cssText=`padding:10px; border-bottom:1px solid #222; border-left:4px solid ${r.clr}; margin-bottom:5px; animation: slide-up 0.3s both;`; 
-        d.innerHTML=`<div style="color:${r.clr}; font-family:var(--D); font-size:14px;">${r.n} <span style="font-size:8px; color:#555;">EXISTING: ${r.vName}</span></div><div style="font-size:12px; color:#fff;">${r.tx}</div><div style="font-size:10px; color:#777;">RESULT: ${r.sat}</div>`;
-        rl.appendChild(d); 
-        rl.scrollTop = rl.scrollHeight; 
+        d.innerHTML=`<div style="color:${r.clr}; font-family:var(--D); font-size:14px;">${r.n} <span style="font-size:8px; color:#555;">EXISTING: ${r.vName}</span></div><div style="font-size:11px; line-height:1.4; color:#fff;">${r.tx}</div><div style="font-size:9px; color:#777; margin-top:2px;">STATUS: ${r.sat}</div>`;
+        rl.appendChild(d); rl.scrollTop = rl.scrollHeight; 
     }, i * 150); });
     setTimeout(() => { SFX.report(); document.getElementById('result-ov').classList.remove('hidden'); }, 300);
     render();
 }
 
-function closeResult() { 
-    SFX.select(); document.getElementById('result-ov').classList.add('hidden'); 
-    if(state.month > 12) { 
-        const ranking = state.vendorList.map(v => ({ id: v, name: VENDORS[v].name, total: state.customers.filter(c => c.vendor === v).reduce((a, b) => a + b.budget, 0), color: VENDORS[v].bg })).sort((a, b) => b.total - a.total);
-        const rw = document.getElementById('vendor-ranking'); rw.innerHTML = '<div style="font-family:var(--D);font-size:14px;color:var(--gold);margin-bottom:8px;">RANKING</div>';
-        ranking.forEach((r, idx) => rw.innerHTML += `<div class="rank-row"><span class="rank-name" style="color:${r.color}">${idx+1}. ${r.name}</span><span class="rank-val">¥${r.total}M</span></div>`);
-        document.getElementById('final-score').textContent=`¥${state.sales}M`; document.getElementById('final-modal').classList.remove('hidden'); 
-    } else { triggerEvent(); }
-}
-function preparePerks() {
-    SFX.report(); document.getElementById('final-modal').classList.add('hidden');
-    const list = document.getElementById('perk-list'); list.innerHTML = '';
-    const candidates = [...PERKS].sort(() => 0.5 - Math.random()).slice(0, 3);
-    candidates.forEach(p => {
-        const b = document.createElement('button'); b.className = 'sp-btn';
-        b.innerHTML = `<div style="font-family:var(--D); font-size:14px; color:var(--gold);">${p.name}</div><div style="font-size:9px;">${p.desc}</div>`;
-        b.onclick = () => { SFX.select(); p.apply(state); document.getElementById('perk-ov').classList.add('hidden'); continueGame(); };
-        list.appendChild(b);
-    });
-    document.getElementById('perk-ov').classList.remove('hidden');
-}
-function continueGame() { state.month = 1; state.year++; state.tasks = []; state.mh = state.maxMh; triggerEvent(); render(); }
+function closeResult() { SFX.select(); document.getElementById('result-ov').classList.add('hidden'); if(state.month > 12) { const ranking = state.vendorList.map(v => ({ id: v, name: VENDORS[v].name, total: state.customers.filter(c => c.vendor === v).reduce((a, b) => a + b.budget, 0), color: VENDORS[v].bg })).sort((a, b) => b.total - a.total); const rw = document.getElementById('vendor-ranking'); rw.innerHTML = '<div style="font-family:var(--D);font-size:14px;color:var(--gold);margin-bottom:8px;">RANKING</div>'; ranking.forEach((r, idx) => rw.innerHTML += `<div class="rank-row"><span class="rank-name" style="color:${r.color}">${idx+1}. ${r.name}</span><span class="rank-val">¥${r.total}M</span></div>`); document.getElementById('final-score').textContent=`¥${state.sales}M`; document.getElementById('final-modal').classList.remove('hidden'); } }
+function preparePerks() { SFX.report(); document.getElementById('final-modal').classList.add('hidden'); const list = document.getElementById('perk-list'); list.innerHTML = ''; const candidates = [...PERKS].sort(() => 0.5 - Math.random()).slice(0, 3); candidates.forEach(p => { const b = document.createElement('button'); b.className = 'sp-btn'; b.innerHTML = `<div style="font-family:var(--D); font-size:14px; color:var(--gold);">${p.name}</div><div style="font-size:9px;">${p.desc}</div>`; b.onclick = () => { SFX.select(); p.apply(state); document.getElementById('perk-ov').classList.add('hidden'); continueGame(); }; list.appendChild(b); }); document.getElementById('perk-ov').classList.remove('hidden'); }
+function continueGame() { state.month = 1; state.year++; state.tasks = []; state.mh = state.maxMh; render(); }
 function resetGame() { location.reload(); }
 document.getElementById('sp-close').onclick=()=>{ SFX.select(); state.selId=null; render(); };
 </script>
