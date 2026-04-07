@@ -23,6 +23,14 @@
             --M: 'DM Mono', monospace;
             --B: 'Outfit', sans-serif;
             --grid-size: 15;
+            /* グラデーション定義 */
+            --g-emerald: linear-gradient(135deg, #00D68F, #008f5d);
+            --g-sky:     linear-gradient(135deg, #38BDF8, #0284C7);
+            --g-amber:   linear-gradient(135deg, #F59E0B, #B45309);
+            --g-purple:  linear-gradient(135deg, #A855F7, #7E22CE);
+            --g-rose:    linear-gradient(135deg, #FF4D6D, #C9184A);
+            --g-gold:    linear-gradient(135deg, #C9A84C, #8B732E);
+            --g-btn:     linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0.04));
         }
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
@@ -61,15 +69,15 @@
         .setup-label { font-size: 10px; font-weight: 900; color: var(--muted); letter-spacing: 0.3em; margin-bottom: 10px; text-align: center; text-transform: uppercase; }
         .setup-row { display: flex; gap: 8px; width: 100%; }
         .mode-btn {
-            background: rgba(255,255,255,0.03); border: 1px solid var(--bdr);
+            background: var(--g-btn); border: 1px solid var(--bdr);
             color: #fff; border-radius: 12px; padding: 14px;
             font-family: var(--D); font-size: 16px; letter-spacing: 0.15em;
             cursor: pointer; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             flex: 1;
         }
-        .mode-btn:hover { background: rgba(255,255,255,0.08); border-color: var(--gold); color: var(--gold); transform: translateY(-2px); }
-        .mode-btn.sel { background: var(--gold); color: var(--bg); border-color: var(--gold); }
-        .start-btn { margin-top: 20px; background: #fff; color: var(--bg); font-weight: 900; font-size: 20px; padding: 18px; width: 100%; max-width: 300px; }
+        .mode-btn:hover { border-color: var(--gold); color: var(--gold); transform: translateY(-2px); }
+        .mode-btn.sel { background: var(--g-gold); color: var(--bg); border-color: var(--gold); }
+        .start-btn { margin-top: 20px; background: #fff; color: var(--bg); font-weight: 900; font-size: 20px; padding: 18px; width: 100%; max-width: 300px; border-radius: 12px; border: none; }
 
         /* ── HEADER ── */
         .hdr { flex: 0 0 auto; padding: 12px 18px 0; background: var(--bg); border-bottom: 1px solid var(--bdr); z-index: 10; }
@@ -84,17 +92,24 @@
         .share-bar { margin: 8px 0 0; height: 14px; display: flex; border-radius: 3px; overflow: hidden; border: 1px solid var(--bdr); }
         .share-seg { height: 100%; transition: width 1.2s cubic-bezier(0.16, 1, 0.3, 1); display: flex; align-items: center; justify-content: center; font-family: var(--D); font-size: 10px; color: rgba(255,255,255,.9); white-space: nowrap; overflow: hidden; font-weight: 600; }
 
-        /* ロガリア配置変更: ヘッダー内のシェアバー直下へ */
         .log-area { min-height: 28px; padding: 6px 0; border-top: 1px solid var(--bdr); background: transparent; display: flex; align-items: center; margin-top: 8px; }
-        .log-ln { font-family: var(--M); font-size: 11px; color: var(--emerald); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; text-transform: uppercase; }
+        .log-ln { font-family: var(--M); font-size: 13px; color: var(--emerald); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; text-transform: uppercase; }
 
         /* ── GRID AREA ── */
         .grid-wrap { flex: 1 1 0; min-height: 0; display: flex; align-items: center; justify-content: center; padding: 8px 12px; position: relative; overflow: hidden; }
         #grid { display: grid; grid-template-columns: repeat(var(--grid-size), 1fr); grid-template-rows: repeat(var(--grid-size), 1fr); gap: 2px; width: 100%; max-width: 380px; aspect-ratio: 1; }
 
-        .tile { aspect-ratio: 1; perspective: 600px; cursor: pointer; position: relative; user-select: none; transition: transform 0.2s; }
+        .tile { aspect-ratio: 1; perspective: 1000px; cursor: pointer; position: relative; user-select: none; transition: transform 0.2s; }
         .tile-inner { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
         .tile.sel .tile-inner { transform: scale(1.1); z-index: 5; }
+        
+        /* リプレース回転演出 */
+        .tile.is-replaced .tile-inner { animation: flip-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes flip-in {
+            from { transform: rotateY(180deg); }
+            to { transform: rotateY(0deg); }
+        }
+
         .tile-side { position: absolute; inset: 0; backface-visibility: hidden; border-radius: 3px; border: 1px solid rgba(255,255,255,.05); display: flex; align-items: center; justify-content: center; }
         .side-back { transform: rotateY(180deg); }
         .t-lbl { font-family: var(--M); font-size: 11px; color: rgba(255,255,255,.9); pointer-events: none; font-weight: 700; text-shadow: 0 1px 2px rgba(0,0,0,0.5); } 
@@ -130,17 +145,18 @@
         .sp-sec-title { font-size: 7px; font-weight: 900; color: var(--muted); text-transform: uppercase; border-top: 1px solid var(--bdr); padding-top: 4px; margin-top: 2px; margin-bottom: 2px; }
         
         .sp-btns-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-        .sp-btn { border: 1px solid rgba(255,255,255,0.2); color: #fff; border-radius: 8px; padding: 22px 2px; font-family: var(--D); font-size: 15px; letter-spacing: .05em; cursor: pointer; transition: all 0.2s; text-transform: uppercase; width: 100%; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        /* グラデーションボタン設定 */
+        .sp-btn { border: 1px solid rgba(255,255,255,0.2); color: #fff; border-radius: 8px; padding: 22px 2px; font-family: var(--D); font-size: 15px; letter-spacing: .05em; cursor: pointer; transition: all 0.2s; text-transform: uppercase; width: 100%; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); background: var(--g-btn); }
         .sp-btn:active:not(:disabled) { transform: scale(0.95); opacity: 0.8; }
-        .sp-btn.btn-visit { background: rgba(56,189,248,0.15); border-color: var(--sky); color: var(--sky); }
-        .sp-btn.btn-survey { background: rgba(245,158,11,0.15); border-color: var(--amber); color: var(--amber); }
-        .sp-btn.btn-study { background: rgba(168,85,247,0.15); border-color: var(--purple); color: var(--purple); }
-        .sp-btn.btn-spec { background: rgba(255,77,109,0.15); border-color: var(--rose); color: var(--rose); }
+        .sp-btn.btn-visit { background: var(--g-sky); border-color: #7dd3fc; }
+        .sp-btn.btn-survey { background: var(--g-amber); border-color: #fbbf24; }
+        .sp-btn.btn-study { background: var(--g-purple); border-color: #c084fc; }
+        .sp-btn.btn-spec { background: var(--g-rose); border-color: #fda4af; }
         .sp-btn.full { grid-column: span 2; }
-        .sp-btn.pri { background: rgba(0,214,143,0.3); border-color: var(--emerald); color: var(--emerald); font-size: 16px; font-weight: 900; padding: 25px 2px; }
-        .sp-btn.alt { background: rgba(56,189,248,0.25); border-color: var(--sky); color: #fff; padding: 22px 2px; font-weight: 700; border-width: 2px; }
-        .sp-btn.btn-event { background: rgba(113,113,122,0.2); border-color: var(--pink); color: #fff; padding: 14px 2px; font-size: 11px; }
-        .sp-btn.btn-news { background: rgba(59,130,246,0.2); border-color: var(--blue); color: #fff; padding: 14px 2px; font-size: 11px; }
+        .sp-btn.pri { background: var(--g-emerald); border-color: #34d399; font-size: 16px; font-weight: 900; padding: 25px 2px; }
+        .sp-btn.alt { background: var(--g-sky); border-color: #38bdf8; color: #fff; padding: 22px 2px; font-weight: 700; border-width: 2px; }
+        .sp-btn.btn-event { background: var(--g-btn); border-color: var(--pink); color: #fff; padding: 14px 2px; font-size: 11px; }
+        .sp-btn.btn-news { background: var(--g-btn); border-color: var(--blue); color: #fff; padding: 14px 2px; font-size: 11px; }
         .sp-btn:disabled { opacity: 0.05; cursor: not-allowed; filter: grayscale(1); }
 
         /* ── LOWER UI ── */
@@ -210,7 +226,6 @@
             </div>
         </div>
         <div class="share-bar" id="share-bar"></div>
-        <!-- ログエリアをヘッダー内に移動 -->
         <div class="log-area"><div class="log-ln" id="log-ln">SYSTEM READY... STANDBY FOR COMMAND.</div></div>
     </header>
 
@@ -357,7 +372,7 @@ function startApp() {
 }
 
 function startRivalSimulation() {
-    // 他社アクションの間隔を指示通り2秒(2000ms)に変更
+    // 他社アクションの間隔を指示通り4秒(4000ms)に変更
     setInterval(() => {
         if (!state.isPlaying || document.getElementById('result-ov').offsetParent !== null) return;
         const rivalList = state.vendorList.filter(v => v !== 'H');
@@ -378,6 +393,7 @@ function startRivalSimulation() {
         let logMsg = "";
         if (Math.random() < aggroChance) {
             const prevV = tgt.vendor;
+            tgt.prevVendor = prevV;
             tgt.vendor = rid;
             tgt.mo = Math.max(1, tgt.mo - 10);
             tgt.vc = 0;
@@ -390,7 +406,7 @@ function startRivalSimulation() {
         }
         document.getElementById('log-ln').textContent = logMsg;
         render(); 
-    }, 2000); 
+    }, 4000); 
 }
 
 function init() {
@@ -447,14 +463,17 @@ function render() {
         const el = document.createElement('div'); el.className = 'tile';
         if (t && t.cid) {
             const c=state.customers.find(x=>x.id===t.cid); const kn=c.vc>0||c.vendor==='H'; const selected = state.selId === c.id;
-            el.className = `tile ${selected ? 'sel' : ''} ${c.cxoProtect > 0 ? 'cxo-a' : ''} ${kn && c.mo >= 48 && c.mo < 50 ? 'rfp-a' : ''} ${kn && c.mo >= 50 ? 'bld-a' : ''}`;
+            const isReplaced = c.vendor !== c.prevVendor;
+            el.className = `tile ${selected ? 'sel' : ''} ${isReplaced ? 'is-replaced' : ''} ${c.cxoProtect > 0 ? 'cxo-a' : ''} ${kn && c.mo >= 48 && c.mo < 50 ? 'rfp-a' : ''} ${kn && c.mo >= 50 ? 'bld-a' : ''}`;
             const inner = document.createElement('div'); inner.className = 'tile-inner';
             const front = document.createElement('div'); front.className = 'tile-side side-front';
             const back = document.createElement('div'); back.className = 'tile-side side-back';
-            front.style.backgroundColor = VENDORS[kn ? c.vendor : 'UNK'].bg; back.style.backgroundColor = VENDORS[kn ? c.prevVendor : 'UNK'].bg;
+            front.style.backgroundColor = VENDORS[kn ? c.vendor : 'UNK'].bg; 
+            back.style.backgroundColor = VENDORS[kn ? c.prevVendor : 'UNK'].bg;
             const spVal = document.createElement('span'); spVal.className='t-lbl'; spVal.textContent=kn?Math.ceil(c.mo/12):'?';
             front.appendChild(spVal.cloneNode(true)); back.appendChild(spVal.cloneNode(true));
             inner.appendChild(front); inner.appendChild(back); el.appendChild(inner);
+            if (isReplaced) { setTimeout(() => { c.prevVendor = c.vendor; }, 800); }
             el.onclick=()=>{ SFX.select(); state.selId=c.id; render(); };
         } else { el.innerHTML = `<div class="tile-inner"><div class="tile-side" style="background:${VENDORS.NONE.bg}"></div></div>`; }
         gEl.appendChild(el);
@@ -569,10 +588,18 @@ function executeStrategy() {
 }
 
 function closeResult() { SFX.select(); document.getElementById('result-ov').classList.add('hidden'); if(state.month > 12) { const ranking = state.vendorList.map(v => ({ id: v, name: VENDORS[v].name, total: state.customers.filter(c => c.vendor === v).reduce((a, b) => a + b.budget, 0), color: VENDORS[v].bg })).sort((a, b) => b.total - a.total); const rw = document.getElementById('vendor-ranking'); rw.innerHTML = '<div style="font-family:var(--D);font-size:14px;color:var(--gold);margin-bottom:8px;">RANKING</div>'; ranking.forEach((r, idx) => rw.innerHTML += `<div class="rank-row"><span class="rank-name" style="color:${r.color}">${idx+1}. ${r.name}</span><span class="rank-val">¥${r.total}M</span></div>`); document.getElementById('final-score').textContent=`¥${state.sales}M`; document.getElementById('final-modal').classList.remove('hidden'); } }
-function preparePerks() { SFX.report(); document.getElementById('final-modal').classList.add('hidden'); const list = document.getElementById('perk-list'); list.innerHTML = ''; const candidates = [...PERKS].sort(() => 0.5 - Math.random()).slice(0, 3); candidates.forEach(p => { const b = document.createElement('button'); b.className = 'sp-btn'; b.innerHTML = `<div style="font-family:var(--D); font-size:14px; color:var(--gold);">${p.name}</div><div style="font-size:9px;">${p.desc}</div>`; b.onclick = () => { SFX.select(); p.apply(state); document.getElementById('perk-ov').classList.add('hidden'); continueGame(); }; list.appendChild(b); }); document.getElementById('perk-ov').classList.remove('hidden'); }
+function preparePerks() { SFX.report(); document.getElementById('final-modal').classList.add('hidden'); const list = document.getElementById('perk-list'); list.innerHTML = ''; const candidates = [...PERKS].sort(() => 0.5 - Math.random()).slice(0, 3); candidates.forEach(p => { const b = document.createElement('button'); b.className = 'perk-btn'; b.style.background = 'var(--g-btn)'; b.innerHTML = `<div style="font-family:var(--D); font-size:14px; color:var(--gold);">${p.name}</div><div style="font-size:9px;">${p.desc}</div>`; b.onclick = () => { SFX.select(); p.apply(state); document.getElementById('perk-ov').classList.add('hidden'); continueGame(); }; list.appendChild(b); }); document.getElementById('perk-ov').classList.remove('hidden'); }
 function continueGame() { state.month = 1; state.year++; state.tasks = []; state.mh = state.maxMh; render(); }
 function resetGame() { location.reload(); }
 document.getElementById('sp-close').onclick=()=>{ SFX.select(); state.selId=null; render(); };
 </script>
+<style>
+@keyframes rfp { 0%,100%{box-shadow:0 0 10px #F59E0B;border-color:#F59E0B} 50%{box-shadow:0 0 20px #F59E0B;border-color:#fbbf24} }
+@keyframes bld { 0%,100%{box-shadow:0 0 10px #71717A;border-color:#71717A} 50%{box-shadow:0 0 20px #71717A;border-color:#9ca3af} }
+@keyframes cxo { 0%,100%{box-shadow:0 0 15px #38BDF8;border-color:#38BDF8} 50%{box-shadow:0 0 30px #38BDF8;border-color:#7dd3fc} }
+.rfp-a { animation: rfp 1.5s infinite; border-width: 2px !important; }
+.bld-a { animation: bld 2s infinite; border-width: 2px !important; }
+.cxo-a { animation: cxo 1.5s infinite; border-width: 3px !important; }
+</style>
 </body>
 </html>
