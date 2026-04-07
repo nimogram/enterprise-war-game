@@ -84,6 +84,10 @@
         .share-bar { margin: 8px 0 0; height: 14px; display: flex; border-radius: 3px; overflow: hidden; border: 1px solid var(--bdr); }
         .share-seg { height: 100%; transition: width 1.2s cubic-bezier(0.16, 1, 0.3, 1); display: flex; align-items: center; justify-content: center; font-family: var(--D); font-size: 10px; color: rgba(255,255,255,.9); white-space: nowrap; overflow: hidden; font-weight: 600; }
 
+        /* ロガリア配置変更: ヘッダー内のシェアバー直下へ */
+        .log-area { min-height: 28px; padding: 6px 0; border-top: 1px solid var(--bdr); background: transparent; display: flex; align-items: center; margin-top: 8px; }
+        .log-ln { font-family: var(--M); font-size: 11px; color: var(--emerald); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; text-transform: uppercase; }
+
         /* ── GRID AREA ── */
         .grid-wrap { flex: 1 1 0; min-height: 0; display: flex; align-items: center; justify-content: center; padding: 8px 12px; position: relative; overflow: hidden; }
         #grid { display: grid; grid-template-columns: repeat(var(--grid-size), 1fr); grid-template-rows: repeat(var(--grid-size), 1fr); gap: 2px; width: 100%; max-width: 380px; aspect-ratio: 1; }
@@ -101,8 +105,8 @@
         /* ── SIDE PANEL (ACTION CARD) ── */
         .sp { 
             position: absolute; top: 0; right: 0; bottom: 0; width: 82%; 
-            background: rgba(6,12,25,0.7); /* 半透明化: 指示に従い 0.7 に */
-            backdrop-filter: blur(15px) saturate(1.8); /* ぼかしを薄く: 指示に従い 15px に */
+            background: rgba(6,12,25,0.7); 
+            backdrop-filter: blur(15px) saturate(1.8); 
             border-left: 1px solid rgba(255,255,255,.2); 
             display: flex; flex-direction: column; gap: 3px; padding: 10px; z-index: 50; 
             transform: translateX(100%); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); 
@@ -146,9 +150,6 @@
         .t-chip-rm { background: none; border: none; color: rgba(255,255,255,0.4); cursor: pointer; font-size: 11px; }
         .exec-btn { flex: 0 0 52px; min-height: 52px; border: none; border-top: 1px solid var(--bdr); background: rgba(255,255,255,.03); color: var(--muted); font-family: var(--D); font-size: 18px; letter-spacing: .4em; text-transform: uppercase; cursor: not-allowed; opacity: .4; transition: all 0.3s; z-index: 10; }
         .exec-btn.on { background: #fff; color: var(--bg); cursor: pointer; opacity: 1; }
-
-        .log-area { flex: 0 0 38px; min-height: 38px; padding: 2px 18px; border-top: 1px solid var(--bdr); background: var(--bg); display: flex; align-items: center; }
-        .log-ln { font-family: var(--M); font-size: 11px; color: var(--emerald); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; text-transform: uppercase; }
 
         .score-bar { flex: 0 0 46px; min-height: 46px; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; border-top: 1px solid var(--bdr); background: var(--bg); z-index: 10; }
         .score-v { font-family: var(--D); font-size: 28px; color: #fff; letter-spacing: 0.05em; }
@@ -209,6 +210,8 @@
             </div>
         </div>
         <div class="share-bar" id="share-bar"></div>
+        <!-- ログエリアをヘッダー内に移動 -->
+        <div class="log-area"><div class="log-ln" id="log-ln">SYSTEM READY... STANDBY FOR COMMAND.</div></div>
     </header>
 
     <div id="event-banner" class="event-banner hidden">
@@ -252,7 +255,6 @@
 
     <div class="task-strip" id="task-strip"></div>
     <button class="exec-btn" id="exec-btn" disabled onclick="executeStrategy()">Launch Mission</button>
-    <div class="log-area"><div class="log-ln" id="log-ln">SYSTEM READY... STANDBY FOR COMMAND.</div></div>
     <footer class="score-bar">
         <div class="score-v" id="score-v">¥0<span>M</span></div>
     </footer>
@@ -355,6 +357,7 @@ function startApp() {
 }
 
 function startRivalSimulation() {
+    // 他社アクションの間隔を指示通り2秒(2000ms)に変更
     setInterval(() => {
         if (!state.isPlaying || document.getElementById('result-ov').offsetParent !== null) return;
         const rivalList = state.vendorList.filter(v => v !== 'H');
@@ -387,7 +390,7 @@ function startRivalSimulation() {
         }
         document.getElementById('log-ln').textContent = logMsg;
         render(); 
-    }, 1500);
+    }, 2000); 
 }
 
 function init() {
@@ -505,7 +508,7 @@ function executeStrategy() {
                 `CIO直下、DX推進室との限定セッション。${vName}では対応不可能なハイブリッドクラウド要件の調整を完遂。`
             ],
             SURVEY: [
-                `既存システムマップ調査。${vName}の保守契約が来期末で満了し、大幅な値上げが予定されているインテルを確保。`,
+                `高度な資産調査。${vName}の保守契約が来期末で満了し、大幅な値上げが予定されているインテルを確保。`,
                 `エンドユーザー満足度調査を潜入実施。リプレイスへの要望が80%を超えていることをデータで裏付けました。`,
                 `購買部門への極秘ヒアリング。${vName}の担当営業に対する不信感が募っていることを確認、攻め時を特定。`
             ],
