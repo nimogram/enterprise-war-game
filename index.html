@@ -334,6 +334,13 @@ const SFX = {
     error: () => createTone(110, 'square', 0.2, 0.1)
 };
 
+// --- DATA ---
+const PERKS = [
+    { id:'P1', name:'Executive Connection', desc:'全顧客の信頼度(Win%)を恒久的に +5%', apply: (s) => s.globalWrMod += 5 },
+    { id:'P2', name:'Resource Optimization', desc:'毎月の行動力(MH)を恒久的に +5', apply: (s) => s.maxMh += 5 },
+    { id:'P3', name:'Deep Intelligence', desc:'調査(SURVEY)時に信頼度が +3 向上するようになる', apply: (s) => s.surveyBuff += 3 }
+];
+
 // --- GAME LOGIC ---
 const VENDORS = {
     H: { name:'H社(SELF)', bg:'#00D68F' }, I: { name:'D社', bg:'#60A5FA' },
@@ -372,9 +379,8 @@ function startApp() {
 }
 
 function startRivalSimulation() {
-    // 他社アクションの間隔を指示通り4秒(4000ms)に変更
     setInterval(() => {
-        if (!state.isPlaying || document.getElementById('result-ov').offsetParent !== null) return;
+        if (!state.isPlaying || document.getElementById('result-ov').offsetParent !== null || document.getElementById('final-modal').offsetParent !== null) return;
         const rivalList = state.vendorList.filter(v => v !== 'H');
         const rid = rivalList[Math.floor(Math.random() * rivalList.length)];
         const aggroChance = state.tasks.length === 0 ? 0.15 : 0.05;
@@ -587,8 +593,34 @@ function executeStrategy() {
     render();
 }
 
-function closeResult() { SFX.select(); document.getElementById('result-ov').classList.add('hidden'); if(state.month > 12) { const ranking = state.vendorList.map(v => ({ id: v, name: VENDORS[v].name, total: state.customers.filter(c => c.vendor === v).reduce((a, b) => a + b.budget, 0), color: VENDORS[v].bg })).sort((a, b) => b.total - a.total); const rw = document.getElementById('vendor-ranking'); rw.innerHTML = '<div style="font-family:var(--D);font-size:14px;color:var(--gold);margin-bottom:8px;">RANKING</div>'; ranking.forEach((r, idx) => rw.innerHTML += `<div class="rank-row"><span class="rank-name" style="color:${r.color}">${idx+1}. ${r.name}</span><span class="rank-val">¥${r.total}M</span></div>`); document.getElementById('final-score').textContent=`¥${state.sales}M`; document.getElementById('final-modal').classList.remove('hidden'); } }
-function preparePerks() { SFX.report(); document.getElementById('final-modal').classList.add('hidden'); const list = document.getElementById('perk-list'); list.innerHTML = ''; const candidates = [...PERKS].sort(() => 0.5 - Math.random()).slice(0, 3); candidates.forEach(p => { const b = document.createElement('button'); b.className = 'perk-btn'; b.style.background = 'var(--g-btn)'; b.innerHTML = `<div style="font-family:var(--D); font-size:14px; color:var(--gold);">${p.name}</div><div style="font-size:9px;">${p.desc}</div>`; b.onclick = () => { SFX.select(); p.apply(state); document.getElementById('perk-ov').classList.add('hidden'); continueGame(); }; list.appendChild(b); }); document.getElementById('perk-ov').classList.remove('hidden'); }
+function closeResult() { 
+    SFX.select(); 
+    document.getElementById('result-ov').classList.add('hidden'); 
+    if(state.month === 13) { 
+        const ranking = state.vendorList.map(v => ({ id: v, name: VENDORS[v].name, total: state.customers.filter(c => c.vendor === v).reduce((a, b) => a + b.budget, 0), color: VENDORS[v].bg })).sort((a, b) => b.total - a.total); 
+        const rw = document.getElementById('vendor-ranking'); rw.innerHTML = '<div style="font-family:var(--D);font-size:14px;color:var(--gold);margin-bottom:8px;">RANKING</div>'; 
+        ranking.forEach((r, idx) => rw.innerHTML += `<div class="rank-row" style="display:flex; justify-content:space-between; margin-bottom:4px; font-size:12px;"><span class="rank-name" style="color:${r.color}">${idx+1}. ${r.name}</span><span class="rank-val" style="color:#fff">¥${r.total}M</span></div>`); 
+        document.getElementById('final-score').textContent=`¥${state.sales}M`; 
+        document.getElementById('final-modal').classList.remove('hidden'); 
+    } 
+}
+
+function preparePerks() { 
+    SFX.report(); 
+    document.getElementById('final-modal').classList.add('hidden'); 
+    const list = document.getElementById('perk-list'); list.innerHTML = ''; 
+    const candidates = [...PERKS].sort(() => 0.5 - Math.random()).slice(0, 3); 
+    candidates.forEach(p => { 
+        const b = document.createElement('button'); 
+        b.className = 'perk-btn'; 
+        b.style.cssText = 'height:60px; background:var(--g-btn); border:1px solid var(--bdr); border-radius:12px; color:#fff; cursor:pointer; margin-bottom:8px; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:10px;';
+        b.innerHTML = `<div style="font-family:var(--D); font-size:16px; color:var(--gold); line-height:1;">${p.name}</div><div style="font-size:10px; margin-top:4px; opacity:0.7;">${p.desc}</div>`; 
+        b.onclick = () => { SFX.select(); p.apply(state); document.getElementById('perk-ov').classList.add('hidden'); continueGame(); }; 
+        list.appendChild(b); 
+    }); 
+    document.getElementById('perk-ov').classList.remove('hidden'); 
+}
+
 function continueGame() { state.month = 1; state.year++; state.tasks = []; state.mh = state.maxMh; render(); }
 function resetGame() { location.reload(); }
 document.getElementById('sp-close').onclick=()=>{ SFX.select(); state.selId=null; render(); };
