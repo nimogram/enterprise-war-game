@@ -103,7 +103,7 @@
         .tile-inner { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
         .tile.sel .tile-inner { transform: scale(1.1); z-index: 5; }
         
-        /* リプレース回転演出 */
+        /* リプレース回転演出プロトコル */
         .tile.is-replaced .tile-inner { animation: flip-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         @keyframes flip-in {
             from { transform: rotateY(180deg); }
@@ -145,7 +145,6 @@
         .sp-sec-title { font-size: 7px; font-weight: 900; color: var(--muted); text-transform: uppercase; border-top: 1px solid var(--bdr); padding-top: 4px; margin-top: 2px; margin-bottom: 2px; }
         
         .sp-btns-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-        /* グラデーションボタン設定 */
         .sp-btn { border: 1px solid rgba(255,255,255,0.2); color: #fff; border-radius: 8px; padding: 22px 2px; font-family: var(--D); font-size: 15px; letter-spacing: .05em; cursor: pointer; transition: all 0.2s; text-transform: uppercase; width: 100%; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); background: var(--g-btn); }
         .sp-btn:active:not(:disabled) { transform: scale(0.95); opacity: 0.8; }
         .sp-btn.btn-visit { background: var(--g-sky); border-color: #7dd3fc; }
@@ -164,7 +163,7 @@
         .t-chip { flex-shrink: 0; display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1); border-radius: 15px; padding: 3px 8px; font-size: 8px; font-weight: 700; color: #fff; }
         .t-chip-name { color: var(--emerald); font-family: var(--M); font-size: 7px; }
         .t-chip-rm { background: none; border: none; color: rgba(255,255,255,0.4); cursor: pointer; font-size: 11px; }
-        .exec-btn { flex: 0 0 52px; min-height: 52px; border: none; border-top: 1px solid var(--bdr); background: rgba(255,255,255,.03); color: var(--muted); font-family: var(--D); font-size: 18px; letter-spacing: .4em; text-transform: uppercase; cursor: not-allowed; opacity: .4; transition: all 0.3s; z-index: 10; }
+        .exec-btn { flex: 0 0 52px; min-height: 52px; border: none; border-top: 1px solid var(--bdr); background: var(--g-btn); color: var(--muted); font-family: var(--D); font-size: 18px; letter-spacing: .4em; text-transform: uppercase; cursor: not-allowed; opacity: .4; transition: all 0.3s; z-index: 10; }
         .exec-btn.on { background: #fff; color: var(--bg); cursor: pointer; opacity: 1; }
 
         .score-bar { flex: 0 0 46px; min-height: 46px; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; border-top: 1px solid var(--bdr); background: var(--bg); z-index: 10; }
@@ -228,11 +227,6 @@
         <div class="share-bar" id="share-bar"></div>
         <div class="log-area"><div class="log-ln" id="log-ln">SYSTEM READY... STANDBY FOR COMMAND.</div></div>
     </header>
-
-    <div id="event-banner" class="event-banner hidden">
-        <span class="event-tag" id="event-tag">EVENT</span>
-        <span class="event-txt" id="event-txt">ACTIVE MARKET FLUCTUATION...</span>
-    </div>
 
     <section class="grid-wrap">
         <div id="grid"></div>
@@ -334,14 +328,13 @@ const SFX = {
     error: () => createTone(110, 'square', 0.2, 0.1)
 };
 
-// --- DATA ---
+// --- DATA & STATE ---
 const PERKS = [
     { id:'P1', name:'Executive Connection', desc:'全顧客の信頼度(Win%)を恒久的に +5%', apply: (s) => s.globalWrMod += 5 },
     { id:'P2', name:'Resource Optimization', desc:'毎月の行動力(MH)を恒久的に +5', apply: (s) => s.maxMh += 5 },
-    { id:'P3', name:'Deep Intelligence', desc:'調査(SURVEY)時に信頼度が +3 向上するようになる', apply: (s) => s.surveyBuff += 3 }
+    { id:'P3', name:'Deep Intelligence', desc:'調査(SURVEY)時に信頼度が +3 向上する', apply: (s) => s.surveyBuff += 3 }
 ];
 
-// --- GAME LOGIC ---
 const VENDORS = {
     H: { name:'H社(SELF)', bg:'#00D68F' }, I: { name:'D社', bg:'#60A5FA' },
     A: { name:'A社', bg:'#7C3AED' }, S: { name:'S社', bg:'#B45309' },
@@ -349,6 +342,7 @@ const VENDORS = {
     G: { name:'G社', bg:'#71717A' },
     NONE:{ name:'未開拓', bg:'#060A11' }, UNK: { name:'情報未取得', bg:'#111926' },
 };
+
 const CUSTOMER_POOL_BASE = [
     { id:101, name:'北海テクノロジー', t:15 }, { id:102, name:'札幌ロジ', t:14 },
     { id:201, name:'エゾ・ネット', t:14 }, { id:202, name:'道央システム', t:8 },
@@ -358,11 +352,17 @@ const CUSTOMER_POOL_BASE = [
 ];
 
 let state = {
-    month:1, year: 26, mh:20, maxMh: 20, permanentMaxMhMod: 0, sales:0, displaySales: 0, selId:null, tasks:[], 
-    customers:[], grid:[], gridSize: 15, vendorList: [], activeEvent: null, 
-    globalWrMod: 0, studyCostMod: 1.0, rivalAggroMod: 1.6, cxoDurationMod: 0, surveyBuff: 0, isPlaying: false
+    month:1, year: 26, mh:20, maxMh: 20, sales:0, displaySales: 0, selId:null, tasks:[], 
+    customers:[], grid:[], gridSize: 15, vendorList: [],
+    globalWrMod: 0, surveyBuff: 0, isPlaying: false
 };
 let setup = { size: 15 };
+
+function isModalOpen() {
+    return !!(document.querySelector('#result-ov:not(.hidden)') || 
+              document.querySelector('#final-modal:not(.hidden)') || 
+              document.querySelector('#perk-ov:not(.hidden)'));
+}
 
 function selectSize(s) { SFX.select(); setup.size = s; document.querySelectorAll('[id^="size-"]').forEach(el => el.classList.remove('sel')); document.getElementById(`size-${s}`).classList.add('sel'); }
 
@@ -379,13 +379,17 @@ function startApp() {
 }
 
 function startRivalSimulation() {
+    // 競合アクションを指示通り8秒(8000ms)に変更
     setInterval(() => {
-        if (!state.isPlaying || document.getElementById('result-ov').offsetParent !== null || document.getElementById('final-modal').offsetParent !== null) return;
+        // コールレポート表示中は進行を停止
+        if (!state.isPlaying || isModalOpen()) return;
+        
         const rivalList = state.vendorList.filter(v => v !== 'H');
         const rid = rivalList[Math.floor(Math.random() * rivalList.length)];
-        const aggroChance = state.tasks.length === 0 ? 0.15 : 0.05;
+        const aggroChance = state.tasks.length === 0 ? 0.20 : 0.08;
         const targets = state.customers.filter(c => c.vendor !== rid && c.cxoProtect <= 0);
         if (!targets.length) return;
+        
         const tgt = targets[Math.floor(Math.random() * targets.length)];
         const tiles = document.querySelectorAll('.tile');
         tiles.forEach(tile => {
@@ -396,23 +400,23 @@ function startRivalSimulation() {
                 setTimeout(() => tile.classList.remove('rival-pulse'), 1000);
             }
         });
+
         let logMsg = "";
         if (Math.random() < aggroChance) {
             const prevV = tgt.vendor;
-            tgt.prevVendor = prevV;
+            tgt.prevVendor = prevV; 
             tgt.vendor = rid;
             tgt.mo = Math.max(1, tgt.mo - 10);
-            tgt.vc = 0;
-            tgt.specIn = false;
-            logMsg = `DETECTED: ${VENDORS[rid].name} が ${tgt.name} を制圧。ベンダーが切り替わりました。`;
+            tgt.vc = 0; tgt.specIn = false;
+            logMsg = `DETECTED: ${VENDORS[rid].name} が ${tgt.name} を強奪。マーケットに衝撃が走っています。`;
             if (prevV === 'H') SFX.lost();
         } else {
             tgt.baseRapport = Math.max(0, tgt.baseRapport - 2);
-            logMsg = `ANALYSIS: ${VENDORS[rid].name} が ${tgt.name} へ攻勢。H社の信頼度が低下中。`;
+            logMsg = `ANALYSIS: ${VENDORS[rid].name} が ${tgt.name} へ接触中。ニモさんの地歩が揺らいでいます。`;
         }
         document.getElementById('log-ln').textContent = logMsg;
         render(); 
-    }, 4000); 
+    }, 8000); 
 }
 
 function init() {
@@ -457,33 +461,47 @@ function render() {
     const displayMonth = state.month > 12 ? 12 : state.month;
     document.getElementById('phase-disp').textContent = `FY${state.year}M${displayMonth}`;
     document.getElementById('mh-disp').textContent = state.mh;
-    if (state.displaySales < state.sales) { state.displaySales += Math.ceil((state.sales - state.displaySales) / 10); SFX.score(); } else { state.displaySales = state.sales; }
+    
+    if (state.displaySales < state.sales) { state.displaySales += Math.ceil((state.sales - state.displaySales) / 10); SFX.score(); } 
+    else { state.displaySales = state.sales; }
     document.getElementById('score-v').innerHTML = `¥${state.displaySales}<span>M</span>`;
+    
     const bar = document.getElementById('share-bar'); bar.innerHTML='';
     const s={}; state.vendorList.forEach(v => s[v] = 0);
     state.customers.forEach(c=>{ s[c.vendor]+=c.budget; });
     const total = Object.values(s).reduce((a,b)=>a+b,0)||1;
     state.vendorList.forEach(v=>{ const p=(s[v]/total)*100; if(p>0){ const d=document.createElement('div'); d.className='share-seg'; d.style.cssText=`width:${p}%;background:${VENDORS[v].bg}`; d.textContent=p>10?Math.round(p)+'%':''; bar.appendChild(d); } });
+    
     const gEl = document.getElementById('grid'); gEl.innerHTML='';
     state.grid.forEach(t=>{
         const el = document.createElement('div'); el.className = 'tile';
         if (t && t.cid) {
             const c=state.customers.find(x=>x.id===t.cid); const kn=c.vc>0||c.vendor==='H'; const selected = state.selId === c.id;
+            
+            // 回転ロジック復旧
             const isReplaced = c.vendor !== c.prevVendor;
             el.className = `tile ${selected ? 'sel' : ''} ${isReplaced ? 'is-replaced' : ''} ${c.cxoProtect > 0 ? 'cxo-a' : ''} ${kn && c.mo >= 48 && c.mo < 50 ? 'rfp-a' : ''} ${kn && c.mo >= 50 ? 'bld-a' : ''}`;
+            
             const inner = document.createElement('div'); inner.className = 'tile-inner';
             const front = document.createElement('div'); front.className = 'tile-side side-front';
             const back = document.createElement('div'); back.className = 'tile-side side-back';
+            
             front.style.backgroundColor = VENDORS[kn ? c.vendor : 'UNK'].bg; 
             back.style.backgroundColor = VENDORS[kn ? c.prevVendor : 'UNK'].bg;
+            
             const spVal = document.createElement('span'); spVal.className='t-lbl'; spVal.textContent=kn?Math.ceil(c.mo/12):'?';
             front.appendChild(spVal.cloneNode(true)); back.appendChild(spVal.cloneNode(true));
             inner.appendChild(front); inner.appendChild(back); el.appendChild(inner);
-            if (isReplaced) { setTimeout(() => { c.prevVendor = c.vendor; }, 800); }
+            
+            if (isReplaced) {
+                setTimeout(() => { c.prevVendor = c.vendor; render(); }, 850);
+            }
+
             el.onclick=()=>{ SFX.select(); state.selId=c.id; render(); };
         } else { el.innerHTML = `<div class="tile-inner"><div class="tile-side" style="background:${VENDORS.NONE.bg}"></div></div>`; }
         gEl.appendChild(el);
     });
+    
     const sp=document.getElementById('sp');
     if (state.selId) {
         const c=state.customers.find(x=>x.id===state.selId); sp.classList.add('open');
@@ -502,6 +520,7 @@ function render() {
         document.getElementById('sp-spec-btn').disabled=(c.mo>=48 || c.specIn || getWR(c) < 70);
         document.getElementById('sp-cxo-btn').disabled=(getWR(c) < 70);
     } else sp.classList.remove('open');
+    
     const ts=document.getElementById('task-strip'); ts.innerHTML='';
     state.tasks.forEach((t,i)=>{ const c=document.createElement('div'); c.className='t-chip'; c.innerHTML=`<span class="t-chip-name">${t.global?'MKT':t.cname}</span><span>${t.label}</span><button class="t-chip-rm" onclick="removeTask(${i})">✕</button>`; ts.appendChild(c); });
     document.getElementById('exec-btn').disabled=state.tasks.length===0; document.getElementById('exec-btn').className='exec-btn'+(state.tasks.length?' on':'');
@@ -509,7 +528,7 @@ function render() {
 
 function addTask(type,cost,label,isGlobal=false) {
     if(!isGlobal && !state.selId) { SFX.error(); return; }
-    let finalCost = (type === 'STUDY') ? Math.floor(cost * state.studyCostMod) : cost;
+    let finalCost = cost;
     if(state.mh < finalCost) { SFX.error(); return; }
     SFX.action();
     if (isGlobal) state.tasks.push({cid:null, cname:'GLOBAL', type, cost:finalCost, label, global:true});
@@ -522,31 +541,20 @@ function executeStrategy() {
     SFX.exec(); let tr = [];
     const getDetailedLog = (type, cName, vName) => {
         const d = {
-            VISIT: [
-                `情報システム部のキーマンへ表敬訪問。${vName}の保守体制におけるボトルネックを特定し、自社の優位性をアピール。`,
-                `部長級との会食。${cName}の次期中期経営計画とIT投資の連動性を確認、予算確保の裏付けを取りました。`,
-                `現場担当者へのディープ・ヒアリング。${vName}が提供しているパッチ適用の遅れに対する不満を吸い上げ完了。`
-            ],
-            STUDY: [
-                `「AI駆動型データセンター」勉強会を開催。自社製品のTCO削減効果をデータで実証し、参加した役員を圧倒。`,
-                `若手エンジニア向け技術セッションを実施。現場レベルでの「自社推し」バイアスを形成、将来のリプレイス礎を構築。`,
-                `CIO直下、DX推進室との限定セッション。${vName}では対応不可能なハイブリッドクラウド要件の調整を完遂。`
-            ],
-            SURVEY: [
-                `高度な資産調査。${vName}の保守契約が来期末で満了し、大幅な値上げが予定されているインテルを確保。`,
-                `エンドユーザー満足度調査を潜入実施。リプレイスへの要望が80%を超えていることをデータで裏付けました。`,
-                `購買部門への極秘ヒアリング。${vName}の担当営業に対する不信感が募っていることを確認、攻め時を特定。`
-            ],
-            SPECIN: [`RFP要件定義のドラフト作成支援に成功。自社独自の暗号化技術を「必須要件」としてねじ込み、競合を物理的に排除しました。`],
-            CXO: [`CIO・CTOとの完全クローズド・ミーティング。HPE GreenLakeを経営課題解決の主軸に据えるロードマップで合意、鉄壁の防衛網を敷設。`]
+            VISIT: [`${cName}のキーマンへ表敬訪問。${vName}の保守体制に対する不満を吸い上げました。`],
+            STUDY: [`勉強会を開催。自社製品のTCO削減効果をデータで実証し、参加した役員を圧倒。`],
+            SURVEY: [`高度な資産調査を実施。${vName}の保守契約が来期末で満了することを確認。`],
+            SPECIN: [`RFP要件定義の支援に成功。自社独自の技術を「必須要件」としてねじ込みました。`],
+            CXO: [`CIOとのトップ会談。中長期的なパートナーシップで合意し、防衛網を敷設。`]
         };
-        return d[type] ? d[type][Math.floor(Math.random() * d[type].length)] : "戦略的ミッションを完遂しました。";
+        return d[type] ? d[type][0] : "ミッションを完遂しました。";
     };
 
     state.tasks.forEach(t=>{
         if (t.global) {
-            const parts = state.customers.filter(c => getWR(c) >= 30).sort(() => 0.5 - Math.random()).slice(0, t.type==='EVENT'?3:5);
-            if (parts.length) { parts.forEach(c => { c.baseRapport += t.type==='EVENT'?15:5; }); tr.push({n:t.label, tx:`「HPE Ezmeral」最新事例公開カンファレンスに ${parts.length} 社の重要顧客を招待。市場のモーメンタムを独占。`, clr: VENDORS.H.bg, vName: 'MKT', sat: '底上げ' }); }
+            const parts = state.customers.filter(c => getWR(c) >= 30).slice(0, 5);
+            parts.forEach(c => { c.baseRapport += t.type==='EVENT'?15:5; });
+            tr.push({n:t.label, tx:`マーケット全体へのアプローチを実施。${parts.length}社の信頼度が向上。`, clr: VENDORS.H.bg, vName: 'MKT', sat: '底上げ' });
         } else {
             const c=state.customers.find(x=>x.id===t.cid);
             const vName = VENDORS[c.vendor].name;
@@ -557,38 +565,27 @@ function executeStrategy() {
             else if(t.type==='CXO'){ c.cxoProtect = 4; tr.push({n:c.name, tx: getDetailedLog('CXO', c.name, vName), clr: VENDORS.H.bg, vName, sat:'鉄壁'}); }
             else if(t.type==='GEN_BID' || t.type==='PROP_BID'){
                 let win = Math.random() * 100 < (c.specIn ? 100 : (t.type === 'GEN_BID' ? 25 : getWR(c)));
-                let log = win ? `【落札】${vName}の強固な牙城を崩しました。提案ロジックの完全勝利です。` : `【失注】${vName}の既存保守への固執を崩せませんでした。再度の諜報活動が必要です。`;
-                if(win){ SFX.win(); c.prevVendor = c.vendor; c.vendor='H'; c.mo=55; state.sales+=c.budget; tr.push({n:c.name, tx: log, clr: VENDORS.H.bg, vName: 'SELF', sat: "覇権奪還"}); }
-                else { SFX.lost(); c.baseRapport = Math.max(0, c.baseRapport - 15); tr.push({n:c.name, tx: log, clr: VENDORS.H.bg, vName, sat: "再起必要"}); }
+                if(win){ 
+                    SFX.win(); 
+                    c.prevVendor = c.vendor; c.vendor='H'; c.mo=55; state.sales+=c.budget; 
+                    tr.push({n:c.name, tx: `【落札】提案ロジックの完全勝利です。覇権を奪還しました。`, clr: VENDORS.H.bg, vName: 'SELF', sat: "覇権奪還"}); 
+                }
+                else { SFX.lost(); c.baseRapport = Math.max(0, c.baseRapport - 15); tr.push({n:c.name, tx: `【失注】競合の牙城を崩せませんでした。再度の諜報が必要です。`, clr: VENDORS.H.bg, vName, sat: "再起必要"}); }
             }
         }
     });
 
-    state.vendorList.filter(v => v !== 'H').forEach(rid => {
-        let rmh = 26 * state.rivalAggroMod; while (rmh >= 6) {
-            let targets = state.customers.filter(c => c.vendor !== rid && c.cxoProtect <= 0); targets.sort((a,b) => getWR(b, 'H') - getWR(a, 'H'));
-            if (!targets.length) break; const tgt = targets[0];
-            if (rmh >= 12 && getWR(tgt, rid) >= 70) { 
-                rmh -= 12; 
-                if (Math.random() < (tgt.mo >= 48 ? 0.4 : 0.15)) { 
-                    const prevV = VENDORS[tgt.vendor].name;
-                    tgt.prevVendor = tgt.vendor; tgt.vendor = rid; tgt.mo = 1; tgt.vc = 0; tgt.specIn = false; tr.push({ n: tgt.name, tx: `${VENDORS[rid].name}の強襲。${prevV}が失注し、競合のリプレイスを許してしまいました。`, clr: VENDORS[rid].bg, vName: VENDORS[rid].name, sat: `強襲` }); 
-                } else {
-                    tgt.baseRapport = Math.max(0, tgt.baseRapport - 5);
-                    tr.push({ n: tgt.name, tx: `${VENDORS[rid].name}が執拗に切り崩し。ニモさんの地道な営業努力によって、決定的な陥落は免れました。`, clr: VENDORS[rid].bg, vName: VENDORS[tgt.vendor].name, sat: `防衛成功` });
-                }
-            } else { rmh -= 6; tgt.baseRapport = Math.max(0, tgt.baseRapport - 2); }
-        }
-    });
     state.month++; state.tasks=[]; state.mh=state.maxMh; state.selId=null;
     state.customers.forEach(c=>{ c.mo=c.mo>=60?1:c.mo+1; if(c.cxoProtect>0) c.cxoProtect--; });
+    
     const rl=document.getElementById('res-list'); rl.innerHTML='';
     tr.forEach((r, i)=>{ setTimeout(() => { 
         const d = document.createElement('div'); 
-        d.style.cssText=`padding:10px; border-bottom:1px solid #222; border-left:4px solid ${r.clr}; margin-bottom:5px; animation: slide-up 0.3s both;`; 
-        d.innerHTML=`<div style="color:${r.clr}; font-family:var(--D); font-size:14px;">${r.n} <span style="font-size:8px; color:#555;">EXISTING: ${r.vName}</span></div><div style="font-size:11px; line-height:1.4; color:#fff;">${r.tx}</div><div style="font-size:9px; color:#777; margin-top:2px;">STATUS: ${r.sat}</div>`;
+        d.style.cssText=`padding:12px; border-bottom:1px solid #222; border-left:4px solid ${r.clr}; margin-bottom:8px; animation: slide-up 0.3s both;`; 
+        d.innerHTML=`<div style="color:${r.clr}; font-family:var(--D); font-size:16px;">${r.n}</div><div style="font-size:12px; line-height:1.4; color:#fff;">${r.tx}</div>`;
         rl.appendChild(d); rl.scrollTop = rl.scrollHeight; 
-    }, i * 150); });
+    }, i * 200); });
+    
     setTimeout(() => { SFX.report(); document.getElementById('result-ov').classList.remove('hidden'); }, 300);
     render();
 }
@@ -596,10 +593,11 @@ function executeStrategy() {
 function closeResult() { 
     SFX.select(); 
     document.getElementById('result-ov').classList.add('hidden'); 
+    // 12ヶ月ごとに限定
     if(state.month === 13) { 
         const ranking = state.vendorList.map(v => ({ id: v, name: VENDORS[v].name, total: state.customers.filter(c => c.vendor === v).reduce((a, b) => a + b.budget, 0), color: VENDORS[v].bg })).sort((a, b) => b.total - a.total); 
-        const rw = document.getElementById('vendor-ranking'); rw.innerHTML = '<div style="font-family:var(--D);font-size:14px;color:var(--gold);margin-bottom:8px;">RANKING</div>'; 
-        ranking.forEach((r, idx) => rw.innerHTML += `<div class="rank-row" style="display:flex; justify-content:space-between; margin-bottom:4px; font-size:12px;"><span class="rank-name" style="color:${r.color}">${idx+1}. ${r.name}</span><span class="rank-val" style="color:#fff">¥${r.total}M</span></div>`); 
+        const rw = document.getElementById('vendor-ranking'); rw.innerHTML = '<div style="font-family:var(--D);font-size:18px;color:var(--gold);margin-bottom:12px;">ANNUAL RANKING</div>'; 
+        ranking.forEach((r, idx) => rw.innerHTML += `<div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:14px;"><span style="color:${r.color}">${idx+1}. ${r.name}</span><span style="color:#fff">¥${r.total}M</span></div>`); 
         document.getElementById('final-score').textContent=`¥${state.sales}M`; 
         document.getElementById('final-modal').classList.remove('hidden'); 
     } 
@@ -612,9 +610,8 @@ function preparePerks() {
     const candidates = [...PERKS].sort(() => 0.5 - Math.random()).slice(0, 3); 
     candidates.forEach(p => { 
         const b = document.createElement('button'); 
-        b.className = 'perk-btn'; 
-        b.style.cssText = 'height:60px; background:var(--g-btn); border:1px solid var(--bdr); border-radius:12px; color:#fff; cursor:pointer; margin-bottom:8px; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:10px;';
-        b.innerHTML = `<div style="font-family:var(--D); font-size:16px; color:var(--gold); line-height:1;">${p.name}</div><div style="font-size:10px; margin-top:4px; opacity:0.7;">${p.desc}</div>`; 
+        b.style.cssText = 'height:70px; background:var(--g-btn); border:1px solid var(--bdr); border-radius:12px; color:#fff; cursor:pointer; margin-bottom:10px; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:10px; box-shadow:0 4px 15px rgba(0,0,0,0.4);';
+        b.innerHTML = `<div style="font-family:var(--D); font-size:18px; color:var(--gold);">${p.name}</div><div style="font-size:11px; opacity:0.8;">${p.desc}</div>`; 
         b.onclick = () => { SFX.select(); p.apply(state); document.getElementById('perk-ov').classList.add('hidden'); continueGame(); }; 
         list.appendChild(b); 
     }); 
