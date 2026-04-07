@@ -14,6 +14,7 @@
             --amber:   #F59E0B;
             --purple:  #A855F7;
             --blue:    #3B82F6;
+            --pink:    #71717A; /* グレーに変更 */
             --bg:      #060A11;
             --surf:    #0C1221;
             --bdr:     rgba(255,255,255,0.07);
@@ -162,11 +163,11 @@
         .tile.sel .tile-side { border-color: #fff !important; box-shadow: 0 0 15px rgba(255,255,255,.4); }
         .t-lbl { font-family: var(--M); font-size: 8px; color: rgba(255,255,255,.9); pointer-events: none; font-weight: 600; text-shadow: 0 1px 2px rgba(0,0,0,0.5); } 
 
-        /* ── SIDE PANEL (ZERO SCROLL) ── */
+        /* ── SIDE PANEL (ZERO SCROLL / COMPACT) ── */
         .sp {
             position: absolute; top: 0; right: 0; bottom: 0;
             width: 82%;
-            background: rgba(6,12,25,0.92); 
+            background: rgba(6,12,25,0.95); 
             backdrop-filter: blur(50px) saturate(2);
             border-left: 1px solid rgba(255,255,255,.2);
             display: flex; flex-direction: column; gap: 3px;
@@ -196,11 +197,11 @@
 
         .sp-sec-title { font-size: 7px; font-weight: 900; color: var(--muted); text-transform: uppercase; border-top: 1px solid var(--bdr); padding-top: 4px; margin-top: 2px; margin-bottom: 2px; }
         
-        /* ── BUTTON GRID ── */
+        /* ── BUTTON GRID (ENHANCED) ── */
         .sp-btns-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
         .sp-btn {
             border: 1px solid rgba(255,255,255,0.2);
-            color: #fff; border-radius: 8px; padding: 12px 2px;
+            color: #fff; border-radius: 8px; padding: 15px 2px;
             font-family: var(--D); font-size: 13px; letter-spacing: .05em;
             cursor: pointer; transition: all 0.2s;
             text-transform: uppercase; width: 100%; text-align: center;
@@ -214,12 +215,11 @@
         .sp-btn.btn-spec { background: rgba(255,77,109,0.15); border-color: var(--rose); color: var(--rose); }
 
         .sp-btn.full { grid-column: span 2; }
-        .sp-btn.pri { background: rgba(0,214,143,0.25); border-color: var(--emerald); color: var(--emerald); font-size: 14px; font-weight: 900; padding: 16px 2px; }
-        .sp-btn.alt { background: rgba(56,189,248,0.25); border-color: var(--sky); color: #fff; padding: 14px 2px; font-weight: 700; border-width: 2px; }
+        .sp-btn.pri { background: rgba(0,214,143,0.3); border-color: var(--emerald); color: var(--emerald); font-size: 14px; font-weight: 900; padding: 18px 2px; }
+        .sp-btn.alt { background: rgba(56,189,248,0.25); border-color: var(--sky); color: #fff; padding: 16px 2px; font-weight: 700; border-width: 2px; }
         
-        /* ── INTELLIGENCE COLORS (UPDATED) ── */
-        .sp-btn.btn-event { background: rgba(168,85,247,0.2); border-color: var(--purple); color: #fff; padding: 10px 2px; font-size: 11px; }
-        .sp-btn.btn-news { background: rgba(59,130,246,0.2); border-color: var(--blue); color: #fff; padding: 10px 2px; font-size: 11px; }
+        .sp-btn.btn-event { background: rgba(113,113,122,0.2); border-color: var(--pink); color: #fff; padding: 12px 2px; font-size: 11px; }
+        .sp-btn.btn-news { background: rgba(59,130,246,0.2); border-color: var(--blue); color: #fff; padding: 12px 2px; font-size: 11px; }
         
         .sp-btn:disabled { opacity: 0.05; cursor: not-allowed; filter: grayscale(1); }
 
@@ -269,6 +269,7 @@
         .final-btn.alt { background: rgba(0,214,143,0.1); border: 1px solid var(--emerald); color: var(--emerald); }
 
         .hidden { display: none !important; }
+        @keyframes slide-up { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -424,6 +425,7 @@ const VENDORS = {
     H: { name:'H社(SELF)', bg:'#00D68F' }, I: { name:'D社', bg:'#60A5FA' },
     A: { name:'A社', bg:'#7C3AED' }, S: { name:'S社', bg:'#B45309' },
     E: { name:'E社', bg:'#DB2777' }, F: { name:'F社', bg:'#0891B2' }, 
+    G: { name:'G社', bg:'#71717A' }, // グレーに変更
     NONE:{ name:'未開拓', bg:'#060A11' }, UNK: { name:'情報未取得', bg:'#111926' },
 };
 const MARKET_EVENTS = [
@@ -457,6 +459,7 @@ function selectSize(s) { SFX.select(); setup.size = s; document.querySelectorAll
 function startApp() {
     SFX.select(); state.gridSize = setup.size; state.difficulty = setup.difficulty;
     state.vendorList = ['H','I','A','S','E','F'];
+    if (state.gridSize === 15) state.vendorList.push('G'); // 15x15時のみG社追加
     document.documentElement.style.setProperty('--grid-size', state.gridSize);
     document.getElementById('mode-select-ov').classList.add('hidden');
     document.getElementById('app').classList.add('visible');
@@ -611,11 +614,24 @@ function executeStrategy() {
             }
         }
     });
+    // Rival logic
     state.vendorList.filter(v => v !== 'H').forEach(rid => {
         let rmh = 26 * state.rivalAggroMod; while (rmh >= 6) {
             let targets = state.customers.filter(c => c.vendor !== rid && c.cxoProtect <= 0); targets.sort((a,b) => getWR(b, 'H') - getWR(a, 'H'));
             if (!targets.length) break; const tgt = targets[0];
-            if (rmh >= 12 && getWR(tgt, rid) >= 70) { rmh -= 12; if (Math.random() < (tgt.mo >= 48 ? 0.4 : 0.15)) { tgt.prevVendor = tgt.vendor; tgt.vendor = rid; tgt.mo = 1; tgt.vc = 0; tgt.specIn = false; tr.push({ n: tgt.name, tx: `他社による強奪。`, clr: VENDORS[rid].bg, vName: VENDORS[rid].name, sat: `強襲` }); } } else rmh -= 6;
+            if (rmh >= 12 && getWR(tgt, rid) >= 70) { 
+                rmh -= 12; 
+                if (Math.random() < (tgt.mo >= 48 ? 0.4 : 0.15)) { 
+                    tgt.prevVendor = tgt.vendor; tgt.vendor = rid; tgt.mo = 1; tgt.vc = 0; tgt.specIn = false; tr.push({ n: tgt.name, tx: `他社による強奪。`, clr: VENDORS[rid].bg, vName: VENDORS[rid].name, sat: `強襲` }); 
+                } else {
+                    // 攻められたことによるWIN%低下
+                    tgt.baseRapport = Math.max(0, tgt.baseRapport - 3);
+                    tr.push({ n: tgt.name, tx: `${VENDORS[rid].name}の執拗な切り崩し工作。信頼が低下。`, clr: VENDORS[rid].bg, vName: VENDORS[tgt.vendor].name, sat: `防衛・消耗` });
+                }
+            } else {
+                rmh -= 6;
+                tgt.baseRapport = Math.max(0, tgt.baseRapport - 1);
+            }
         }
     });
     state.month++; state.tasks=[]; state.mh=state.maxMh; state.selId=null;
