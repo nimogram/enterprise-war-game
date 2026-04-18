@@ -23,7 +23,6 @@
             --M: 'DM Mono', monospace;
             --B: 'Outfit', sans-serif;
             --grid-size: 15;
-            /* グラデーション定義 */
             --g-emerald: linear-gradient(135deg, #00D68F, #008f5d);
             --g-sky:     linear-gradient(135deg, #38BDF8, #0284C7);
             --g-amber:   linear-gradient(135deg, #F59E0B, #B45309);
@@ -56,7 +55,6 @@
         }
         #app.visible { opacity: 1; }
 
-        /* ── START OVERLAY ── */
         #mode-select-ov {
             position: fixed; inset: 0; z-index: 10000;
             background: var(--bg); display: flex; flex-direction: column;
@@ -79,7 +77,6 @@
         .mode-btn.sel { background: var(--g-gold); color: var(--bg); border-color: var(--gold); }
         .start-btn { margin-top: 20px; background: #fff; color: var(--bg); font-weight: 900; font-size: 20px; padding: 18px; width: 100%; max-width: 300px; border-radius: 12px; border: none; }
 
-        /* ── HEADER ── */
         .hdr { flex: 0 0 auto; padding: 12px 18px 0; background: var(--bg); border-bottom: 1px solid var(--bdr); z-index: 10; }
         .hdr-row { display: flex; justify-content: space-between; align-items: flex-end; }
         .hdr-tag { font-family: var(--D); font-size: 7px; letter-spacing: .65em; color: var(--gold); line-height: 1; margin-bottom: 4px; display: flex; align-items: center; gap: 5px; }
@@ -95,7 +92,6 @@
         .log-area { min-height: 28px; padding: 6px 0; border-top: 1px solid var(--bdr); background: transparent; display: flex; align-items: center; margin-top: 8px; }
         .log-ln { font-family: var(--M); font-size: 13px; color: var(--emerald); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; text-transform: uppercase; }
 
-        /* ── GRID AREA ── */
         .grid-wrap { flex: 1 1 0; min-height: 0; display: flex; align-items: center; justify-content: center; padding: 8px 12px; position: relative; overflow: hidden; }
         #grid { display: grid; grid-template-columns: repeat(var(--grid-size), 1fr); grid-template-rows: repeat(var(--grid-size), 1fr); gap: 2px; width: 100%; max-width: 380px; aspect-ratio: 1; }
 
@@ -103,7 +99,6 @@
         .tile-inner { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
         .tile.sel .tile-inner { transform: scale(1.1); z-index: 5; }
         
-        /* リプレース回転演出プロトコル */
         .tile.is-replaced .tile-inner { animation: flip-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         @keyframes flip-in {
             from { transform: rotateY(180deg); }
@@ -117,7 +112,6 @@
         @keyframes pulse-rival { 0% { box-shadow: 0 0 0px inset var(--glow); } 50% { box-shadow: 0 0 10px inset var(--glow); border-color: var(--glow); } 100% { box-shadow: 0 0 0px inset var(--glow); } }
         .rival-pulse { animation: pulse-rival 0.5s ease-out 2; }
 
-        /* ── SIDE PANEL (ACTION CARD) ── */
         .sp { 
             position: absolute; top: 0; right: 0; bottom: 0; width: 82%; 
             background: rgba(6,12,25,0.7); 
@@ -142,7 +136,6 @@
         .sp-rl { font-size: 6px; font-weight: 800; color: var(--muted); text-transform: uppercase; }
         .sp-rv { font-family: var(--D); font-size: 13px; color: var(--gold); line-height: 1; }
         .sp-status { font-size: 9px; font-weight: 600; color: #fff; line-height: 1.2; margin-bottom: 4px; }
-        .sp-sec-title { font-size: 7px; font-weight: 900; color: var(--muted); text-transform: uppercase; border-top: 1px solid var(--bdr); padding-top: 4px; margin-top: 2px; margin-bottom: 2px; }
         
         .sp-btns-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
         .sp-btn { border: 1px solid rgba(255,255,255,0.2); color: #fff; border-radius: 8px; padding: 22px 2px; font-family: var(--D); font-size: 15px; letter-spacing: .05em; cursor: pointer; transition: all 0.2s; text-transform: uppercase; width: 100%; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); background: var(--g-btn); }
@@ -153,12 +146,8 @@
         .sp-btn.btn-spec { background: var(--g-rose); border-color: #fda4af; }
         .sp-btn.full { grid-column: span 2; }
         .sp-btn.pri { background: var(--g-emerald); border-color: #34d399; font-size: 16px; font-weight: 900; padding: 25px 2px; }
-        .sp-btn.alt { background: var(--g-sky); border-color: #38bdf8; color: #fff; padding: 22px 2px; font-weight: 700; border-width: 2px; }
-        .sp-btn.btn-event { background: var(--g-btn); border-color: var(--pink); color: #fff; padding: 14px 2px; font-size: 11px; }
-        .sp-btn.btn-news { background: var(--g-btn); border-color: var(--blue); color: #fff; padding: 14px 2px; font-size: 11px; }
         .sp-btn:disabled { opacity: 0.05; cursor: not-allowed; filter: grayscale(1); }
 
-        /* ── LOWER UI ── */
         .task-strip { flex: 0 0 44px; min-height: 44px; display: flex; align-items: center; gap: 6px; padding: 0 14px; overflow-x: auto; border-top: 1px solid var(--bdr); background: var(--bg); z-index: 10; }
         .t-chip { flex-shrink: 0; display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1); border-radius: 15px; padding: 3px 8px; font-size: 8px; font-weight: 700; color: #fff; }
         .t-chip-name { color: var(--emerald); font-family: var(--M); font-size: 7px; }
@@ -170,16 +159,8 @@
         .score-v { font-family: var(--D); font-size: 28px; color: #fff; letter-spacing: 0.05em; }
         .score-v span { font-size: 14px; color: var(--gold); }
 
-        /* ── MODALS (SEMIPARENT 0.7 / THIN BLUR) ── */
         #result-ov, #final-modal, #perk-ov { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(4,8,15,.6); backdrop-filter: blur(15px); z-index: 800; }
-        
-        .res-box, .final-box, .perk-box { 
-            width: 93%; max-height: 85dvh; border: 1px solid rgba(255,255,255,.15); 
-            border-radius: 28px; background: rgba(12,18,33,0.7); 
-            display: flex; flex-direction: column; overflow: hidden; 
-            box-shadow: 0 30px 60px rgba(0,0,0,0.9);
-        }
-        
+        .res-box, .final-box, .perk-box { width: 93%; max-height: 85dvh; border: 1px solid rgba(255,255,255,.15); border-radius: 28px; background: rgba(12,18,33,0.7); display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 30px 60px rgba(0,0,0,0.9); }
         .res-hdr { padding: 20px; border-bottom: 1px solid var(--bdr); text-align: center; }
         .res-title { font-family: var(--D); font-size: 24px; letter-spacing: .5em; color: var(--gold); }
         .res-list { flex: 1; overflow-y: auto; padding: 15px 20px; }
@@ -235,13 +216,13 @@
             <div class="sp-name" id="sp-name">—</div>
             <div class="sp-full" id="sp-full">領域情報を同期中...</div>
             <div class="sp-stats">
-                <div class="sp-stat"><div class="sp-sl">Visit</div><div class="sp-sv" id="sp-vc">0</div></div>
-                <div class="sp-stat"><div class="sp-sl">Area</div><div class="sp-sv" id="sp-tiles">0</div></div>
-                <div class="sp-stat"><div class="sp-sl">Win %</div><div class="sp-sv" id="sp-win">0%</div></div>
+                <div class="sp-stat"><div class="sp-sl">Mindshare (H)</div><div class="sp-sv" id="sp-mind">0%</div></div>
+                <div class="sp-stat"><div class="sp-sl">Refresh</div><div class="sp-sv" id="sp-refresh">0m</div></div>
+                <div class="sp-stat"><div class="sp-sl">Budget</div><div class="sp-sv" id="sp-budget">¥0M</div></div>
             </div>
             <div class="sp-kv-row">
                 <div class="sp-kv"><div class="sp-rl">Provider</div><div class="sp-rv" id="sp-vendor">—</div></div>
-                <div class="sp-kv"><div class="sp-rl">Budget</div><div class="sp-rv" id="sp-budget">¥0M</div></div>
+                <div class="sp-kv"><div class="sp-rl">Area</div><div class="sp-rv" id="sp-tiles">0 tiles</div></div>
             </div>
             <div class="sp-status" id="sp-status">—</div>
             <div class="sp-sec-title">Field Operations</div>
@@ -250,15 +231,10 @@
                 <button class="sp-btn btn-survey" onclick="addTask('SURVEY',3,'調査')">Survey (-3)</button>
                 <button class="sp-btn btn-study" onclick="addTask('STUDY',8,'勉強会')">Study (-8)</button>
                 <button class="sp-btn btn-spec" id="sp-spec-btn" onclick="addTask('SPECIN',12,'スペック')">Spec (-12)</button>
-                <button class="sp-btn alt full" id="sp-cxo-btn" onclick="addTask('CXO',15,'CXO MEETING (-15)')">CXO Meeting</button>
-                <button class="sp-btn pri full" id="sp-genbid-btn" onclick="addTask('GEN_BID',10,'一般競争入札 (-10)')" disabled>General Bid</button>
-                <button class="sp-btn pri full" id="sp-propbid-btn" onclick="addTask('PROP_BID',10,'総合評価入札 (-10)')" disabled>Proposal Bid</button>
+                <button class="sp-btn pri full" id="sp-cxo-btn" onclick="addTask('CXO',15,'CXO MEETING (-15)')">CXO Meeting</button>
             </div>
-            <div class="sp-sec-title">Intelligence</div>
-            <div class="sp-btns-grid">
-                <button class="sp-btn btn-event" onclick="addTask('EVENT',15,'イベント開催',true)">Event (-15)</button>
-                <button class="sp-btn btn-news" onclick="addTask('MAILNEWS',5,'NEWS',true)">News (-5)</button>
-            </div>
+            <div class="sp-sec-title">Decision Point (Month 60)</div>
+            <button class="sp-btn pri full" id="sp-bid-btn" onclick="addTask('BID',10,'更改提案 (-10)')" disabled>Renew Contract</button>
         </aside>
     </section>
 
@@ -269,35 +245,9 @@
     </footer>
 </div>
 
-<!-- RESULT MODALS -->
-<div id="result-ov" class="hidden">
-    <div class="res-box">
-        <div class="res-hdr"><span class="res-title">CALL REPORT</span></div>
-        <div class="res-list" id="res-list"></div>
-        <div class="modal-btns-area">
-            <button class="res-next" onclick="closeResult()">Acknowledge ›</button>
-        </div>
-    </div>
-</div>
-<div id="perk-ov" class="hidden">
-    <div class="perk-box">
-        <div class="res-hdr"><span class="res-title">UPGRADE</span></div>
-        <div class="res-list" id="perk-list" style="padding:20px; display:flex; flex-direction:column; gap:8px;"></div>
-    </div>
-</div>
-<div id="final-modal" class="hidden">
-    <div class="final-box">
-        <div class="res-hdr"><span class="res-title">ANNUAL RESULT</span></div>
-        <div class="final-scroll-content">
-            <div id="final-score" style="font-family:var(--D); font-size:64px; color:var(--emerald); text-align:center; margin-top:20px;">¥0M</div>
-            <div class="rank-wrap" id="vendor-ranking" style="padding:20px;"></div>
-        </div>
-        <div class="modal-btns-area">
-            <button class="final-btn alt" onclick="preparePerks()">Next Year</button>
-            <button class="final-btn" onclick="resetGame()">Reset</button>
-        </div>
-    </div>
-</div>
+<div id="result-ov" class="hidden"><div class="res-box"><div class="res-hdr"><span class="res-title">CALL REPORT</span></div><div class="res-list" id="res-list"></div><div class="modal-btns-area"><button class="res-next" onclick="closeResult()">Acknowledge ›</button></div></div></div>
+<div id="perk-ov" class="hidden"><div class="perk-box"><div class="res-hdr"><span class="res-title">UPGRADE</span></div><div class="res-list" id="perk-list" style="padding:20px; display:flex; flex-direction:column; gap:8px;"></div></div></div>
+<div id="final-modal" class="hidden"><div class="final-box"><div class="res-hdr"><span class="res-title">ANNUAL RESULT</span></div><div class="final-scroll-content"><div id="final-score" style="font-family:var(--D); font-size:64px; color:var(--emerald); text-align:center; margin-top:20px;">¥0M</div><div class="rank-wrap" id="vendor-ranking" style="padding:20px;"></div></div><div class="modal-btns-area"><button class="final-btn alt" onclick="preparePerks()">Next Year</button><button class="final-btn" onclick="resetGame()">Reset</button></div></div></div>
 
 <script>
 // --- AUDIO ---
@@ -328,11 +278,11 @@ const SFX = {
     error: () => createTone(110, 'square', 0.2, 0.1)
 };
 
-// --- DATA & STATE ---
+// --- DATA ---
 const PERKS = [
-    { id:'P1', name:'Executive Connection', desc:'全顧客の信頼度(Win%)を恒久的に +5%', apply: (s) => s.globalWrMod += 5 },
-    { id:'P2', name:'Resource Optimization', desc:'毎月の行動力(MH)を恒久的に +5', apply: (s) => s.maxMh += 5 },
-    { id:'P3', name:'Deep Intelligence', desc:'調査(SURVEY)時に信頼度が +3 向上する', apply: (s) => s.surveyBuff += 3 }
+    { id:'P1', name:'Brand Dominance', desc:'全顧客のマインドシェアを恒久的に +10%', apply: (s) => s.globalWrMod += 10 },
+    { id:'P2', name:'Elite Resource', desc:'毎月の行動力(MH)を恒久的に +5', apply: (s) => s.maxMh += 5 },
+    { id:'P3', name:'Strategic Insight', desc:'調査時にマインドシェアが +5 向上する', apply: (s) => s.surveyBuff += 5 }
 ];
 
 const VENDORS = {
@@ -358,11 +308,7 @@ let state = {
 };
 let setup = { size: 15 };
 
-function isModalOpen() {
-    return !!(document.querySelector('#result-ov:not(.hidden)') || 
-              document.querySelector('#final-modal:not(.hidden)') || 
-              document.querySelector('#perk-ov:not(.hidden)'));
-}
+function isModalOpen() { return !!(document.querySelector('#result-ov:not(.hidden)') || document.querySelector('#final-modal:not(.hidden)') || document.querySelector('#perk-ov:not(.hidden)')); }
 
 function selectSize(s) { SFX.select(); setup.size = s; document.querySelectorAll('[id^="size-"]').forEach(el => el.classList.remove('sel')); document.getElementById(`size-${s}`).classList.add('sel'); }
 
@@ -379,18 +325,17 @@ function startApp() {
 }
 
 function startRivalSimulation() {
-    // 競合アクションを指示通り8秒(8000ms)に変更
     setInterval(() => {
-        // コールレポート表示中は進行を停止
         if (!state.isPlaying || isModalOpen()) return;
-        
         const rivalList = state.vendorList.filter(v => v !== 'H');
         const rid = rivalList[Math.floor(Math.random() * rivalList.length)];
-        const aggroChance = state.tasks.length === 0 ? 0.20 : 0.08;
-        const targets = state.customers.filter(c => c.vendor !== rid && c.cxoProtect <= 0);
+        const targets = state.customers.filter(c => c.cxoProtect <= 0);
         if (!targets.length) return;
         
         const tgt = targets[Math.floor(Math.random() * targets.length)];
+        tgt.mindshare[rid] = Math.min(100, tgt.mindshare[rid] + 4);
+        state.vendorList.forEach(v => { if(v !== rid) tgt.mindshare[v] = Math.max(0, tgt.mindshare[v] - 1.5); });
+
         const tiles = document.querySelectorAll('.tile');
         tiles.forEach(tile => {
             const idx = Array.from(tile.parentNode.children).indexOf(tile);
@@ -401,20 +346,7 @@ function startRivalSimulation() {
             }
         });
 
-        let logMsg = "";
-        if (Math.random() < aggroChance) {
-            const prevV = tgt.vendor;
-            tgt.prevVendor = prevV; 
-            tgt.vendor = rid;
-            tgt.mo = Math.max(1, tgt.mo - 10);
-            tgt.vc = 0; tgt.specIn = false;
-            logMsg = `DETECTED: ${VENDORS[rid].name} が ${tgt.name} を強奪。マーケットに衝撃が走っています。`;
-            if (prevV === 'H') SFX.lost();
-        } else {
-            tgt.baseRapport = Math.max(0, tgt.baseRapport - 2);
-            logMsg = `ANALYSIS: ${VENDORS[rid].name} が ${tgt.name} へ接触中。ニモさんの地歩が揺らいでいます。`;
-        }
-        document.getElementById('log-ln').textContent = logMsg;
+        document.getElementById('log-ln').textContent = `INTEL: ${VENDORS[rid].name} が ${tgt.name} を強奪予告中。マインドシェアを浸食されています。`;
         render(); 
     }, 8000); 
 }
@@ -427,7 +359,13 @@ function init() {
         let tCount = Math.floor(b.t * (totalArea / 100));
         if (i === CUSTOMER_POOL_BASE.length - 1) tCount = totalArea - currentAllocated;
         currentAllocated += tCount;
-        return { ...b, tiles: tCount, budget: tCount * 10, vendor, prevVendor: vendor, mo: Math.floor(Math.random()*45)+1, vc:0, specIn:false, cxoProtect:0, intelRevealed:false, baseRapport: vendor === 'H' ? 40 : Math.floor(Math.random()*25)+10, bidType: Math.random() < 0.5 ? 'GEN' : 'PROP' };
+        const ms = {};
+        state.vendorList.forEach(v => ms[v] = (v === vendor ? 50 : Math.floor(Math.random()*12)));
+        return { 
+            ...b, tiles: tCount, budget: tCount * 10, vendor, prevVendor: vendor, 
+            mo: Math.floor(Math.random()*45)+1, 
+            mindshare: ms, cxoProtect: 0, intelRevealed: false 
+        };
     });
     buildGrid(); render();
 }
@@ -444,17 +382,6 @@ function buildGrid() {
         }
     });
     state.grid = grid;
-}
-
-function getWR(c, vId = 'H') {
-    if (!c) return 0;
-    let r = (vId === 'H') ? (c.baseRapport || 5) : 15;
-    if (vId === 'H') r += (c.vc * 5) + state.globalWrMod;
-    if (c.vendor === vId) r += (vId === 'H') ? 50 : 35;
-    if (c.mo >= 48 && c.mo < 50) r += 35; else if (c.mo >= 50) r -= 20;
-    if (vId === 'H' && c.specIn) r += 25;
-    state.tasks.filter(t=>t.cid===c.id).forEach(t=>{ if(t.type==='VISIT') r+=5; if(t.type==='STUDY') r+=10; if(t.type==='CXO') r+=40; });
-    return Math.min(99, Math.max(5, Math.round(r)));
 }
 
 function render() {
@@ -476,27 +403,22 @@ function render() {
     state.grid.forEach(t=>{
         const el = document.createElement('div'); el.className = 'tile';
         if (t && t.cid) {
-            const c=state.customers.find(x=>x.id===t.cid); const kn=c.vc>0||c.vendor==='H'; const selected = state.selId === c.id;
-            
-            // 回転ロジック復旧
+            const c=state.customers.find(x=>x.id===t.cid); const kn=c.vendor==='H'||c.intelRevealed; const selected = state.selId === c.id;
             const isReplaced = c.vendor !== c.prevVendor;
-            el.className = `tile ${selected ? 'sel' : ''} ${isReplaced ? 'is-replaced' : ''} ${c.cxoProtect > 0 ? 'cxo-a' : ''} ${kn && c.mo >= 48 && c.mo < 50 ? 'rfp-a' : ''} ${kn && c.mo >= 50 ? 'bld-a' : ''}`;
-            
+            el.className = `tile ${selected ? 'sel' : ''} ${isReplaced ? 'is-replaced' : ''} ${c.cxoProtect > 0 ? 'cxo-a' : ''} ${c.mo >= 58 && c.mo < 60 ? 'rfp-a' : ''} ${c.mo === 60 ? 'bld-a' : ''}`;
             const inner = document.createElement('div'); inner.className = 'tile-inner';
             const front = document.createElement('div'); front.className = 'tile-side side-front';
             const back = document.createElement('div'); back.className = 'tile-side side-back';
-            
             front.style.backgroundColor = VENDORS[kn ? c.vendor : 'UNK'].bg; 
             back.style.backgroundColor = VENDORS[kn ? c.prevVendor : 'UNK'].bg;
             
-            const spVal = document.createElement('span'); spVal.className='t-lbl'; spVal.textContent=kn?Math.ceil(c.mo/12):'?';
+            // 指示に従い、数字だけ（現在の契約年数）に戻す
+            const spVal = document.createElement('span'); spVal.className='t-lbl'; 
+            spVal.textContent = Math.ceil(c.mo/12);
+            
             front.appendChild(spVal.cloneNode(true)); back.appendChild(spVal.cloneNode(true));
             inner.appendChild(front); inner.appendChild(back); el.appendChild(inner);
-            
-            if (isReplaced) {
-                setTimeout(() => { c.prevVendor = c.vendor; render(); }, 850);
-            }
-
+            if (isReplaced) { setTimeout(() => { c.prevVendor = c.vendor; render(); }, 850); }
             el.onclick=()=>{ SFX.select(); state.selId=c.id; render(); };
         } else { el.innerHTML = `<div class="tile-inner"><div class="tile-side" style="background:${VENDORS.NONE.bg}"></div></div>`; }
         gEl.appendChild(el);
@@ -505,20 +427,17 @@ function render() {
     const sp=document.getElementById('sp');
     if (state.selId) {
         const c=state.customers.find(x=>x.id===state.selId); sp.classList.add('open');
-        document.getElementById('sp-name').textContent=c.name; document.getElementById('sp-vc').textContent=c.vc; document.getElementById('sp-tiles').textContent=c.tiles; document.getElementById('sp-win').textContent=`${getWR(c)}%`; document.getElementById('sp-budget').textContent = `¥${c.budget}M`;
-        const kn=c.vc>0||c.vendor==='H'; document.getElementById('sp-vendor').textContent= (kn || c.intelRevealed) ? VENDORS[c.vendor].name : '？';
+        document.getElementById('sp-name').textContent=c.name; 
+        document.getElementById('sp-mind').textContent=Math.round(c.mindshare['H'])+'%'; 
+        document.getElementById('sp-refresh').textContent=(60 - c.mo)+'m'; 
+        document.getElementById('sp-budget').textContent = `¥${c.budget}M`;
+        document.getElementById('sp-vendor').textContent= (c.vendor==='H'||c.intelRevealed) ? VENDORS[c.vendor].name : '？？？';
+        document.getElementById('sp-tiles').textContent=c.tiles + ' tiles';
         const st=document.getElementById('sp-status');
         if(c.cxoProtect>0){ st.textContent=`🛡 CXO SECURE (${c.cxoProtect} Mo)`; st.style.color='var(--sky)'; }
-        else if(c.mo>=50){ st.textContent='OPERATION / STEADY'; st.style.color=''; }
-        else if(c.mo>=48){ st.textContent='📄 RFP RELEASED'; st.style.color='var(--amber)'; }
-        else{ st.textContent='ACTIVE / UTILIZED'; st.style.color=''; }
-        const isRfp = (kn && c.mo >= 48 && c.mo < 50);
-        document.getElementById('sp-genbid-btn').classList.toggle('hidden', c.bidType !== 'GEN' || !isRfp);
-        document.getElementById('sp-propbid-btn').classList.toggle('hidden', c.bidType !== 'PROP' || !isRfp);
-        document.getElementById('sp-genbid-btn').disabled = !isRfp;
-        document.getElementById('sp-propbid-btn').disabled = !isRfp;
-        document.getElementById('sp-spec-btn').disabled=(c.mo>=48 || c.specIn || getWR(c) < 70);
-        document.getElementById('sp-cxo-btn').disabled=(getWR(c) < 70);
+        else if(c.mo >= 58){ st.textContent='📄 REFRESH / BID PHASE'; st.style.color='var(--amber)'; }
+        else { st.textContent='CONTRACTED / STEADY'; st.style.color=''; }
+        document.getElementById('sp-bid-btn').disabled = (c.mo < 60);
     } else sp.classList.remove('open');
     
     const ts=document.getElementById('task-strip'); ts.innerHTML='';
@@ -528,55 +447,45 @@ function render() {
 
 function addTask(type,cost,label,isGlobal=false) {
     if(!isGlobal && !state.selId) { SFX.error(); return; }
-    let finalCost = cost;
-    if(state.mh < finalCost) { SFX.error(); return; }
+    if(state.mh < cost) { SFX.error(); return; }
     SFX.action();
-    if (isGlobal) state.tasks.push({cid:null, cname:'GLOBAL', type, cost:finalCost, label, global:true});
-    else { const c=state.customers.find(x=>x.id===state.selId); state.tasks.push({cid:c.id, cname:c.name, type, cost:finalCost, label, global:false}); }
-    state.mh -= finalCost; state.selId = null; render();
+    if (isGlobal) state.tasks.push({cid:null, cname:'GLOBAL', type, cost, label, global:true});
+    else { const c=state.customers.find(x=>x.id===state.selId); state.tasks.push({cid:c.id, cname:c.name, type, cost, label, global:false}); }
+    state.mh -= cost; state.selId = null; render();
 }
 function removeTask(i) { SFX.remove(); state.mh+=state.tasks[i].cost; state.tasks.splice(i,1); render(); }
 
 function executeStrategy() {
     SFX.exec(); let tr = [];
-    const getDetailedLog = (type, cName, vName) => {
-        const d = {
-            VISIT: [`${cName}のキーマンへ表敬訪問。${vName}の保守体制に対する不満を吸い上げました。`],
-            STUDY: [`勉強会を開催。自社製品のTCO削減効果をデータで実証し、参加した役員を圧倒。`],
-            SURVEY: [`高度な資産調査を実施。${vName}の保守契約が来期末で満了することを確認。`],
-            SPECIN: [`RFP要件定義の支援に成功。自社独自の技術を「必須要件」としてねじ込みました。`],
-            CXO: [`CIOとのトップ会談。中長期的なパートナーシップで合意し、防衛網を敷設。`]
-        };
-        return d[type] ? d[type][0] : "ミッションを完遂しました。";
-    };
-
     state.tasks.forEach(t=>{
         if (t.global) {
-            const parts = state.customers.filter(c => getWR(c) >= 30).slice(0, 5);
-            parts.forEach(c => { c.baseRapport += t.type==='EVENT'?15:5; });
-            tr.push({n:t.label, tx:`マーケット全体へのアプローチを実施。${parts.length}社の信頼度が向上。`, clr: VENDORS.H.bg, vName: 'MKT', sat: '底上げ' });
+            state.customers.forEach(c => { c.mindshare['H'] += 2.5; });
+            tr.push({n:t.label, tx:`全顧客へのマーケティング活動を実施。自社の認知度が向上。`, clr: VENDORS.H.bg });
         } else {
             const c=state.customers.find(x=>x.id===t.cid);
-            const vName = VENDORS[c.vendor].name;
-            if(t.type==='VISIT'){ c.vc++; tr.push({n:c.name, tx: getDetailedLog('VISIT', c.name, vName), clr: VENDORS.H.bg, vName, sat:'良好'}); }
-            else if(t.type==='STUDY'){ c.vc += 2; tr.push({n:c.name, tx: getDetailedLog('STUDY', c.name, vName), clr: VENDORS.H.bg, vName, sat:'高評価'}); }
-            else if(t.type==='SURVEY'){ c.intelRevealed=true; c.baseRapport += state.surveyBuff; tr.push({n:c.name, tx: getDetailedLog('SURVEY', c.name, vName), clr: VENDORS.H.bg, vName, sat:'精度向上'}); }
-            else if(t.type==='SPECIN'){ c.specIn=true; tr.push({n:c.name, tx: getDetailedLog('SPECIN', c.name, vName), clr: VENDORS.H.bg, vName, sat:'独占'}); }
-            else if(t.type==='CXO'){ c.cxoProtect = 4; tr.push({n:c.name, tx: getDetailedLog('CXO', c.name, vName), clr: VENDORS.H.bg, vName, sat:'鉄壁'}); }
-            else if(t.type==='GEN_BID' || t.type==='PROP_BID'){
-                let win = Math.random() * 100 < (c.specIn ? 100 : (t.type === 'GEN_BID' ? 25 : getWR(c)));
-                if(win){ 
-                    SFX.win(); 
-                    c.prevVendor = c.vendor; c.vendor='H'; c.mo=55; state.sales+=c.budget; 
-                    tr.push({n:c.name, tx: `【落札】提案ロジックの完全勝利です。覇権を奪還しました。`, clr: VENDORS.H.bg, vName: 'SELF', sat: "覇権奪還"}); 
-                }
-                else { SFX.lost(); c.baseRapport = Math.max(0, c.baseRapport - 15); tr.push({n:c.name, tx: `【失注】競合の牙城を崩せませんでした。再度の諜報が必要です。`, clr: VENDORS.H.bg, vName, sat: "再起必要"}); }
+            if(t.type==='VISIT'){ c.mindshare['H'] += 6; tr.push({n:c.name, tx: `キーマン訪問。信頼関係が深まりました。`, clr: VENDORS.H.bg }); }
+            else if(t.type==='STUDY'){ c.mindshare['H'] += 14; tr.push({n:c.name, tx: `勉強会。技術的優位性を経営層へアピール。`, clr: VENDORS.H.bg }); }
+            else if(t.type==='SURVEY'){ c.intelRevealed=true; c.mindshare['H'] += (3 + state.surveyBuff); tr.push({n:c.name, tx: `資産調査。他社の契約期間と弱点を把握。`, clr: VENDORS.H.bg }); }
+            else if(t.type==='SPECIN'){ c.mindshare['H'] += 25; tr.push({n:c.name, tx: `スペックイン。有利な更改条件を固定。`, clr: VENDORS.H.bg }); }
+            else if(t.type==='CXO'){ c.cxoProtect = 12; c.mindshare['H'] += 35; tr.push({n:c.name, tx: `CXO面談。次期5年のパートナーシップに合意。`, clr: VENDORS.H.bg }); }
+            else if(t.type==='BID'){
+                const sorted = state.vendorList.map(v => ({id:v, val:c.mindshare[v]})).sort((a,b)=>b.val-a.val);
+                const winner = sorted[0].id;
+                c.prevVendor = c.vendor;
+                c.vendor = winner;
+                c.mo = 1;
+                if(winner === 'H'){ SFX.win(); state.sales += c.budget; tr.push({n:c.name, tx: `【更改成功】覇権を奪還・維持。新たな5年契約を締結しました。`, clr: VENDORS.H.bg }); }
+                else { SFX.lost(); tr.push({n:c.name, tx: `【更改失注】${VENDORS[winner].name}に敗北。マインドシェアの不足が響きました。`, clr: VENDORS[winner].bg }); }
             }
         }
     });
 
     state.month++; state.tasks=[]; state.mh=state.maxMh; state.selId=null;
-    state.customers.forEach(c=>{ c.mo=c.mo>=60?1:c.mo+1; if(c.cxoProtect>0) c.cxoProtect--; });
+    state.customers.forEach(c=>{ 
+        if(c.mo < 60) c.mo++;
+        state.vendorList.forEach(v => { if(v !== c.vendor) c.mindshare[v] = Math.max(0, c.mindshare[v] - 0.7); });
+        if(c.cxoProtect>0) c.cxoProtect--; 
+    });
     
     const rl=document.getElementById('res-list'); rl.innerHTML='';
     tr.forEach((r, i)=>{ setTimeout(() => { 
@@ -591,21 +500,17 @@ function executeStrategy() {
 }
 
 function closeResult() { 
-    SFX.select(); 
-    document.getElementById('result-ov').classList.add('hidden'); 
-    // 12ヶ月ごとに限定
+    SFX.select(); document.getElementById('result-ov').classList.add('hidden'); 
     if(state.month === 13) { 
         const ranking = state.vendorList.map(v => ({ id: v, name: VENDORS[v].name, total: state.customers.filter(c => c.vendor === v).reduce((a, b) => a + b.budget, 0), color: VENDORS[v].bg })).sort((a, b) => b.total - a.total); 
         const rw = document.getElementById('vendor-ranking'); rw.innerHTML = '<div style="font-family:var(--D);font-size:18px;color:var(--gold);margin-bottom:12px;">ANNUAL RANKING</div>'; 
         ranking.forEach((r, idx) => rw.innerHTML += `<div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:14px;"><span style="color:${r.color}">${idx+1}. ${r.name}</span><span style="color:#fff">¥${r.total}M</span></div>`); 
-        document.getElementById('final-score').textContent=`¥${state.sales}M`; 
-        document.getElementById('final-modal').classList.remove('hidden'); 
+        document.getElementById('final-score').textContent=`¥${state.sales}M`; document.getElementById('final-modal').classList.remove('hidden'); 
     } 
 }
 
 function preparePerks() { 
-    SFX.report(); 
-    document.getElementById('final-modal').classList.add('hidden'); 
+    SFX.report(); document.getElementById('final-modal').classList.add('hidden'); 
     const list = document.getElementById('perk-list'); list.innerHTML = ''; 
     const candidates = [...PERKS].sort(() => 0.5 - Math.random()).slice(0, 3); 
     candidates.forEach(p => { 
