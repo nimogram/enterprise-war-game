@@ -99,8 +99,13 @@
         .tile-inner { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
         .tile.sel .tile-inner { transform: scale(1.1); z-index: 5; }
         
-        .tile.is-replaced .tile-inner { animation: flip-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        @keyframes flip-in { from { transform: rotateY(180deg); } to { transform: rotateY(0deg); } }
+        /* 回転アニメーション：リプレイス時と構築移行期間用 */
+        .tile.is-replaced .tile-inner, .tile.migration-a .tile-inner { animation: flip-cycle 2s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite; }
+        @keyframes flip-cycle {
+            0% { transform: rotateY(0deg); }
+            50% { transform: rotateY(180deg); }
+            100% { transform: rotateY(360deg); }
+        }
 
         .tile-side { position: absolute; inset: 0; backface-visibility: hidden; border-radius: 3px; border: 1px solid rgba(255,255,255,.05); display: flex; align-items: center; justify-content: center; }
         .side-back { transform: rotateY(180deg); }
@@ -123,7 +128,6 @@
         .sp-tag { font-size: 6px; font-weight: 900; letter-spacing: .4em; color: var(--emerald); text-transform: uppercase; }
         .sp-close { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 20px; line-height: 1; }
         
-        /* 棒グラフスタイル（最上部用） */
         .mind-chart { height: 32px; display: flex; border-radius: 6px; overflow: hidden; margin: 6px 0 10px; border: 1px solid var(--bdr); background: rgba(0,0,0,0.2); }
         .mind-seg { height: 100%; transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1); display: flex; align-items: center; justify-content: center; font-size: 8px; color: #fff; font-weight: 900; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
 
@@ -230,7 +234,7 @@
                 <button class="sp-btn btn-spec" id="sp-spec-btn" onclick="addTask('SPECIN',12,'スペック')">Spec (-12)</button>
                 <button class="sp-btn pri full" id="sp-cxo-btn" onclick="addTask('CXO',15,'CXO MEETING (-15)')">CXO Meeting</button>
             </div>
-            <div class="sp-sec-title">Decision Point (Month 60)</div>
+            <div class="sp-sec-title">Decision Point (Month 54)</div>
             <button class="sp-btn pri full" id="sp-bid-btn" onclick="addTask('BID',10,'更改提案 (-10)')" disabled>Renew Contract</button>
         </aside>
     </section>
@@ -383,7 +387,8 @@ function init() {
             if (idx === others.length - 1) ms[v] = remaining;
             else { let s = Math.random() * remaining; ms[v] = s; remaining -= s; }
         });
-        return { ...b, tiles: tCount, budget: tCount * 10, vendor, prevVendor: vendor, mo: Math.floor(Math.random()*45)+1, mindshare: ms, cxoProtect: 0, intelRevealed: false, vc: 0 };
+        // 初期状態は49ヶ月目以前（RFI前）に設定
+        return { ...b, tiles: tCount, budget: tCount * 10, vendor, prevVendor: vendor, mo: Math.floor(Math.random()*40)+1, mindshare: ms, cxoProtect: 0, intelRevealed: false, vc: 0 };
     });
     buildGrid(); render();
 }
@@ -421,7 +426,15 @@ function render() {
             const kn = c.vendor === 'H' || c.intelRevealed || c.vc > 0;
             const selected = state.selId === c.id;
             const isReplaced = c.vendor !== c.prevVendor;
-            el.className = `tile ${selected ? 'sel' : ''} ${isReplaced ? 'is-replaced' : ''} ${c.cxoProtect > 0 ? 'cxo-a' : ''} ${c.mo >= 58 && c.mo < 60 ? 'rfp-a' : ''} ${c.mo === 60 ? 'bld-a' : ''}`;
+            
+            // 指示に基づく期間別アニメーション
+            // 50-53: RFI (rfp-a), 54: Decision (bld-a), 55-60: Migration (migration-a)
+            const rfiActive = c.mo >= 50 && c.mo < 54;
+            const decisionActive = c.mo === 54;
+            const migrationActive = c.mo >= 55 && c.mo <= 60;
+            
+            el.className = `tile ${selected ? 'sel' : ''} ${isReplaced ? 'is-replaced' : ''} ${c.cxoProtect > 0 ? 'cxo-a' : ''} ${rfiActive ? 'rfp-a' : ''} ${decisionActive ? 'bld-a' : ''} ${migrationActive ? 'migration-a' : ''}`;
+            
             const inner = document.createElement('div'); inner.className = 'tile-inner';
             const front = document.createElement('div'); front.className = 'tile-side side-front';
             const back = document.createElement('div'); back.className = 'tile-side side-back';
@@ -431,7 +444,10 @@ function render() {
             spVal.textContent = kn ? Math.ceil(c.mo/12) : '?';
             front.appendChild(spVal.cloneNode(true)); back.appendChild(spVal.cloneNode(true));
             inner.appendChild(front); inner.appendChild(back); el.appendChild(inner);
-            if (isReplaced) { setTimeout(() => { c.prevVendor = c.vendor; render(); }, 850); }
+            
+            // リプレイス時の単発回転演出フラグをリセット
+            if (isReplaced && !migrationActive) { setTimeout(() => { c.prevVendor = c.vendor; render(); }, 2000); }
+            
             el.onclick=()=>{ SFX.select(); state.selId=c.id; render(); };
         } else { el.innerHTML = `<div class="tile-inner"><div class="tile-side" style="background:${VENDORS.NONE.bg}"></div></div>`; }
         gEl.appendChild(el);
@@ -448,7 +464,6 @@ function render() {
             if (share > 0) {
                 const seg = document.createElement('div');
                 seg.className = 'mind-seg'; seg.style.width = share + '%';
-                // 判明していない場合は競合カラーをUNKで隠蔽
                 const color = (kn || v === 'H') ? VENDORS[v].bg : VENDORS.UNK.bg;
                 seg.style.backgroundColor = color;
                 if (kn || v === 'H') seg.textContent = share > 10 ? Math.round(share) + '%' : '';
@@ -459,10 +474,14 @@ function render() {
         document.getElementById('sp-budget').textContent = `¥${c.budget}M`;
         document.getElementById('sp-tiles').textContent=c.tiles + ' tiles';
         const st=document.getElementById('sp-status');
-        if(c.cxoProtect>0){ st.textContent=`🛡 CXO SECURE (${c.cxoProtect} Mo)`; st.style.color='var(--sky)'; }
-        else if(c.mo >= 58 && kn){ st.textContent='📄 REFRESH / BID PHASE'; st.style.color='var(--amber)'; }
+        
+        if(c.mo >= 55) { st.textContent='🏗 MIGRATION / TRANSITION'; st.style.color='var(--emerald)'; }
+        else if(c.cxoProtect>0){ st.textContent=`🛡 CXO SECURE (${c.cxoProtect} Mo)`; st.style.color='var(--sky)'; }
+        else if(c.mo >= 50 && kn){ st.textContent=c.mo === 54 ? '⚔️ BID DAY (DECISION)' : '📄 RFI / RFP PHASE'; st.style.color='var(--amber)'; }
         else { st.textContent='CONTRACTED / STEADY'; st.style.color=''; }
-        document.getElementById('sp-bid-btn').disabled = (c.mo < 60);
+        
+        // 更改提案ボタンは54ヶ月目のみ有効
+        document.getElementById('sp-bid-btn').disabled = (c.mo !== 54);
     } else sp.classList.remove('open');
     const ts=document.getElementById('task-strip'); ts.innerHTML='';
     state.tasks.forEach((t,i)=>{ const c=document.createElement('div'); c.className='t-chip'; c.innerHTML=`<span class="t-chip-name">${t.global?'MKT':t.cname}</span><span>${t.label}</span><button class="t-chip-rm" onclick="removeTask(${i})">✕</button>`; ts.appendChild(c); });
@@ -493,14 +512,21 @@ function executeStrategy() {
             else if(t.type==='BID'){
                 const sorted = state.vendorList.map(v => ({id:v, val:c.mindshare[v]})).sort((a,b)=>b.val-a.val);
                 const winner = sorted[0].id;
-                c.prevVendor = c.vendor; c.vendor = winner; c.mo = 1;
-                if(winner === 'H'){ SFX.win(); state.sales += c.budget; tr.push({n:c.name, tx: `【更改成功】新たな5年契約を勝ち取りました。`, clr: VENDORS.H.bg }); }
-                else { SFX.lost(); tr.push({n:c.name, tx: `【更改失注】${VENDORS[winner].name}に敗北。マインドシェアが足りませんでした。`, clr: VENDORS[winner].bg }); }
+                c.prevVendor = c.vendor; c.vendor = winner; 
+                // ベンダー決定後、55ヶ月目（構築移行期間）へ移行
+                c.mo = 55;
+                if(winner === 'H'){ SFX.win(); state.sales += c.budget; tr.push({n:c.name, tx: `【更改成功】ベンダー決定。構築移行フェーズへ突入。`, clr: VENDORS.H.bg }); }
+                else { SFX.lost(); tr.push({n:c.name, tx: `【更改失注】${VENDORS[winner].name}が選定されました。移行期間開始。`, clr: VENDORS[winner].bg }); }
             }
         }
     });
     state.month++; state.tasks=[]; state.mh=state.maxMh; state.selId=null;
-    state.customers.forEach(c=>{ if(c.mo < 60) c.mo++; state.vendorList.forEach(v => { if(v !== c.vendor) c.mindshare[v] = Math.max(0, c.mindshare[v] - 0.7); }); normalizeMindshare(c); if(c.cxoProtect>0) c.cxoProtect--; });
+    state.customers.forEach(c=>{ 
+        // 60ヶ月を過ぎたら1ヶ月目（新契約開始）へ
+        if(c.mo < 60) c.mo++; else c.mo = 1;
+        state.vendorList.forEach(v => { if(v !== c.vendor) c.mindshare[v] = Math.max(0, c.mindshare[v] - 0.7); }); 
+        normalizeMindshare(c); if(c.cxoProtect>0) c.cxoProtect--; 
+    });
     const rl=document.getElementById('res-list'); rl.innerHTML='';
     tr.forEach((r, i)=>{ setTimeout(() => { const d = document.createElement('div'); d.style.cssText=`padding:12px; border-bottom:1px solid #222; border-left:4px solid ${r.clr}; margin-bottom:8px; animation: slide-up 0.3s both;`; d.innerHTML=`<div style="color:${r.clr}; font-family:var(--D); font-size:16px;">${r.n}</div><div style="font-size:12px; line-height:1.4; color:#fff;">${r.tx}</div>`; rl.appendChild(d); rl.scrollTop = rl.scrollHeight; }, i * 200); });
     setTimeout(() => { SFX.report(); document.getElementById('result-ov').classList.remove('hidden'); }, 300);
@@ -515,10 +541,10 @@ document.getElementById('sp-close').onclick=()=>{ SFX.select(); state.selId=null
 </script>
 <style>
 @keyframes rfp { 0%,100%{box-shadow:0 0 10px #F59E0B;border-color:#F59E0B} 50%{box-shadow:0 0 20px #F59E0B;border-color:#fbbf24} }
-@keyframes bld { 0%,100%{box-shadow:0 0 10px #71717A;border-color:#71717A} 50%{box-shadow:0 0 20px #71717A;border-color:#9ca3af} }
+@keyframes bld { 0%,100%{box-shadow:0 0 10px #fff;border-color:#fff} 50%{box-shadow:0 0 20px #fff;border-color:rgba(255,255,255,0.5)} }
 @keyframes cxo { 0%,100%{box-shadow:0 0 15px #38BDF8;border-color:#38BDF8} 50%{box-shadow:0 0 30px #38BDF8;border-color:#7dd3fc} }
 .rfp-a { animation: rfp 1.5s infinite; border-width: 2px !important; }
-.bld-a { animation: bld 2s infinite; border-width: 2px !important; }
+.bld-a { animation: bld 1s infinite; border-width: 2px !important; }
 .cxo-a { animation: cxo 1.5s infinite; border-width: 3px !important; }
 </style>
 </body>
