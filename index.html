@@ -100,10 +100,7 @@
         .tile.sel .tile-inner { transform: scale(1.1); z-index: 5; }
         
         .tile.is-replaced .tile-inner { animation: flip-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        @keyframes flip-in {
-            from { transform: rotateY(180deg); }
-            to { transform: rotateY(0deg); }
-        }
+        @keyframes flip-in { from { transform: rotateY(180deg); } to { transform: rotateY(0deg); } }
 
         .tile-side { position: absolute; inset: 0; backface-visibility: hidden; border-radius: 3px; border: 1px solid rgba(255,255,255,.05); display: flex; align-items: center; justify-content: center; }
         .side-back { transform: rotateY(180deg); }
@@ -125,17 +122,18 @@
         .sp-hdr { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; }
         .sp-tag { font-size: 6px; font-weight: 900; letter-spacing: .4em; color: var(--emerald); text-transform: uppercase; }
         .sp-close { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 20px; line-height: 1; }
+        
+        /* 棒グラフスタイル（最上部用） */
+        .mind-chart { height: 32px; display: flex; border-radius: 6px; overflow: hidden; margin: 6px 0 10px; border: 1px solid var(--bdr); background: rgba(0,0,0,0.2); }
+        .mind-seg { height: 100%; transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1); display: flex; align-items: center; justify-content: center; font-size: 8px; color: #fff; font-weight: 900; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
+
         .sp-name { font-family: var(--D); font-size: 20px; color: #fff; letter-spacing: .02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.1; margin-bottom: 1px; }
-        .sp-full { font-size: 8px; color: #a0b0c5; line-height: 1.1; border-left: 2px solid var(--gold); padding-left: 5px; margin-bottom: 4px; }
         .sp-stats { display: flex; gap: 4px; margin-bottom: 2px; }
         .sp-stat { flex: 1; background: rgba(255,255,255,.03); border: 1px solid var(--bdr); border-radius: 6px; padding: 4px; text-align: center; }
         .sp-sl { font-size: 6px; font-weight: 800; color: var(--muted); text-transform: uppercase; }
         .sp-sv { font-family: var(--D); font-size: 15px; color: #fff; line-height: 1; } 
-        .sp-kv-row { display: flex; justify-content: space-between; gap: 8px; border-bottom: 1px solid var(--bdr); padding-bottom: 3px; margin-bottom: 2px; }
-        .sp-kv { flex: 1; }
-        .sp-rl { font-size: 6px; font-weight: 800; color: var(--muted); text-transform: uppercase; }
-        .sp-rv { font-family: var(--D); font-size: 13px; color: var(--gold); line-height: 1; }
         .sp-status { font-size: 9px; font-weight: 600; color: #fff; line-height: 1.2; margin-bottom: 4px; }
+        .sp-sec-title { font-size: 7px; font-weight: 900; color: var(--muted); text-transform: uppercase; border-top: 1px solid var(--bdr); padding-top: 4px; margin-top: 2px; margin-bottom: 2px; }
         
         .sp-btns-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
         .sp-btn { border: 1px solid rgba(255,255,255,0.2); color: #fff; border-radius: 8px; padding: 22px 2px; font-family: var(--D); font-size: 15px; letter-spacing: .05em; cursor: pointer; transition: all 0.2s; text-transform: uppercase; width: 100%; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); background: var(--g-btn); }
@@ -144,7 +142,6 @@
         .sp-btn.btn-survey { background: var(--g-amber); border-color: #fbbf24; }
         .sp-btn.btn-study { background: var(--g-purple); border-color: #c084fc; }
         .sp-btn.btn-spec { background: var(--g-rose); border-color: #fda4af; }
-        .sp-btn.full { grid-column: span 2; }
         .sp-btn.pri { background: var(--g-emerald); border-color: #34d399; font-size: 16px; font-weight: 900; padding: 25px 2px; }
         .sp-btn:disabled { opacity: 0.05; cursor: not-allowed; filter: grayscale(1); }
 
@@ -213,18 +210,18 @@
         <div id="grid"></div>
         <aside class="sp" id="sp">
             <div class="sp-hdr"><span class="sp-tag">Tactical Detail</span><button class="sp-close" id="sp-close">✕</button></div>
+            
+            <div style="font-size:7px; font-weight:900; color:var(--muted); text-transform:uppercase; margin-top:4px; margin-bottom:2px;">Mindshare Breakdown</div>
+            <div class="mind-chart" id="mind-chart"></div>
+
             <div class="sp-name" id="sp-name">—</div>
-            <div class="sp-full" id="sp-full">領域情報を同期中...</div>
             <div class="sp-stats">
-                <div class="sp-stat"><div class="sp-sl">Mindshare (H)</div><div class="sp-sv" id="sp-mind">0%</div></div>
                 <div class="sp-stat"><div class="sp-sl">Refresh</div><div class="sp-sv" id="sp-refresh">0m</div></div>
                 <div class="sp-stat"><div class="sp-sl">Budget</div><div class="sp-sv" id="sp-budget">¥0M</div></div>
-            </div>
-            <div class="sp-kv-row">
-                <div class="sp-kv"><div class="sp-rl">Provider</div><div class="sp-rv" id="sp-vendor">—</div></div>
-                <div class="sp-kv"><div class="sp-rl">Area</div><div class="sp-rv" id="sp-tiles">0 tiles</div></div>
+                <div class="sp-stat"><div class="sp-sl">Area</div><div class="sp-sv" id="sp-tiles">0 tiles</div></div>
             </div>
             <div class="sp-status" id="sp-status">—</div>
+            
             <div class="sp-sec-title">Field Operations</div>
             <div class="sp-btns-grid">
                 <button class="sp-btn btn-visit" onclick="addTask('VISIT',5,'訪問')">Visit (-5)</button>
@@ -280,9 +277,9 @@ const SFX = {
 
 // --- DATA ---
 const PERKS = [
-    { id:'P1', name:'Brand Dominance', desc:'全顧客のマインドシェアを恒久的に +10%', apply: (s) => s.globalWrMod += 10 },
+    { id:'P1', name:'Brand Dominance', desc:'全顧客の初期マインドシェアを恒久的に +10%', apply: (s) => s.globalWrMod += 10 },
     { id:'P2', name:'Elite Resource', desc:'毎月の行動力(MH)を恒久的に +5', apply: (s) => s.maxMh += 5 },
-    { id:'P3', name:'Strategic Insight', desc:'調査時にマインドシェアが +5 向上する', apply: (s) => s.surveyBuff += 5 }
+    { id:'P3', name:'Strategic Insight', desc:'調査時に自社マインドシェアが +5% 向上する', apply: (s) => s.surveyBuff += 5 }
 ];
 
 const VENDORS = {
@@ -324,6 +321,28 @@ function startApp() {
     startRivalSimulation();
 }
 
+function normalizeMindshare(c, priorityVendor = null, gainValue = 0) {
+    if (priorityVendor) {
+        let othersTotal = 0;
+        state.vendorList.forEach(v => { if (v !== priorityVendor) othersTotal += c.mindshare[v]; });
+        c.mindshare[priorityVendor] = Math.min(100, c.mindshare[priorityVendor] + gainValue);
+        let remaining = 100 - c.mindshare[priorityVendor];
+        if (othersTotal > 0) {
+            state.vendorList.forEach(v => {
+                if (v !== priorityVendor) {
+                    let ratio = c.mindshare[v] / othersTotal;
+                    c.mindshare[v] = remaining * ratio;
+                }
+            });
+        } else {
+            let count = state.vendorList.length - 1;
+            state.vendorList.forEach(v => { if (v !== priorityVendor) c.mindshare[v] = remaining / count; });
+        }
+    }
+    let sum = state.vendorList.reduce((acc, v) => acc + c.mindshare[v], 0);
+    state.vendorList.forEach(v => c.mindshare[v] = (c.mindshare[v] / sum) * 100);
+}
+
 function startRivalSimulation() {
     setInterval(() => {
         if (!state.isPlaying || isModalOpen()) return;
@@ -331,11 +350,8 @@ function startRivalSimulation() {
         const rid = rivalList[Math.floor(Math.random() * rivalList.length)];
         const targets = state.customers.filter(c => c.cxoProtect <= 0);
         if (!targets.length) return;
-        
         const tgt = targets[Math.floor(Math.random() * targets.length)];
-        tgt.mindshare[rid] = Math.min(100, tgt.mindshare[rid] + 4);
-        state.vendorList.forEach(v => { if(v !== rid) tgt.mindshare[v] = Math.max(0, tgt.mindshare[v] - 1.5); });
-
+        normalizeMindshare(tgt, rid, 4);
         const tiles = document.querySelectorAll('.tile');
         tiles.forEach(tile => {
             const idx = Array.from(tile.parentNode.children).indexOf(tile);
@@ -345,7 +361,6 @@ function startRivalSimulation() {
                 setTimeout(() => tile.classList.remove('rival-pulse'), 1000);
             }
         });
-
         document.getElementById('log-ln').textContent = `INTEL: ${VENDORS[rid].name} が ${tgt.name} を強奪予告中。マインドシェアを浸食されています。`;
         render(); 
     }, 8000); 
@@ -360,12 +375,15 @@ function init() {
         if (i === CUSTOMER_POOL_BASE.length - 1) tCount = totalArea - currentAllocated;
         currentAllocated += tCount;
         const ms = {};
-        state.vendorList.forEach(v => ms[v] = (v === vendor ? 50 : Math.floor(Math.random()*12)));
-        return { 
-            ...b, tiles: tCount, budget: tCount * 10, vendor, prevVendor: vendor, 
-            mo: Math.floor(Math.random()*45)+1, 
-            mindshare: ms, cxoProtect: 0, intelRevealed: false 
-        };
+        let mainShare = 50 + (vendor === 'H' ? state.globalWrMod : 0);
+        ms[vendor] = mainShare;
+        let remaining = 100 - mainShare;
+        let others = state.vendorList.filter(v => v !== vendor);
+        others.forEach((v, idx) => {
+            if (idx === others.length - 1) ms[v] = remaining;
+            else { let s = Math.random() * remaining; ms[v] = s; remaining -= s; }
+        });
+        return { ...b, tiles: tCount, budget: tCount * 10, vendor, prevVendor: vendor, mo: Math.floor(Math.random()*45)+1, mindshare: ms, cxoProtect: 0, intelRevealed: false, vc: 0 };
     });
     buildGrid(); render();
 }
@@ -388,22 +406,20 @@ function render() {
     const displayMonth = state.month > 12 ? 12 : state.month;
     document.getElementById('phase-disp').textContent = `FY${state.year}M${displayMonth}`;
     document.getElementById('mh-disp').textContent = state.mh;
-    
-    if (state.displaySales < state.sales) { state.displaySales += Math.ceil((state.sales - state.displaySales) / 10); SFX.score(); } 
-    else { state.displaySales = state.sales; }
+    if (state.displaySales < state.sales) { state.displaySales += Math.ceil((state.sales - state.displaySales) / 10); SFX.score(); } else { state.displaySales = state.sales; }
     document.getElementById('score-v').innerHTML = `¥${state.displaySales}<span>M</span>`;
-    
     const bar = document.getElementById('share-bar'); bar.innerHTML='';
     const s={}; state.vendorList.forEach(v => s[v] = 0);
     state.customers.forEach(c=>{ s[c.vendor]+=c.budget; });
     const total = Object.values(s).reduce((a,b)=>a+b,0)||1;
     state.vendorList.forEach(v=>{ const p=(s[v]/total)*100; if(p>0){ const d=document.createElement('div'); d.className='share-seg'; d.style.cssText=`width:${p}%;background:${VENDORS[v].bg}`; d.textContent=p>10?Math.round(p)+'%':''; bar.appendChild(d); } });
-    
     const gEl = document.getElementById('grid'); gEl.innerHTML='';
     state.grid.forEach(t=>{
         const el = document.createElement('div'); el.className = 'tile';
         if (t && t.cid) {
-            const c=state.customers.find(x=>x.id===t.cid); const kn=c.vendor==='H'||c.intelRevealed; const selected = state.selId === c.id;
+            const c=state.customers.find(x=>x.id===t.cid);
+            const kn = c.vendor === 'H' || c.intelRevealed || c.vc > 0;
+            const selected = state.selId === c.id;
             const isReplaced = c.vendor !== c.prevVendor;
             el.className = `tile ${selected ? 'sel' : ''} ${isReplaced ? 'is-replaced' : ''} ${c.cxoProtect > 0 ? 'cxo-a' : ''} ${c.mo >= 58 && c.mo < 60 ? 'rfp-a' : ''} ${c.mo === 60 ? 'bld-a' : ''}`;
             const inner = document.createElement('div'); inner.className = 'tile-inner';
@@ -411,11 +427,8 @@ function render() {
             const back = document.createElement('div'); back.className = 'tile-side side-back';
             front.style.backgroundColor = VENDORS[kn ? c.vendor : 'UNK'].bg; 
             back.style.backgroundColor = VENDORS[kn ? c.prevVendor : 'UNK'].bg;
-            
-            // 指示に従い、数字だけ（現在の契約年数）に戻す
             const spVal = document.createElement('span'); spVal.className='t-lbl'; 
-            spVal.textContent = Math.ceil(c.mo/12);
-            
+            spVal.textContent = kn ? Math.ceil(c.mo/12) : '?';
             front.appendChild(spVal.cloneNode(true)); back.appendChild(spVal.cloneNode(true));
             inner.appendChild(front); inner.appendChild(back); el.appendChild(inner);
             if (isReplaced) { setTimeout(() => { c.prevVendor = c.vendor; render(); }, 850); }
@@ -427,19 +440,30 @@ function render() {
     const sp=document.getElementById('sp');
     if (state.selId) {
         const c=state.customers.find(x=>x.id===state.selId); sp.classList.add('open');
+        const kn = c.vendor === 'H' || c.intelRevealed || c.vc > 0;
         document.getElementById('sp-name').textContent=c.name; 
-        document.getElementById('sp-mind').textContent=Math.round(c.mindshare['H'])+'%'; 
-        document.getElementById('sp-refresh').textContent=(60 - c.mo)+'m'; 
+        const chart = document.getElementById('mind-chart'); chart.innerHTML = '';
+        state.vendorList.forEach(v => {
+            const share = c.mindshare[v];
+            if (share > 0) {
+                const seg = document.createElement('div');
+                seg.className = 'mind-seg'; seg.style.width = share + '%';
+                // 判明していない場合は競合カラーをUNKで隠蔽
+                const color = (kn || v === 'H') ? VENDORS[v].bg : VENDORS.UNK.bg;
+                seg.style.backgroundColor = color;
+                if (kn || v === 'H') seg.textContent = share > 10 ? Math.round(share) + '%' : '';
+                chart.appendChild(seg);
+            }
+        });
+        document.getElementById('sp-refresh').textContent = kn ? (60 - c.mo)+'m' : '???'; 
         document.getElementById('sp-budget').textContent = `¥${c.budget}M`;
-        document.getElementById('sp-vendor').textContent= (c.vendor==='H'||c.intelRevealed) ? VENDORS[c.vendor].name : '？？？';
         document.getElementById('sp-tiles').textContent=c.tiles + ' tiles';
         const st=document.getElementById('sp-status');
         if(c.cxoProtect>0){ st.textContent=`🛡 CXO SECURE (${c.cxoProtect} Mo)`; st.style.color='var(--sky)'; }
-        else if(c.mo >= 58){ st.textContent='📄 REFRESH / BID PHASE'; st.style.color='var(--amber)'; }
+        else if(c.mo >= 58 && kn){ st.textContent='📄 REFRESH / BID PHASE'; st.style.color='var(--amber)'; }
         else { st.textContent='CONTRACTED / STEADY'; st.style.color=''; }
         document.getElementById('sp-bid-btn').disabled = (c.mo < 60);
     } else sp.classList.remove('open');
-    
     const ts=document.getElementById('task-strip'); ts.innerHTML='';
     state.tasks.forEach((t,i)=>{ const c=document.createElement('div'); c.className='t-chip'; c.innerHTML=`<span class="t-chip-name">${t.global?'MKT':t.cname}</span><span>${t.label}</span><button class="t-chip-rm" onclick="removeTask(${i})">✕</button>`; ts.appendChild(c); });
     document.getElementById('exec-btn').disabled=state.tasks.length===0; document.getElementById('exec-btn').className='exec-btn'+(state.tasks.length?' on':'');
@@ -458,71 +482,33 @@ function removeTask(i) { SFX.remove(); state.mh+=state.tasks[i].cost; state.task
 function executeStrategy() {
     SFX.exec(); let tr = [];
     state.tasks.forEach(t=>{
-        if (t.global) {
-            state.customers.forEach(c => { c.mindshare['H'] += 2.5; });
-            tr.push({n:t.label, tx:`全顧客へのマーケティング活動を実施。自社の認知度が向上。`, clr: VENDORS.H.bg });
-        } else {
+        if (t.global) { state.customers.forEach(c => { normalizeMindshare(c, 'H', 2.5); }); tr.push({n:t.label, tx:`全顧客へのマーケティング活動を実施。自社の認知度が向上しました。`, clr: VENDORS.H.bg }); }
+        else {
             const c=state.customers.find(x=>x.id===t.cid);
-            if(t.type==='VISIT'){ c.mindshare['H'] += 6; tr.push({n:c.name, tx: `キーマン訪問。信頼関係が深まりました。`, clr: VENDORS.H.bg }); }
-            else if(t.type==='STUDY'){ c.mindshare['H'] += 14; tr.push({n:c.name, tx: `勉強会。技術的優位性を経営層へアピール。`, clr: VENDORS.H.bg }); }
-            else if(t.type==='SURVEY'){ c.intelRevealed=true; c.mindshare['H'] += (3 + state.surveyBuff); tr.push({n:c.name, tx: `資産調査。他社の契約期間と弱点を把握。`, clr: VENDORS.H.bg }); }
-            else if(t.type==='SPECIN'){ c.mindshare['H'] += 25; tr.push({n:c.name, tx: `スペックイン。有利な更改条件を固定。`, clr: VENDORS.H.bg }); }
-            else if(t.type==='CXO'){ c.cxoProtect = 12; c.mindshare['H'] += 35; tr.push({n:c.name, tx: `CXO面談。次期5年のパートナーシップに合意。`, clr: VENDORS.H.bg }); }
+            if(t.type==='VISIT'){ c.vc++; normalizeMindshare(c, 'H', 6); tr.push({n:c.name, tx: `キーマン訪問。信頼関係が深まり、インテリジェンスを確保。`, clr: VENDORS.H.bg }); }
+            else if(t.type==='STUDY'){ normalizeMindshare(c, 'H', 14); tr.push({n:c.name, tx: `勉強会。技術的優位性をアピールし認知度を拡大。`, clr: VENDORS.H.bg }); }
+            else if(t.type==='SURVEY'){ c.intelRevealed=true; normalizeMindshare(c, 'H', 3 + state.surveyBuff); tr.push({n:c.name, tx: `資産調査。他社の契約期間と弱点を詳細に把握。`, clr: VENDORS.H.bg }); }
+            else if(t.type==='SPECIN'){ normalizeMindshare(c, 'H', 25); tr.push({n:c.name, tx: `スペックイン。有利な更改条件を固定しシェア拡大。`, clr: VENDORS.H.bg }); }
+            else if(t.type==='CXO'){ c.cxoProtect = 12; normalizeMindshare(c, 'H', 35); tr.push({n:c.name, tx: `CXO面談。次期5年のパートナーシップに合意。`, clr: VENDORS.H.bg }); }
             else if(t.type==='BID'){
                 const sorted = state.vendorList.map(v => ({id:v, val:c.mindshare[v]})).sort((a,b)=>b.val-a.val);
                 const winner = sorted[0].id;
-                c.prevVendor = c.vendor;
-                c.vendor = winner;
-                c.mo = 1;
-                if(winner === 'H'){ SFX.win(); state.sales += c.budget; tr.push({n:c.name, tx: `【更改成功】覇権を奪還・維持。新たな5年契約を締結しました。`, clr: VENDORS.H.bg }); }
-                else { SFX.lost(); tr.push({n:c.name, tx: `【更改失注】${VENDORS[winner].name}に敗北。マインドシェアの不足が響きました。`, clr: VENDORS[winner].bg }); }
+                c.prevVendor = c.vendor; c.vendor = winner; c.mo = 1;
+                if(winner === 'H'){ SFX.win(); state.sales += c.budget; tr.push({n:c.name, tx: `【更改成功】新たな5年契約を勝ち取りました。`, clr: VENDORS.H.bg }); }
+                else { SFX.lost(); tr.push({n:c.name, tx: `【更改失注】${VENDORS[winner].name}に敗北。マインドシェアが足りませんでした。`, clr: VENDORS[winner].bg }); }
             }
         }
     });
-
     state.month++; state.tasks=[]; state.mh=state.maxMh; state.selId=null;
-    state.customers.forEach(c=>{ 
-        if(c.mo < 60) c.mo++;
-        state.vendorList.forEach(v => { if(v !== c.vendor) c.mindshare[v] = Math.max(0, c.mindshare[v] - 0.7); });
-        if(c.cxoProtect>0) c.cxoProtect--; 
-    });
-    
+    state.customers.forEach(c=>{ if(c.mo < 60) c.mo++; state.vendorList.forEach(v => { if(v !== c.vendor) c.mindshare[v] = Math.max(0, c.mindshare[v] - 0.7); }); normalizeMindshare(c); if(c.cxoProtect>0) c.cxoProtect--; });
     const rl=document.getElementById('res-list'); rl.innerHTML='';
-    tr.forEach((r, i)=>{ setTimeout(() => { 
-        const d = document.createElement('div'); 
-        d.style.cssText=`padding:12px; border-bottom:1px solid #222; border-left:4px solid ${r.clr}; margin-bottom:8px; animation: slide-up 0.3s both;`; 
-        d.innerHTML=`<div style="color:${r.clr}; font-family:var(--D); font-size:16px;">${r.n}</div><div style="font-size:12px; line-height:1.4; color:#fff;">${r.tx}</div>`;
-        rl.appendChild(d); rl.scrollTop = rl.scrollHeight; 
-    }, i * 200); });
-    
+    tr.forEach((r, i)=>{ setTimeout(() => { const d = document.createElement('div'); d.style.cssText=`padding:12px; border-bottom:1px solid #222; border-left:4px solid ${r.clr}; margin-bottom:8px; animation: slide-up 0.3s both;`; d.innerHTML=`<div style="color:${r.clr}; font-family:var(--D); font-size:16px;">${r.n}</div><div style="font-size:12px; line-height:1.4; color:#fff;">${r.tx}</div>`; rl.appendChild(d); rl.scrollTop = rl.scrollHeight; }, i * 200); });
     setTimeout(() => { SFX.report(); document.getElementById('result-ov').classList.remove('hidden'); }, 300);
     render();
 }
 
-function closeResult() { 
-    SFX.select(); document.getElementById('result-ov').classList.add('hidden'); 
-    if(state.month === 13) { 
-        const ranking = state.vendorList.map(v => ({ id: v, name: VENDORS[v].name, total: state.customers.filter(c => c.vendor === v).reduce((a, b) => a + b.budget, 0), color: VENDORS[v].bg })).sort((a, b) => b.total - a.total); 
-        const rw = document.getElementById('vendor-ranking'); rw.innerHTML = '<div style="font-family:var(--D);font-size:18px;color:var(--gold);margin-bottom:12px;">ANNUAL RANKING</div>'; 
-        ranking.forEach((r, idx) => rw.innerHTML += `<div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:14px;"><span style="color:${r.color}">${idx+1}. ${r.name}</span><span style="color:#fff">¥${r.total}M</span></div>`); 
-        document.getElementById('final-score').textContent=`¥${state.sales}M`; document.getElementById('final-modal').classList.remove('hidden'); 
-    } 
-}
-
-function preparePerks() { 
-    SFX.report(); document.getElementById('final-modal').classList.add('hidden'); 
-    const list = document.getElementById('perk-list'); list.innerHTML = ''; 
-    const candidates = [...PERKS].sort(() => 0.5 - Math.random()).slice(0, 3); 
-    candidates.forEach(p => { 
-        const b = document.createElement('button'); 
-        b.style.cssText = 'height:70px; background:var(--g-btn); border:1px solid var(--bdr); border-radius:12px; color:#fff; cursor:pointer; margin-bottom:10px; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:10px; box-shadow:0 4px 15px rgba(0,0,0,0.4);';
-        b.innerHTML = `<div style="font-family:var(--D); font-size:18px; color:var(--gold);">${p.name}</div><div style="font-size:11px; opacity:0.8;">${p.desc}</div>`; 
-        b.onclick = () => { SFX.select(); p.apply(state); document.getElementById('perk-ov').classList.add('hidden'); continueGame(); }; 
-        list.appendChild(b); 
-    }); 
-    document.getElementById('perk-ov').classList.remove('hidden'); 
-}
-
+function closeResult() { SFX.select(); document.getElementById('result-ov').classList.add('hidden'); if(state.month === 13) { const ranking = state.vendorList.map(v => ({ id: v, name: VENDORS[v].name, total: state.customers.filter(c => c.vendor === v).reduce((a, b) => a + b.budget, 0), color: VENDORS[v].bg })).sort((a, b) => b.total - a.total); const rw = document.getElementById('vendor-ranking'); rw.innerHTML = '<div style="font-family:var(--D);font-size:18px;color:var(--gold);margin-bottom:12px;">ANNUAL RANKING</div>'; ranking.forEach((r, idx) => rw.innerHTML += `<div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:14px;"><span style="color:${r.color}">${idx+1}. ${r.name}</span><span style="color:#fff">¥${r.total}M</span></div>`); document.getElementById('final-score').textContent=`¥${state.sales}M`; document.getElementById('final-modal').classList.remove('hidden'); } }
+function preparePerks() { SFX.report(); document.getElementById('final-modal').classList.add('hidden'); const list = document.getElementById('perk-list'); list.innerHTML = ''; const candidates = [...PERKS].sort(() => 0.5 - Math.random()).slice(0, 3); candidates.forEach(p => { const b = document.createElement('button'); b.style.cssText = 'height:70px; background:var(--g-btn); border:1px solid var(--bdr); border-radius:12px; color:#fff; cursor:pointer; margin-bottom:10px; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:10px; box-shadow:0 4px 15px rgba(0,0,0,0.4);'; b.innerHTML = `<div style="font-family:var(--D); font-size:18px; color:var(--gold);">${p.name}</div><div style="font-size:11px; opacity:0.8;">${p.desc}</div>`; b.onclick = () => { SFX.select(); p.apply(state); document.getElementById('perk-ov').classList.add('hidden'); continueGame(); }; list.appendChild(b); }); document.getElementById('perk-ov').classList.remove('hidden'); }
 function continueGame() { state.month = 1; state.year++; state.tasks = []; state.mh = state.maxMh; render(); }
 function resetGame() { location.reload(); }
 document.getElementById('sp-close').onclick=()=>{ SFX.select(); state.selId=null; render(); };
